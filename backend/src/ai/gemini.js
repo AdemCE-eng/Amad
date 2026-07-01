@@ -84,21 +84,25 @@ function withTimeout(promise, ms) {
 /**
  * Generate the pet message for an event.
  * @param {object} ctx  the `_aiContext` produced by petEngine (category, event, amount, ...)
- * @returns {Promise<string>} Arabic sentence (real or fallback) — never empty.
+ * @returns {Promise<{text: string, source: "gemini"|"mock"|"fallback"}>}
+ *   `source` lets the caller show whether this was a real AI call, so it's
+ *   never ambiguous in the demo whether Gemini is actually responding.
  */
 export async function generatePetMessage(ctx = {}) {
   const category = ctx.category || "neutral";
 
-  if (USE_MOCK_AI || !GEMINI_API_KEY) return fallbackMessage(category);
+  if (USE_MOCK_AI || !GEMINI_API_KEY) {
+    return { text: fallbackMessage(category), source: "mock" };
+  }
 
   try {
     const prompt = buildPrompt(ctx);
     const result = await withTimeout(getModel().generateContent(prompt), TIMEOUT_MS);
     const text = result?.response?.text?.().trim();
-    return text || fallbackMessage(category);
+    return text ? { text, source: "gemini" } : { text: fallbackMessage(category), source: "fallback" };
   } catch (err) {
     console.warn(`⚠️  Gemini failed (${err.message}); using fallback.`);
-    return fallbackMessage(category);
+    return { text: fallbackMessage(category), source: "fallback" };
   }
 }
 
