@@ -11,7 +11,12 @@ const HEAL_K = 2; // scaling factor for goal-relative healing
 const HEAL_MIN = 5;
 const HEAL_MAX = 25;
 const PURCHASE_IN_BUDGET_PENALTY = -3;
-const PURCHASE_OVER_BUDGET_PENALTY = -20;
+// Over-budget penalty scales with HOW FAR over budget this purchase pushes
+// you (same relative-effort principle as healing) instead of a flat hit —
+// barely crossing the line stings a little, blowing it out stings a lot.
+const OVER_BUDGET_PENALTY_K = 0.5;
+const OVER_BUDGET_PENALTY_MIN = 10;
+const OVER_BUDGET_PENALTY_MAX = 35;
 
 // ── Helpers ──────────────────────────────────────────────
 export const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
@@ -53,13 +58,17 @@ export function initialState() {
 }
 
 // Internal: stamp health/mood/animation onto the pet after a health change.
-function withHealth(pet, healthDelta, { animationState, forceMood } = {}) {
+// `mood` always derives from the resulting health — it must never disagree with
+// what the health bar shows. `animationState` can still be overridden per event
+// for a one-off Lottie cue (e.g. "eating"), independent of the persistent mood.
+function withHealth(pet, healthDelta, { animationState } = {}) {
   const health = clamp(Math.round(pet.health + healthDelta), 0, 100);
+  const mood = moodFromHealth(health);
   return {
     ...pet,
     health,
-    mood: forceMood || moodFromHealth(health),
-    animationState: animationState || moodToAnimation(moodFromHealth(health)),
+    mood,
+    animationState: animationState || moodToAnimation(mood),
     updatedAt: Date.now(),
   };
 }
@@ -84,10 +93,7 @@ export function applySalary(state, amount, saveRate = SAVE_RATE) {
     HEAL_MIN,
     HEAL_MAX
   );
-  const pet = withHealth(state.pet, healthDelta, {
-    animationState: "eating",
-    forceMood: "happy",
-  });
+  const pet = withHealth(state.pet, healthDelta, { animationState: "eating" });
   return {
     ...state,
     user,
@@ -111,10 +117,7 @@ export function applyInstantSave(state, amount) {
     HEAL_MIN,
     HEAL_MAX
   );
-  const pet = withHealth(state.pet, healthDelta, {
-    animationState: "eating",
-    forceMood: "happy",
-  });
+  const pet = withHealth(state.pet, healthDelta, { animationState: "eating" });
   return {
     ...state,
     user,
@@ -133,10 +136,17 @@ export function applyPurchase(state, { amount, category = "general", label = "ع
     balance: state.user.balance - amount,
     spentThisMonth,
   };
-  const healthDelta = overBudget ? PURCHASE_OVER_BUDGET_PENALTY : PURCHASE_IN_BUDGET_PENALTY;
+  let healthDelta = PURCHASE_IN_BUDGET_PENALTY;
+  if (overBudget) {
+    const overagePct = ((spentThisMonth - state.user.monthlyBudget) / state.user.monthlyBudget) * 100;
+    healthDelta = -clamp(
+      Math.round(overagePct * OVER_BUDGET_PENALTY_K),
+      OVER_BUDGET_PENALTY_MIN,
+      OVER_BUDGET_PENALTY_MAX
+    );
+  }
   const pet = withHealth(state.pet, healthDelta, {
     animationState: overBudget ? "sick" : undefined,
-    forceMood: overBudget ? "sick" : undefined,
   });
   return {
     ...state,
@@ -144,7 +154,7 @@ export function applyPurchase(state, { amount, category = "general", label = "ع
     pet,
     meta: { lastEvent: "purchase" },
     _aiContext: {
-      category: overBudget ? "sick" : pet.mood === "sad" ? "sad" : "neutral",
+      category: pet.mood, // AI reaction always matches what the health bar shows
       event: "purchase",
       amount,
       txnCategory: category,

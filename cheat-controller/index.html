@@ -116,6 +116,7 @@
       <div class="row"><span>التقدم نحو الهدف</span><div class="bar"><span id="goalBar" style="width:0%; background:var(--alinma)"></span></div><b id="goalNum">—</b></div>
       <div class="row"><span>درع الطوارئ المتبقي</span><b id="shield">—</b></div>
       <div class="bubble" id="bubble">…</div>
+      <div style="text-align:center"><span class="badge" id="aiBadge">—</span></div>
       <div class="errBanner" id="errBanner"></div>
       <pre id="raw">اضغط أي زر لعرض الاستجابة…</pre>
     </div>
@@ -204,6 +205,26 @@
           pet.health >= 50 ? 'var(--green)' : pet.health >= 20 ? 'var(--amber)' : 'var(--red)';
         document.getElementById('bubble').textContent = pet.message || '…';
       }
+
+      // Makes it obvious whether this reply came from a real Gemini call, the
+      // mock-mode fallback (USE_MOCK_AI=true), or the emergency fallback
+      // (Gemini errored/timed out) — otherwise all three look identical.
+      const aiBadge = document.getElementById('aiBadge');
+      const AI_LABELS = {
+        gemini: ['🤖 رد Gemini حقيقي', '#e6f7f0', '#0e9488'],
+        mock: ['📋 وضع تجريبي (Mock)', '#f0ebfa', '#6b3fa0'],
+        fallback: ['⚠️ احتياطي (فشل Gemini)', '#fdeaea', '#d64545'],
+      };
+      if (data.aiSource && AI_LABELS[data.aiSource]) {
+        const [label, bg, fg] = AI_LABELS[data.aiSource];
+        aiBadge.textContent = label;
+        aiBadge.style.background = bg;
+        aiBadge.style.color = fg;
+        aiBadge.style.display = 'inline-block';
+      } else {
+        aiBadge.style.display = 'none';
+      }
+
       if (user) {
         const pct = Math.min(100, Math.round(user.savedAmount / user.goalAmount * 100));
         document.getElementById('goalBar').style.width = pct + '%';

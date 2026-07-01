@@ -31,7 +31,7 @@ async function readState() {
 
 // Persist the engine result, attach the AI message, and log a transaction.
 async function commit(next, txn) {
-  const message = await generatePetMessage(next._aiContext);
+  const { text: message, source: aiSource } = await generatePetMessage(next._aiContext);
   const pet = { ...next.pet, message, updatedAt: Date.now() };
 
   const updates = {
@@ -44,7 +44,10 @@ async function commit(next, txn) {
 
   if (txn) await db.ref("/transactions").push({ ...txn, timestamp: Date.now() });
 
-  return { user: next.user, pet, emergencyShield: next.emergencyShield, meta: next.meta };
+  // aiSource is NOT stored in Firebase (the frontend never needs it) — it's
+  // only surfaced in the HTTP response so the Cheat Controller can show
+  // whether the message just came from a real Gemini call or a fallback.
+  return { user: next.user, pet, emergencyShield: next.emergencyShield, meta: next.meta, aiSource };
 }
 
 function insufficientFunds(res, state) {
