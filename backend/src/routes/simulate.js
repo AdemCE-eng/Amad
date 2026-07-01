@@ -5,9 +5,11 @@ import { Router } from "express";
 import { db } from "../firebase.js";
 import {
   applySalary,
+  applyInstantSave,
   applyPurchase,
   applyEmergency,
   initialState,
+  hasSufficientFunds,
 } from "../logic/petEngine.js";
 import { generatePetMessage } from "../ai/gemini.js";
 
@@ -45,18 +47,49 @@ async function commit(next, txn) {
   return { user: next.user, pet, emergencyShield: next.emergencyShield, meta: next.meta };
 }
 
+function insufficientFunds(res, state) {
+  res.status(400).json({
+    ok: false,
+    error: "insufficient_funds",
+    message: "الرصيد غير كافٍ لإتمام هذه العملية.",
+    user: state.user,
+  });
+}
+
 // ── Routes ───────────────────────────────────────────────
 
-// POST /api/simulate/salary  { amount }
+// POST /api/simulate/salary  { amount, savePercent }
+// savePercent (0-100) is optional — how much of the deposit auto-routes to
+// Instant Savings. Defaults to the engine's standard rate (20%) if omitted.
 router.post("/simulate/salary", async (req, res, next) => {
   try {
     const amount = Number(req.body.amount) || 8000;
+    const savePercent = Number(req.body.savePercent);
+    const saveRate = Number.isFinite(savePercent) ? savePercent / 100 : undefined;
     const state = await readState();
-    const out = await commit(applySalary(state, amount), {
+    const out = await commit(applySalary(state, amount, saveRate), {
       type: "salary",
       amount,
       category: "income",
       label: "إيداع راتب",
+    });
+    res.json({ ok: true, ...out });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// POST /api/simulate/save  { amount }  — manual Instant Savings top-up
+router.post("/simulate/save", async (req, res, next) => {
+  try {
+    const amount = Number(req.body.amount) || 300;
+    const state = await readState();
+    if (!hasSufficientFunds(state, amount)) return insufficientFunds(res, state);
+    const out = await commit(applyInstantSave(state, amount), {
+      type: "save",
+      amount,
+      category: "savings",
+      label: "إيداع في المدخرات الفورية",
     });
     res.json({ ok: true, ...out });
   } catch (e) {
@@ -70,6 +103,7 @@ router.post("/simulate/purchase", async (req, res, next) => {
     const amount = Number(req.body.amount) || 50;
     const { category = "coffee", label = "قهوة" } = req.body;
     const state = await readState();
+    if (!hasSufficientFunds(state, amount)) return insufficientFunds(res, state);
     const out = await commit(applyPurchase(state, { amount, category, label }), {
       type: "purchase",
       amount,
@@ -88,6 +122,7 @@ router.post("/simulate/emergency", async (req, res, next) => {
     const amount = Number(req.body.amount) || 1500;
     const { label = "سحب طارئ" } = req.body;
     const state = await readState();
+    if (!hasSufficientFunds(state, amount)) return insufficientFunds(res, state);
     const out = await commit(applyEmergency(state, { amount, label }), {
       type: "emergency",
       amount,
@@ -95,6 +130,28 @@ router.post("/simulate/emergency", async (req, res, next) => {
       label,
     });
     res.json({ ok: true, ...out });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// POST /api/user/goal  { goalAmount }  — settings change, not a financial
+// event: no health/mood/AI reaction, just updates the target the pet's
+// healing math is relative to.
+router.post("/user/goal", async (req, res, next) => {
+  try {
+    const goalAmount = Math.round(Number(req.body.goalAmount));
+    if (!Number.isFinite(goalAmount) || goalAmount <= 0) {
+      return res.status(400).json({
+        ok: false,
+        error: "invalid_goal",
+        message: "قيمة الهدف يجب أن تكون رقماً أكبر من صفر.",
+      });
+    }
+    const state = await readState();
+    const user = { ...state.user, goalAmount };
+    await db.ref("/user/goalAmount").set(goalAmount);
+    res.json({ ok: true, user, pet: state.pet, emergencyShield: state.emergencyShield });
   } catch (e) {
     next(e);
   }

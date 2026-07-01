@@ -18,11 +18,28 @@ anything — the controller triggers endpoints, and the frontend only listens to
 
 | Folder | Owner | Status |
 |---|---|---|
-| `backend/` | Backend & AI | ✅ built |
+| `backend/` | Backend & AI | ✅ built — real Gemini AI live |
 | `cheat-controller/` | Backend & AI | ✅ built (served at `/`) |
 | `docs/DATA_MODEL.md` | Backend & AI | ✅ the Firebase contract for the frontend |
+| `docs/API.md` | Backend & AI | ✅ endpoint reference (for demo/debugging, not needed by frontend) |
 | `frontend/` | Frontend (Flutter) | 🔲 stub |
 | `design/` | UI/UX Designer | 🔲 stub |
+
+## Cheat Controller — what the demo operator (PM) sees
+
+Open `http://localhost:3000/`. Every action button has its own editable input — type any amount
+before clicking, nothing is fixed:
+
+- **🎯 تحديث هدف الادخار** — set the user's savings goal.
+- **💰 إيداع راتب** — deposit a salary. Second input controls what % auto-saves (default 20%).
+- **💚 مدخرات فورية** — manually move money straight into savings (heals more per SAR than salary).
+- **☕ شراء قهوة / 🛍️ شراء كبير** — a small in-budget purchase vs. one that breaks the monthly budget.
+- **🛡️ درع الطوارئ** — an emergency withdrawal, penalty-free while the shield has uses left.
+- **🔄 إعادة تعيين العرض** — Panic Reset. Wipes everything back to a clean demo state in ~1s. Use
+  this between judges.
+
+If you try to spend more than the balance, nothing breaks — you'll see a red "insufficient funds"
+banner and no state changes. See [`docs/API.md`](docs/API.md) for the full endpoint reference.
 
 ## Run it locally (no cloud credentials needed)
 
@@ -46,11 +63,11 @@ npm run dev                        # Express on http://localhost:3000
 Open **http://localhost:3000/** → the Cheat Controller. Click the buttons and watch the
 pet state change live in the emulator UI (http://localhost:4000).
 
-## Going live (when credentials arrive)
+## Current status
 
-Edit `backend/.env`:
-- Set `USE_MOCK_AI=false` and `GEMINI_API_KEY=...` for real AI flavor text.
-- Remove `FIREBASE_DATABASE_EMULATOR_HOST` and set `FIREBASE_DATABASE_URL` + a service-account
-  key to point at the real Firebase project.
-
-No code changes required.
+- **Gemini AI is live** (`USE_MOCK_AI=false` in `backend/.env`, real key set) — pet messages are
+  genuine AI reactions, not the hardcoded fallback array. Falls back automatically if a call is
+  slow or fails, so this is safe to leave on.
+- **Firebase is still on the local emulator.** When the real Firebase project is ready: remove
+  `FIREBASE_DATABASE_EMULATOR_HOST` from `backend/.env` and set `FIREBASE_DATABASE_URL` + a
+  service-account key instead. No code changes required either way.
