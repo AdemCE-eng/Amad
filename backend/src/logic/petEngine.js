@@ -16,6 +16,12 @@ const PURCHASE_OVER_BUDGET_PENALTY = -20;
 // ── Helpers ──────────────────────────────────────────────
 export const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 
+// Any event that pulls money OUT of balance (purchase, emergency, instant
+// save) must check this first — real accounts don't go negative.
+export function hasSufficientFunds(state, amount) {
+  return amount <= state.user.balance;
+}
+
 export function moodFromHealth(health) {
   if (health >= 80) return "happy";
   if (health >= 50) return "neutral";
@@ -65,8 +71,9 @@ function moodToAnimation(mood) {
 // ── Events ───────────────────────────────────────────────
 
 // Salary deposit → a slice is auto-saved → pet heals and eats happily.
-export function applySalary(state, amount) {
-  const savedPortion = Math.round(amount * SAVE_RATE);
+// `saveRate` (0-1) is choosable per deposit — defaults to the standard auto-save rate.
+export function applySalary(state, amount, saveRate = SAVE_RATE) {
+  const savedPortion = Math.round(amount * clamp(saveRate, 0, 1));
   const user = {
     ...state.user,
     balance: state.user.balance + amount,
@@ -87,6 +94,33 @@ export function applySalary(state, amount) {
     pet,
     meta: { lastEvent: "salary" },
     _aiContext: { category: "happy", event: "salary", amount, savedPortion, healthDelta },
+  };
+}
+
+// Instant Savings → the user manually moves money straight into savings.
+// Unlike a salary deposit (only a slice is auto-saved), the FULL amount counts
+// toward the goal here, so it heals proportionally more per SAR.
+export function applyInstantSave(state, amount) {
+  const user = {
+    ...state.user,
+    balance: state.user.balance - amount,
+    savedAmount: state.user.savedAmount + amount,
+  };
+  const healthDelta = clamp(
+    Math.round((amount / user.goalAmount) * 100 * HEAL_K),
+    HEAL_MIN,
+    HEAL_MAX
+  );
+  const pet = withHealth(state.pet, healthDelta, {
+    animationState: "eating",
+    forceMood: "happy",
+  });
+  return {
+    ...state,
+    user,
+    pet,
+    meta: { lastEvent: "save" },
+    _aiContext: { category: "happy", event: "save", amount, healthDelta },
   };
 }
 
