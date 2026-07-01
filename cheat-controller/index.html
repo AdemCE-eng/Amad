@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🎮 Cheat Controller — المرافق المالي الذكي</title>
+  <style>
+    :root {
+      --alinma: #6b3fa0;      /* Alinma purple */
+      --alinma-dark: #4e2d78;
+      --green: #1faa59;
+      --red: #d64545;
+      --amber: #e0a500;
+      --bg: #f5f3f9;
+      --card: #ffffff;
+      --ink: #2a2340;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background: var(--bg); color: var(--ink);
+      margin: 0; padding: 24px; min-height: 100vh;
+    }
+    .wrap { max-width: 720px; margin: 0 auto; }
+    h1 { color: var(--alinma-dark); font-size: 1.4rem; margin: 0 0 4px; }
+    .sub { color: #777; font-size: .85rem; margin-bottom: 20px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    button {
+      border: none; border-radius: 14px; padding: 18px 16px;
+      font-size: 1rem; font-weight: 700; color: #fff; cursor: pointer;
+      transition: transform .06s ease, filter .15s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,.08);
+    }
+    button:active { transform: scale(.97); }
+    button:hover { filter: brightness(1.05); }
+    .salary   { background: var(--green); }
+    .coffee   { background: var(--alinma); }
+    .big      { background: var(--amber); }
+    .emergency{ background: #2f7fd6; }
+    .reset    { background: var(--red); grid-column: 1 / -1; }
+    .status {
+      margin-top: 20px; background: var(--card); border-radius: 16px;
+      padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,.06);
+    }
+    .row { display: flex; justify-content: space-between; align-items: center; margin: 6px 0; }
+    .bar { height: 14px; border-radius: 8px; background: #eee; overflow: hidden; flex: 1; margin: 0 10px; }
+    .bar > span { display: block; height: 100%; background: var(--green); transition: width .4s ease; }
+    .bubble {
+      background: #f0ebfa; border-radius: 14px; padding: 12px 14px;
+      margin-top: 10px; font-size: 1.05rem; text-align: center; min-height: 24px;
+    }
+    .badge { font-size: .8rem; padding: 3px 10px; border-radius: 999px; background: #eee; }
+    pre {
+      margin-top: 14px; background: #1e1b2e; color: #c8e6c9; border-radius: 12px;
+      padding: 12px; font-size: .72rem; overflow-x: auto; direction: ltr; max-height: 180px;
+    }
+    .emoji { font-size: 2.4rem; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>🎮 لوحة التحكم السرية — Cheat Controller</h1>
+    <div class="sub">اضغط الأزرار لتحديث Firebase مباشرة — يتفاعل الحيوان الأليف فوراً على شاشة التطبيق.</div>
+
+    <div class="grid">
+      <button class="salary"    onclick="call('/api/simulate/salary',    {amount:8000})">💰 إيداع راتب</button>
+      <button class="coffee"    onclick="call('/api/simulate/purchase',  {amount:50, category:'coffee', label:'قهوة'})">☕ شراء قهوة (50)</button>
+      <button class="big"       onclick="call('/api/simulate/purchase',  {amount:2500, category:'shopping', label:'تسوق كبير'})">🛍️ شراء كبير (تجاوز الميزانية)</button>
+      <button class="emergency" onclick="call('/api/simulate/emergency', {amount:1500, label:'طوارئ طبية'})">🛡️ درع الطوارئ</button>
+      <button class="reset"     onclick="call('/api/reset', {})">🔄 إعادة تعيين العرض (Panic Reset)</button>
+    </div>
+
+    <div class="status">
+      <div style="text-align:center">
+        <div class="emoji" id="emoji">🐣</div>
+        <span class="badge" id="mood">—</span>
+      </div>
+      <div class="row"><span>الصحة</span><div class="bar"><span id="healthBar" style="width:100%"></span></div><b id="healthNum">—</b></div>
+      <div class="row"><span>التقدم نحو الهدف</span><div class="bar"><span id="goalBar" style="width:0%; background:var(--alinma)"></span></div><b id="goalNum">—</b></div>
+      <div class="row"><span>درع الطوارئ المتبقي</span><b id="shield">—</b></div>
+      <div class="bubble" id="bubble">…</div>
+      <pre id="raw">اضغط أي زر لعرض الاستجابة…</pre>
+    </div>
+  </div>
+
+  <script>
+    const EMOJI = { happy: '😄', neutral: '🙂', sad: '😟', sick: '🤒' };
+
+    async function call(url, body) {
+      setBusy(true);
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        const data = await res.json();
+        render(data);
+      } catch (e) {
+        document.getElementById('raw').textContent = '❌ ' + e.message +
+          '\n(تأكد أن الخادم يعمل: npm run dev)';
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    function render(data) {
+      document.getElementById('raw').textContent = JSON.stringify(data, null, 2);
+      const pet = data.pet, user = data.user, shield = data.emergencyShield;
+      if (pet) {
+        document.getElementById('emoji').textContent = EMOJI[pet.mood] || '🐣';
+        document.getElementById('mood').textContent = pet.mood;
+        document.getElementById('healthNum').textContent = pet.health;
+        document.getElementById('healthBar').style.width = pet.health + '%';
+        document.getElementById('healthBar').style.background =
+          pet.health >= 50 ? 'var(--green)' : pet.health >= 20 ? 'var(--amber)' : 'var(--red)';
+        document.getElementById('bubble').textContent = pet.message || '…';
+      }
+      if (user) {
+        const pct = Math.min(100, Math.round(user.savedAmount / user.goalAmount * 100));
+        document.getElementById('goalBar').style.width = pct + '%';
+        document.getElementById('goalNum').textContent = pct + '%';
+      }
+      if (shield) document.getElementById('shield').textContent = shield.usesRemaining;
+    }
+
+    function setBusy(b) { document.body.style.opacity = b ? .6 : 1; }
+
+    // Load initial state on open.
+    fetch('/api/state').then(r => r.json()).then(render).catch(() => {});
+  </script>
+</body>
+</html>

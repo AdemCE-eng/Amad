@@ -1,0 +1,17 @@
+# Dependencies
+node_modules/
+
+# Env / secrets
+.env
+*serviceAccount*.json
+firebase-key.json
+
+# Firebase emulator
+firebase-debug.log
+database-debug.log
+ui-debug.log
+.firebase/
+
+# OS / editor
+.DS_Store
+Thumbs.db

@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm --version)",
+      "Bash(git --version)",
+      "Bash(git init *)",
+      "Bash(mkdir -p backend/src/routes backend/src/logic backend/src/ai cheat-controller docs frontend design)",
+      "Bash(git config *)"
+    ]
+  }
+}
