@@ -86,10 +86,17 @@
   <script>
     const EMOJI = { happy: '😄', neutral: '🙂', sad: '😟', sick: '🤒' };
 
-    async function call(url, body) {
+    // Relative URLs only resolve when this page is served BY the backend
+    // (http://localhost:3000/). If it's opened directly (file://) or previewed
+    // from elsewhere, fall back to the backend's default local address.
+    const API_BASE = location.protocol === 'file:' || !location.origin.startsWith('http')
+      ? 'http://localhost:3000'
+      : '';
+
+    async function call(path, body) {
       setBusy(true);
       try {
-        const res = await fetch(url, {
+        const res = await fetch(API_BASE + path, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body),
@@ -127,7 +134,7 @@
     function setBusy(b) { document.body.style.opacity = b ? .6 : 1; }
 
     // Load initial state on open.
-    fetch('/api/state').then(r => r.json()).then(render).catch(() => {});
+    fetch(API_BASE + '/api/state').then(r => r.json()).then(render).catch(() => {});
   </script>
 </body>
 </html>
