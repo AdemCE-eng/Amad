@@ -31,7 +31,7 @@ on the `mood` and `animationState` strings. **The frontend never writes to the D
 
   "transactions": {
     "<pushId>": {
-      "type": "purchase",      // purchase | salary | emergency
+      "type": "purchase",      // purchase | salary | save | emergency
       "amount": 50,            // SAR
       "category": "coffee",
       "label": "قهوة",         // Arabic display label
@@ -40,7 +40,7 @@ on the `mood` and `animationState` strings. **The frontend never writes to the D
   },
 
   "meta": {
-    "lastEvent": "idle"        // last action processed: salary | purchase | emergency | reset | idle
+    "lastEvent": "idle"        // last action processed: salary | save | purchase | emergency | reset | idle
   }
 }
 ```

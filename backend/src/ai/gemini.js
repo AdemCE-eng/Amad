@@ -6,8 +6,8 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const USE_MOCK_AI = process.env.USE_MOCK_AI !== "false"; // default: mock
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-1.5-flash";
-const TIMEOUT_MS = 3000;
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash-lite";
+const TIMEOUT_MS = 5000; // flash-lite runs ~1.5-2.5s with the guardrail; leaves margin
 
 // The judge-validation win: the AI is emotionally expressive but financially silent.
 const SYSTEM_GUARDRAIL = `أنت حيوان أليف افتراضي لطيف يعيش داخل تطبيق بنك الإنماء.
@@ -106,6 +106,8 @@ function buildPrompt(ctx) {
   switch (ctx.event) {
     case "salary":
       return "قام المستخدم بإيداع راتبه وتم توفير جزء منه تلقائياً. عبّر عن سعادتك وفخرك.";
+    case "save":
+      return "قام المستخدم بإيداع مبلغ إضافي مباشرة في المدخرات الفورية. عبّر عن فخرك الشديد بهذه العادة الرائعة.";
     case "emergency":
       return "قام المستخدم بسحب مبلغ لحالة طارئة، ودرع الطوارئ يحميك من أي ضرر. طمئنه أنك بخير.";
     case "purchase":
