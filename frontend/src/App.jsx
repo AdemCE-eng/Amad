@@ -115,7 +115,7 @@ const PET_TYPES = {
   falcon: { id: 'falcon', name: 'صقر', Graphic: PetGraphics.falcon },
   camel: { id: 'camel', name: 'جمل', Graphic: PetGraphics.camel },
   wolf: { id: 'wolf', name: 'ذئب', Graphic: PetGraphics.wolf },
-  cat: { id: 'cat', name: 'قط', Graphic: PetGraphics.cat },
+  fox: { id: 'fox', name: 'ثعلب', Graphic: PetGraphics.cat },
   bird: { id: 'bird', name: 'طائر', Graphic: PetGraphics.bird }
 };
 
@@ -546,7 +546,7 @@ export default function App() {
   const [actionError, setActionError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const currentPet = PET_TYPES[petType];
+  const currentPet = PET_TYPES[petType] || PET_TYPES.falcon;
   const CurrentPetGraphic = currentPet.Graphic;
 
   // Track pet.health across renders to trigger screen-shake / heal-flash
