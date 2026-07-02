@@ -145,9 +145,10 @@ export function applyPurchase(state, { amount, category = "general", label = "ع
       OVER_BUDGET_PENALTY_MAX
     );
   }
-  const pet = withHealth(state.pet, healthDelta, {
-    animationState: overBudget ? "sick" : undefined,
-  });
+  // No animation override: pose derives from the health band, same as mood.
+  // The over-budget "hit" feedback is the health drop itself (frontend shakes
+  // the screen and flashes red) — the pet only collapses when truly sick.
+  const pet = withHealth(state.pet, healthDelta);
   return {
     ...state,
     user,

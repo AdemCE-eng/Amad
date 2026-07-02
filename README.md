@@ -7,7 +7,7 @@ The pet's health, mood, and animations react in real time to the user's financia
 ## Architecture
 
 ```
-Cheat Controller (buttons)  ──HTTP──▶  Express Backend  ──▶  Firebase Realtime DB  ──▶  Flutter Frontend
+Cheat Controller (buttons)  ──HTTP──▶  Express Backend  ──▶  Firebase Realtime DB  ──▶  React Frontend
                                         (all math + AI)        (single source of truth)   (listens + animates)
 ```
 
@@ -22,7 +22,7 @@ anything — the controller triggers endpoints, and the frontend only listens to
 | `cheat-controller/` | Backend & AI | ✅ built (served at `/`) |
 | `docs/DATA_MODEL.md` | Backend & AI | ✅ the Firebase contract for the frontend |
 | `docs/API.md` | Backend & AI | ✅ endpoint reference (for demo/debugging, not needed by frontend) |
-| `frontend/` | Frontend (Flutter) | 🔲 stub |
+| `frontend/` | Frontend (React) | ✅ built |
 | `design/` | UI/UX Designer | 🔲 stub |
 
 ## Cheat Controller — what the demo operator (PM) sees
