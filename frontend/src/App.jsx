@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { useBackendData } from './lib/useBackendData';
 import { api } from './lib/api';
+import PetStage from './components/Pet3D/PetStage';
 
 const customStyles = `
   @keyframes shakeScreen {
@@ -254,7 +255,7 @@ const MobileHome = ({ user, pet, isSick, isSad, isHappy, goalProgress, currentPe
     </div>
   );
 
-const MobilePetPage = ({ user, pet, isSick, isHappy, goalProgress, petType, setPetType, currentPet, CurrentPetGraphic, isPetted, handlePetInteraction, getPetAnimationClass, emergencyShield, isSubmitting, runAction, setActiveView }) => (
+const MobilePetPage = ({ user, pet, isSick, isHappy, goalProgress, petType, setPetType, handlePetInteraction, emergencyShield, isSubmitting, runAction, setActiveView }) => (
     <div className={`bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] ${
       isSick ? 'from-red-50 to-gray-100' : 'from-amber-50 to-orange-50'
     } min-h-screen flex flex-col font-sans transition-colors duration-500`} dir="rtl">
@@ -270,11 +271,8 @@ const MobilePetPage = ({ user, pet, isSick, isHappy, goalProgress, petType, setP
 
       <div className="flex-1 flex flex-col items-center justify-start p-6 overflow-y-auto pb-24 z-10">
 
-        {/* --- MAIN INTERACTIVE PET AREA --- */}
-        <div
-          className="relative w-56 h-56 mb-6 flex items-center justify-center mt-4 cursor-pointer group"
-          onClick={handlePetInteraction}
-        >
+        {/* --- MAIN INTERACTIVE PET AREA (3D) --- */}
+        <div className="relative w-56 h-56 mb-6 flex items-center justify-center mt-4 group">
           {/* Background Glow */}
           <div className={`absolute inset-0 rounded-full blur-2xl transition-all duration-1000 ${
             isSick ? 'bg-red-400/40 animate-pulse' :
@@ -282,22 +280,23 @@ const MobilePetPage = ({ user, pet, isSick, isHappy, goalProgress, petType, setP
             'bg-amber-300/40 animate-pulse'
           }`}></div>
 
-          {/* The Pet Character Frame */}
-          <div className={`relative z-10 w-48 h-48 bg-white/90 backdrop-blur-sm rounded-full shadow-2xl flex items-center justify-center transition-all duration-500 ${
+          {/* The Pet Character Frame — tap the pet to squish it, drag to orbit */}
+          <div className={`relative z-10 w-48 h-48 bg-white/90 backdrop-blur-sm rounded-full shadow-2xl overflow-hidden transition-all duration-500 ${
             isSick ? 'border-4 border-red-400' :
             isHappy ? 'border-4 border-green-400 shadow-[0_0_30px_rgba(52,211,153,0.5)]' :
             'border-4 border-amber-400'
           }`}>
-
-            {/* The Actual Real Graphic (SVG) */}
-            <div className={`w-32 h-32 select-none pointer-events-none transition-all duration-500 transform ${getPetAnimationClass()} group-hover:scale-105`}>
-              <CurrentPetGraphic />
-            </div>
-
-            {/* Status Icons overlay */}
-            {isSick && <span className="absolute -top-4 -right-4 text-4xl animate-bounce drop-shadow-lg">🤒</span>}
-            {isHappy && <span className="absolute -top-4 -right-4 text-4xl animate-ping drop-shadow-lg">✨</span>}
+            <PetStage
+              petType={petType}
+              mood={pet.mood}
+              animationState={pet.animationState || 'idle'}
+              onTap={handlePetInteraction}
+            />
           </div>
+
+          {/* Status Icons overlay */}
+          {isSick && <span className="absolute top-0 right-2 text-4xl animate-bounce drop-shadow-lg z-20">🤒</span>}
+          {isHappy && <span className="absolute top-0 right-2 text-4xl animate-ping drop-shadow-lg z-20">✨</span>}
 
           {/* Health Badge Overlay */}
           <div className="absolute -bottom-2 bg-white px-4 py-2 rounded-full shadow-xl border-2 border-gray-100 flex items-center gap-2 z-20">
