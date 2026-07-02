@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Bell, Menu, ChevronLeft, ShieldAlert, Coffee, 
-  ShoppingCart, Zap, HeartPulse, Shield, ArrowLeftRight, Settings
+import {
+  Bell, Menu, ChevronLeft, ShieldAlert,
+  ShoppingCart, Zap, HeartPulse, ArrowLeftRight, Settings, Wallet, PiggyBank
 } from 'lucide-react';
+import { useBackendData } from './lib/useBackendData';
+import { api } from './lib/api';
 
 const customStyles = `
   @keyframes shakeScreen {
@@ -26,7 +28,7 @@ const customStyles = `
   .animate-screen-shake {
     animation: shakeScreen 0.4s ease-in-out;
   }
-  
+
   /* Pet States */
   .pet-normal {
     animation: breathe 3s infinite ease-in-out;
@@ -108,88 +110,33 @@ const PetGraphics = {
   )
 };
 
-export default function App() {
-  const [activeView, setActiveView] = useState('mobile_home'); 
-  
-  const [balance, setBalance] = useState(12450.50);
-  const [savings, setSavings] = useState(340.25);
-  const [mokafaaPoints, setMokafaaPoints] = useState(1250);
-  
-  const [petType, setPetType] = useState('falcon');
-  const [isPetted, setIsPetted] = useState(false); // Touch interaction state
-  
-  const [petState, setPetState] = useState({
-    level: 3,
-    xp: 65,
-    mood: 'happy', // 'happy', 'tired', 'shielded'
-    health: 100
-  });
+const PET_TYPES = {
+  falcon: { id: 'falcon', name: 'صقر', Graphic: PetGraphics.falcon },
+  camel: { id: 'camel', name: 'جمل', Graphic: PetGraphics.camel },
+  wolf: { id: 'wolf', name: 'ذئب', Graphic: PetGraphics.wolf },
+  cat: { id: 'cat', name: 'قط', Graphic: PetGraphics.cat },
+  bird: { id: 'bird', name: 'طائر', Graphic: PetGraphics.bird }
+};
 
-  const [transactions, setTransactions] = useState([
-    { id: 1, title: 'ستاربكس', category: 'coffee', amount: 18.50, roundUp: 0.50, date: 'اليوم، 09:30 ص' },
-    { id: 2, title: 'أسواق التميمي', category: 'groceries', amount: 145.00, roundUp: 0.00, date: 'أمس، 08:15 م' },
-  ]);
+const TX_LABELS = {
+  purchase: { icon: ShoppingCart, sign: '-' },
+  salary: { icon: Wallet, sign: '+' },
+  save: { icon: PiggyBank, sign: '-' },
+  emergency: { icon: ShieldAlert, sign: '-' },
+};
 
-  // Gamification Effects
-  const [isShaking, setIsShaking] = useState(false);
-  const [flashColor, setFlashColor] = useState(null);
+function formatDate(ts) {
+  if (!ts) return '';
+  return new Date(ts).toLocaleString('ar-SA', { dateStyle: 'medium', timeStyle: 'short' });
+}
 
-  const PET_TYPES = {
-    falcon: { id: 'falcon', name: 'صقر', Graphic: PetGraphics.falcon },
-    camel: { id: 'camel', name: 'جمل', Graphic: PetGraphics.camel },
-    wolf: { id: 'wolf', name: 'ذئب', Graphic: PetGraphics.wolf },
-    cat: { id: 'cat', name: 'قط', Graphic: PetGraphics.cat },
-    bird: { id: 'bird', name: 'طائر', Graphic: PetGraphics.bird }
-  };
-
-  const currentPet = PET_TYPES[petType];
-  const CurrentPetGraphic = currentPet.Graphic;
-
-  const isSick = petState.health <= 40 || petState.mood === 'tired';
-  const isHappy = petState.health >= 80 && petState.mood !== 'shielded';
-
-  const triggerScreenShake = () => {
-    setIsShaking(true);
-    setFlashColor('rgba(239, 68, 68, 0.2)'); // Red Damage Flash
-    setTimeout(() => {
-      setIsShaking(false);
-      setFlashColor(null);
-    }, 400);
-  };
-
-  const triggerHappyFlash = () => {
-    setFlashColor('rgba(16, 185, 129, 0.2)'); // Green Heal Flash
-    setTimeout(() => setFlashColor(null), 400);
-  };
-
-  // Squish animation on tap (No stats change, just visual interaction)
-  const handlePetInteraction = () => {
-    if (isSick) return; // Don't interact if sick
-    setIsPetted(true);
-    setTimeout(() => setIsPetted(false), 200); // Remove squish after 200ms
-  };
-
-  const getPetMessage = () => {
-    if (petState.mood === 'shielded') return `درع الطوارئ مفعل! استخدام المدخرات للضرورة هو قرار حكيم. أنا محمي ولن أفقد طاقتي.`;
-    if (isSick) return `أشعر بالمرض الشديد والإرهاق.. 🤒 لقد استنزفنا الميزانية بشكل سيء. أرجوك، نحتاج إلى التوفير لكي أستعيد عافيتي وأنهض مجدداً!`;
-    if (isHappy) return `أنا في قمة نشاطي وسعادتي! ✨ أداؤك المالي المذهل يمدني بطاقة هائلة. لنواصل هذا الإنجاز الرائع!`;
-    return `أداؤك المالي مستقر! لقد وفرنا مبالغ جيدة. استمر حتى نصل للمستوى التالي!`;
-  };
-
-  const getPetAnimationClass = () => {
-    let animClass = 'pet-normal';
-    if (isSick) animClass = 'pet-sick';
-    else if (petState.mood === 'shielded') animClass = 'pet-shielded';
-    else if (isHappy) animClass = 'pet-happy';
-
-    if (isPetted) return `${animClass} pet-squish`;
-    return animClass;
-  };
-
-  const MobileHome = () => (
+// Each view is a top-level component (not nested in App) so React keeps its
+// identity — and any local form state — across re-renders triggered by the
+// Firebase listeners in App.
+const MobileHome = ({ user, pet, isSick, isSad, isHappy, goalProgress, currentPet, CurrentPetGraphic, transactions, setActiveView, isShaking, flashColor }) => (
     <div className={`bg-gray-50 min-h-screen flex flex-col font-sans transition-all duration-300 ${isShaking ? 'animate-screen-shake' : ''}`} dir="rtl">
       {flashColor && <div className="absolute inset-0 z-50 pointer-events-none transition-colors duration-300" style={{ backgroundColor: flashColor }}></div>}
-      
+
       {/* Header */}
       <div className="bg-[#8c5e3c] text-white p-4 flex justify-between items-center rounded-b-2xl shadow-md z-10">
         <div className="flex items-center gap-3">
@@ -205,22 +152,22 @@ export default function App() {
       <div className="p-4 space-y-6 flex-1 overflow-y-auto pb-24 z-10">
         {/* Welcome & Balance Card */}
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-          <p className="text-gray-500 text-sm mb-1">مرحباً بك، عبدالله</p>
+          <p className="text-gray-500 text-sm mb-1">مرحباً بك، {user.name}</p>
           <div className="flex justify-between items-end">
             <div>
               <p className="text-sm text-gray-400 mb-1">الحساب الجاري المتميز</p>
-              <h2 className="text-3xl font-bold text-[#8c5e3c]">{balance.toFixed(2)} <span className="text-sm text-gray-500">ر.س</span></h2>
+              <h2 className="text-3xl font-bold text-[#8c5e3c]">{user.balance.toFixed(2)} <span className="text-sm text-gray-500">ر.س</span></h2>
             </div>
             <img src={`https://api.dicebear.com/7.x/initials/svg?seed=A&backgroundColor=8c5e3c`} alt="avatar" className="w-12 h-12 rounded-full border-2 border-[#8c5e3c]" />
           </div>
         </div>
 
         {/* --- DYNAMIC WIDGET --- */}
-        <div 
+        <div
           onClick={() => setActiveView('mobile_pet')}
           className={`relative overflow-hidden rounded-2xl p-5 shadow-sm border cursor-pointer transition-all duration-300 transform hover:scale-[1.02] ${
-            isSick ? 'bg-red-50 border-red-300 shadow-red-100' : 
-            petState.mood === 'shielded' ? 'bg-blue-50 border-blue-300 shadow-blue-100' : 
+            isSick ? 'bg-red-50 border-red-300 shadow-red-100' :
+            isSad ? 'bg-orange-50 border-orange-300 shadow-orange-100' :
             isHappy ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-300 shadow-green-100' :
             'bg-gradient-to-r from-orange-50 to-amber-50 border-amber-300 shadow-amber-100'
           }`}
@@ -228,7 +175,7 @@ export default function App() {
           <div className="flex justify-between items-start mb-3">
             <div className="flex items-center gap-3">
               <div className={`w-14 h-14 flex items-center justify-center rounded-full border-2 overflow-hidden bg-white/80 p-1 ${
-                isSick ? 'border-red-400' : petState.mood === 'shielded' ? 'border-blue-400' : 'border-[#8c5e3c]'
+                isSick ? 'border-red-400' : 'border-[#8c5e3c]'
               }`}>
                 <div className={`w-full h-full transform ${isSick ? 'grayscale opacity-70 rotate-90 scale-90' : ''}`}>
                   <CurrentPetGraphic />
@@ -238,28 +185,28 @@ export default function App() {
                 <h3 className="font-bold text-gray-800">مرافقك: {currentPet.name}</h3>
                 <div className="flex items-center gap-1 text-xs font-bold mt-1">
                   <HeartPulse size={12} className={isSick ? 'text-red-500' : 'text-green-500'} />
-                  <span className={isSick ? 'text-red-600' : 'text-green-600'}>{petState.health}% صحة</span>
+                  <span className={isSick ? 'text-red-600' : 'text-green-600'}>{pet.health}% صحة</span>
                 </div>
               </div>
             </div>
             <div className="text-center bg-white px-3 py-1 rounded-xl shadow-sm border border-gray-100">
-              <span className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider">Level</span>
-              <span className="block text-xl font-black text-[#8c5e3c]">{petState.level}</span>
+              <span className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider">الهدف</span>
+              <span className="block text-xl font-black text-[#8c5e3c]">{goalProgress}%</span>
             </div>
           </div>
-          
+
           <p className="text-sm text-gray-700 leading-relaxed mb-4 font-medium italic">
-            "{getPetMessage()}"
+            "{pet.message}"
           </p>
 
-          {/* XP Bar */}
+          {/* Goal progress bar */}
           <div className="w-full bg-white/60 rounded-full h-3 mb-1 overflow-hidden border border-gray-200">
-            <div 
+            <div
               className={`h-3 rounded-full transition-all duration-1000 ease-out ${isSick ? 'bg-red-400' : 'bg-amber-500'}`}
-              style={{ width: `${petState.xp}%` }}
+              style={{ width: `${goalProgress}%` }}
             ></div>
           </div>
-          <p className="text-[10px] text-gray-500 text-left font-bold">{petState.xp}/100 XP</p>
+          <p className="text-[10px] text-gray-500 text-left font-bold">{user.savedAmount.toFixed(0)} / {user.goalAmount.toFixed(0)} ر.س</p>
         </div>
 
         {/* Quick Actions */}
@@ -278,38 +225,40 @@ export default function App() {
         <div>
           <h3 className="font-bold text-gray-800 mb-3 px-1">أحدث العمليات</h3>
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 divide-y divide-gray-50">
-            {transactions.map((tx) => (
-              <div key={tx.id} className="p-4 flex justify-between items-center transition-colors hover:bg-gray-50">
-                <div className="flex items-center gap-3">
-                  <div className={`p-3 rounded-xl ${tx.category === 'emergency' ? 'bg-red-50 text-red-500' : 'bg-gray-50 text-gray-500'}`}>
-                    {tx.category === 'coffee' ? <Coffee size={20} /> : tx.category === 'emergency' ? <ShieldAlert size={20} /> : <ShoppingCart size={20} />}
+            {transactions.length === 0 && (
+              <p className="p-4 text-sm text-gray-400 text-center">لا توجد عمليات بعد</p>
+            )}
+            {transactions.map((tx) => {
+              const meta = TX_LABELS[tx.type] || TX_LABELS.purchase;
+              const Icon = meta.icon;
+              return (
+                <div key={tx.id} className="p-4 flex justify-between items-center transition-colors hover:bg-gray-50">
+                  <div className="flex items-center gap-3">
+                    <div className={`p-3 rounded-xl ${tx.type === 'emergency' ? 'bg-red-50 text-red-500' : tx.type === 'salary' ? 'bg-green-50 text-green-600' : 'bg-gray-50 text-gray-500'}`}>
+                      <Icon size={20} />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-800 text-sm">{tx.label}</p>
+                      <p className="text-[11px] text-gray-400 mt-0.5">{formatDate(tx.timestamp)}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-semibold text-gray-800 text-sm">{tx.title}</p>
-                    <p className="text-[11px] text-gray-400 mt-0.5">{tx.date}</p>
+                  <div className="text-left flex flex-col items-end">
+                    <p className={`font-bold text-sm ${meta.sign === '+' ? 'text-green-600' : 'text-gray-800'}`}>{meta.sign}{Number(tx.amount).toFixed(2)}</p>
                   </div>
                 </div>
-                <div className="text-left flex flex-col items-end">
-                  <p className="font-bold text-gray-800 text-sm">{tx.amount.toFixed(2)}-</p>
-                  {tx.roundUp > 0 && (
-                    <p className="text-[10px] text-green-600 font-bold bg-green-50 px-2 py-0.5 rounded-md inline-block mt-1 border border-green-100">
-                      وفرت {tx.roundUp.toFixed(2)} ر.س
-                    </p>
-                  )}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
     </div>
   );
 
-  const MobilePetPage = () => (
+const MobilePetPage = ({ user, pet, isSick, isHappy, goalProgress, petType, setPetType, currentPet, CurrentPetGraphic, isPetted, handlePetInteraction, getPetAnimationClass, emergencyShield, isSubmitting, runAction, setActiveView }) => (
     <div className={`bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] ${
-      isSick ? 'from-red-50 to-gray-100' : petState.mood === 'shielded' ? 'from-blue-50 to-slate-100' : 'from-amber-50 to-orange-50'
+      isSick ? 'from-red-50 to-gray-100' : 'from-amber-50 to-orange-50'
     } min-h-screen flex flex-col font-sans transition-colors duration-500`} dir="rtl">
-      
+
       {/* Header */}
       <div className="p-4 flex items-center justify-between z-20">
         <button onClick={() => setActiveView('mobile_home')} className="bg-white/80 backdrop-blur p-2 rounded-full shadow-sm text-gray-700 hover:bg-white transition-all">
@@ -320,28 +269,26 @@ export default function App() {
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-start p-6 overflow-y-auto pb-24 z-10">
-        
+
         {/* --- MAIN INTERACTIVE PET AREA --- */}
-        <div 
+        <div
           className="relative w-56 h-56 mb-6 flex items-center justify-center mt-4 cursor-pointer group"
           onClick={handlePetInteraction}
         >
           {/* Background Glow */}
           <div className={`absolute inset-0 rounded-full blur-2xl transition-all duration-1000 ${
-            isSick ? 'bg-red-400/40 animate-pulse' : 
-            petState.mood === 'shielded' ? 'bg-blue-400/40 animate-pulse' : 
+            isSick ? 'bg-red-400/40 animate-pulse' :
             isHappy ? 'bg-yellow-400/60 animate-[spin_4s_linear_infinite]' :
             'bg-amber-300/40 animate-pulse'
           }`}></div>
 
           {/* The Pet Character Frame */}
           <div className={`relative z-10 w-48 h-48 bg-white/90 backdrop-blur-sm rounded-full shadow-2xl flex items-center justify-center transition-all duration-500 ${
-            isSick ? 'border-4 border-red-400' : 
-            petState.mood === 'shielded' ? 'border-4 border-blue-400 shadow-[0_0_30px_rgba(59,130,246,0.6)]' : 
+            isSick ? 'border-4 border-red-400' :
             isHappy ? 'border-4 border-green-400 shadow-[0_0_30px_rgba(52,211,153,0.5)]' :
             'border-4 border-amber-400'
           }`}>
-            
+
             {/* The Actual Real Graphic (SVG) */}
             <div className={`w-32 h-32 select-none pointer-events-none transition-all duration-500 transform ${getPetAnimationClass()} group-hover:scale-105`}>
               <CurrentPetGraphic />
@@ -350,16 +297,15 @@ export default function App() {
             {/* Status Icons overlay */}
             {isSick && <span className="absolute -top-4 -right-4 text-4xl animate-bounce drop-shadow-lg">🤒</span>}
             {isHappy && <span className="absolute -top-4 -right-4 text-4xl animate-ping drop-shadow-lg">✨</span>}
-            {petState.mood === 'shielded' && <Shield className="absolute inset-0 m-auto text-blue-500/20 w-40 h-40 animate-pulse pointer-events-none" />}
           </div>
 
           {/* Health Badge Overlay */}
           <div className="absolute -bottom-2 bg-white px-4 py-2 rounded-full shadow-xl border-2 border-gray-100 flex items-center gap-2 z-20">
             <HeartPulse size={20} className={isSick ? 'text-red-500 animate-pulse' : 'text-green-500'} />
             <div className="w-20 bg-gray-200 rounded-full h-2">
-              <div className={`h-2 rounded-full transition-all duration-1000 ${isSick ? 'bg-red-500' : 'bg-green-500'}`} style={{ width: `${petState.health}%` }}></div>
+              <div className={`h-2 rounded-full transition-all duration-1000 ${isSick ? 'bg-red-500' : 'bg-green-500'}`} style={{ width: `${pet.health}%` }}></div>
             </div>
-            <span className={`text-sm font-black ${isSick ? 'text-red-600' : 'text-green-600'}`}>{petState.health}%</span>
+            <span className={`text-sm font-black ${isSick ? 'text-red-600' : 'text-green-600'}`}>{pet.health}%</span>
           </div>
         </div>
 
@@ -367,7 +313,7 @@ export default function App() {
         <div className="bg-white/90 backdrop-blur p-5 rounded-2xl shadow-lg border border-white/50 w-full mb-6 relative">
           <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 w-6 h-6 bg-white/90 rotate-45 border-t border-l border-white/50"></div>
           <p className="text-center text-gray-800 leading-relaxed relative z-10 font-bold">
-            "{getPetMessage()}"
+            "{pet.message}"
           </p>
         </div>
 
@@ -378,26 +324,26 @@ export default function App() {
             <span className="text-xs text-amber-700 bg-amber-100 border border-amber-200 px-2 py-1 rounded-md font-bold">مفتوح لك</span>
           </div>
           <div className="flex justify-between gap-2 overflow-x-auto pb-2 scrollbar-hide">
-            {Object.values(PET_TYPES).map((pet) => {
-              const Graphic = pet.Graphic;
+            {Object.values(PET_TYPES).map((p) => {
+              const Graphic = p.Graphic;
               return (
-                <button 
-                  key={pet.id}
-                  onClick={() => setPetType(pet.id)}
+                <button
+                  key={p.id}
+                  onClick={() => setPetType(p.id)}
                   className={`flex flex-col items-center justify-center p-2 rounded-xl transition-all min-w-[70px] border-2 ${
-                    petType === pet.id 
-                      ? 'bg-amber-50 border-amber-400 shadow-md scale-105' 
+                    petType === p.id
+                      ? 'bg-amber-50 border-amber-400 shadow-md scale-105'
                       : 'bg-white border-gray-100 hover:border-amber-200 opacity-70 hover:opacity-100'
                   }`}
                 >
                   <div className="w-10 h-10 mb-1 drop-shadow-sm">
                     <Graphic />
                   </div>
-                  <span className={`text-[10px] font-bold ${petType === pet.id ? 'text-amber-700' : 'text-gray-500'}`}>
-                    {pet.name}
+                  <span className={`text-[10px] font-bold ${petType === p.id ? 'text-amber-700' : 'text-gray-500'}`}>
+                    {p.name}
                   </span>
                 </button>
-              )
+              );
             })}
           </div>
         </div>
@@ -406,116 +352,78 @@ export default function App() {
         <div className="w-full bg-white/90 backdrop-blur rounded-2xl p-5 shadow-sm border border-white/50 mb-6">
           <div className="flex justify-between items-center mb-4 border-b border-gray-100 pb-4">
             <div>
-              <p className="text-[11px] text-gray-500 mb-1 font-bold">إجمالي ما وفرناه بكسور الهلل</p>
-              <h3 className="text-2xl font-black text-green-600 drop-shadow-sm">{savings.toFixed(2)} <span className="text-sm">ر.س</span></h3>
+              <p className="text-[11px] text-gray-500 mb-1 font-bold">إجمالي المدخرات</p>
+              <h3 className="text-2xl font-black text-green-600 drop-shadow-sm">{user.savedAmount.toFixed(2)} <span className="text-sm">ر.س</span></h3>
             </div>
             <div className="text-left bg-amber-50 p-2 rounded-xl border border-amber-100">
-              <p className="text-[10px] text-amber-700 mb-1 font-bold">نقاط مكافأة</p>
-              <h3 className="text-xl font-black text-amber-500">{mokafaaPoints}</h3>
+              <p className="text-[10px] text-amber-700 mb-1 font-bold">هدف الادخار</p>
+              <h3 className="text-xl font-black text-amber-500">{user.goalAmount.toFixed(0)}</h3>
             </div>
           </div>
-          
+
           <div>
              <div className="flex justify-between text-xs mb-2 font-black text-gray-700 uppercase">
-               <span>Level {petState.level}</span>
-               <span>{petState.xp} / 100 XP</span>
+               <span>التقدم نحو الهدف</span>
+               <span>{goalProgress}%</span>
              </div>
              <div className="w-full bg-gray-200 rounded-full h-4 shadow-inner overflow-hidden border border-gray-300">
-               <div className="h-4 rounded-full transition-all duration-1000 ease-out bg-gradient-to-l from-amber-400 to-orange-500 relative" style={{ width: `${petState.xp}%` }}>
+               <div className="h-4 rounded-full transition-all duration-1000 ease-out bg-gradient-to-l from-amber-400 to-orange-500 relative" style={{ width: `${goalProgress}%` }}>
                  <div className="absolute top-0 bottom-0 left-0 right-0 bg-gradient-to-b from-white/30 to-transparent"></div>
                </div>
              </div>
           </div>
         </div>
 
-        {/* Emergency Shield Button */}
-        <button 
+        {/* Emergency Shield */}
+        <button
+          disabled={isSubmitting}
           onClick={() => {
-             if(petState.mood !== 'shielded') {
-               setPetState({...petState, mood: 'shielded'});
-             } else {
-               setPetState({...petState, mood: 'happy'});
-             }
+            const amountStr = window.prompt('مبلغ السحب الطارئ (ر.س):', '200');
+            if (!amountStr) return;
+            const amt = parseFloat(amountStr);
+            if (!amt || amt <= 0) return;
+            runAction(() => api.emergency(amt, 'سحب طارئ'));
           }}
-          className={`w-full py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all duration-300 border-b-4 active:border-b-0 active:translate-y-1 ${
-            petState.mood === 'shielded' 
-              ? 'bg-gray-200 text-gray-600 border-gray-300' 
-              : 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-blue-800 shadow-xl shadow-blue-200'
-          }`}
+          className="w-full py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all duration-300 border-b-4 active:border-b-0 active:translate-y-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-blue-800 shadow-xl shadow-blue-200 disabled:opacity-50"
         >
-          <ShieldAlert size={20} className={petState.mood === 'shielded' ? '' : 'animate-pulse'} />
-          {petState.mood === 'shielded' ? 'إلغاء درع الطوارئ' : 'سحب طارئ (تفعيل الدرع)'}
+          <ShieldAlert size={20} className="animate-pulse" />
+          سحب طارئ ({emergencyShield.usesRemaining} متبقٍ)
         </button>
         <p className="text-[10px] text-gray-500 mt-3 text-center font-medium">يفعل الدرع مؤقتاً لحماية المرافق من التأثر النفسي عند سحب مبلغ للظروف القاهرة.</p>
       </div>
     </div>
   );
 
-  const SimulatorController = () => {
+const SimulatorController = ({ user, pet, actionError, isSubmitting, runAction }) => {
     const [amount, setAmount] = useState('');
     const [category, setCategory] = useState('coffee');
     const [desc, setDesc] = useState('');
+    const [salaryAmount, setSalaryAmount] = useState('8000');
+    const [savePercent, setSavePercent] = useState('20');
+
+    const CATEGORY_LABELS = {
+      coffee: 'مقهى',
+      groceries: 'بقالة',
+      dining: 'مطعم',
+      transport: 'مواصلات',
+    };
 
     const handleSimulate = (e) => {
       e.preventDefault();
-      if(!amount) return;
-      
+      if (!amount) return;
       const amt = parseFloat(amount);
-      let roundUpAmt = 0;
-      
-      if (Math.ceil(amt) > amt) {
-        roundUpAmt = Math.ceil(amt) - amt;
-      }
+      const label = desc || CATEGORY_LABELS[category] || category;
+      runAction(() => api.purchase(amt, category, label)).then(() => {
+        setAmount('');
+        setDesc('');
+      });
+    };
 
-      setBalance(prev => prev - amt);
-      if (roundUpAmt > 0) setSavings(prev => prev + roundUpAmt);
-
-      const newTx = {
-        id: Date.now(),
-        title: desc || (category === 'coffee' ? 'مقهى' : category === 'groceries' ? 'بقالة' : 'طوارئ'),
-        category,
-        amount: amt,
-        roundUp: roundUpAmt,
-        date: 'الآن'
-      };
-      setTransactions([newTx, ...transactions]);
-
-      let newMood = petState.mood;
-      let newXp = petState.xp;
-      let newLevel = petState.level;
-      let newHealth = petState.health;
-
-      // The ONLY place where Health and XP are affected (Financial Actions)
-      if (category === 'emergency') {
-        newMood = 'shielded';
-      } else if (category === 'coffee' && amt > 30) {
-        newMood = 'tired';
-        newXp = Math.max(0, newXp - 15);
-        newHealth = Math.max(0, newHealth - 45); 
-        triggerScreenShake(); // Bad Financial Action -> Shake screen
-      } else if (category === 'groceries' && amt > 500) {
-        newMood = 'tired';
-        newHealth = Math.max(0, newHealth - 20);
-        triggerScreenShake();
-      } else {
-        newMood = 'happy';
-        newHealth = Math.min(100, newHealth + 25); 
-        
-        const gainedXp = Math.floor(roundUpAmt * 10);
-        newXp += gainedXp > 0 ? gainedXp : 5; 
-        triggerHappyFlash(); // Good Financial Action -> Green flash
-        
-        if (newXp >= 100) {
-          newLevel += 1;
-          newXp = newXp - 100;
-          setMokafaaPoints(prev => prev + 500); 
-          newHealth = 100; 
-        }
-      }
-
-      setPetState({ mood: newMood, xp: newXp, level: newLevel, health: newHealth });
-      setAmount('');
-      setDesc('');
+    const handleSalary = (e) => {
+      e.preventDefault();
+      const amt = parseFloat(salaryAmount);
+      if (!amt) return;
+      runAction(() => api.salary(amt, parseFloat(savePercent) || 0));
     };
 
     return (
@@ -526,81 +434,206 @@ export default function App() {
             <h1 className="text-2xl font-bold text-white">لوحة التحكم (PoC Simulator)</h1>
           </div>
 
+          {actionError && (
+            <div className="bg-red-900/60 border border-red-700 text-red-200 rounded-xl p-3 mb-6 text-sm font-bold text-center">
+              {actionError}
+            </div>
+          )}
+
+          <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700 mb-6 shadow-xl">
+            <h2 className="font-bold text-lg mb-4 text-emerald-400">إيداع راتب</h2>
+            <form onSubmit={handleSalary} className="space-y-3">
+              <div className="flex gap-3">
+                <input
+                  type="number" step="0.01" value={salaryAmount} onChange={(e) => setSalaryAmount(e.target.value)}
+                  className="flex-1 bg-slate-900 border-2 border-slate-700 rounded-xl p-3 text-white focus:outline-none focus:border-emerald-500 font-bold"
+                  placeholder="المبلغ"
+                />
+                <input
+                  type="number" value={savePercent} onChange={(e) => setSavePercent(e.target.value)}
+                  className="w-24 bg-slate-900 border-2 border-slate-700 rounded-xl p-3 text-white focus:outline-none focus:border-emerald-500 font-bold"
+                  placeholder="% ادخار"
+                />
+              </div>
+              <button type="submit" disabled={isSubmitting} className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold py-3 rounded-xl transition-transform active:scale-95">
+                إيداع
+              </button>
+            </form>
+          </div>
+
           <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700 mb-8 shadow-xl">
             <h2 className="font-bold text-lg mb-4 text-emerald-400">محاكاة عملية شرائية جديدة</h2>
             <form onSubmit={handleSimulate} className="space-y-4">
-              
+
               <div>
                 <label className="block text-sm font-bold text-slate-400 mb-1">المبلغ (ر.س)</label>
-                <input 
+                <input
                   type="number" step="0.01" required value={amount} onChange={(e) => setAmount(e.target.value)}
                   className="w-full bg-slate-900 border-2 border-slate-700 rounded-xl p-3 text-white focus:outline-none focus:border-emerald-500 font-bold"
                   placeholder="مثال: 18.50"
                 />
-                <p className="text-xs text-slate-500 mt-1">سيتم سحب الكسور التلقائي وإضافته كمدخرات (ونقاط للمرافق).</p>
               </div>
 
               <div>
                 <label className="block text-sm font-bold text-slate-400 mb-1">التصنيف</label>
-                <select 
+                <select
                   value={category} onChange={(e) => setCategory(e.target.value)}
                   className="w-full bg-slate-900 border-2 border-slate-700 rounded-xl p-3 text-white focus:outline-none focus:border-emerald-500 font-medium"
                 >
-                  <option value="coffee">قهوة ومطاعم (تصرف سيء إذا زاد)</option>
-                  <option value="groceries">أساسيات ومقاضي (تصرف محايد/جيد)</option>
-                  <option value="emergency">حالة طارئة (يفعّل درع الطوارئ)</option>
+                  <option value="coffee">قهوة ومطاعم</option>
+                  <option value="groceries">أساسيات ومقاضي</option>
+                  <option value="dining">مطعم</option>
+                  <option value="transport">مواصلات</option>
                 </select>
               </div>
 
               <div>
                 <label className="block text-sm font-bold text-slate-400 mb-1">اسم التاجر</label>
-                <input 
+                <input
                   type="text" value={desc} onChange={(e) => setDesc(e.target.value)}
                   className="w-full bg-slate-900 border-2 border-slate-700 rounded-xl p-3 text-white focus:outline-none focus:border-emerald-500 font-medium"
                   placeholder="مثال: هاف مليون"
                 />
               </div>
 
-              <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 rounded-xl mt-4 transition-transform active:scale-95 flex justify-center items-center gap-2">
+              <button type="submit" disabled={isSubmitting} className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold py-4 rounded-xl mt-4 transition-transform active:scale-95 flex justify-center items-center gap-2">
                 <Zap size={20} />
                 تنفيذ المعاملة
               </button>
             </form>
           </div>
 
+          <button
+            onClick={() => runAction(() => api.reset())}
+            disabled={isSubmitting}
+            className="w-full bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white font-bold py-3 rounded-xl mb-8 transition-transform active:scale-95"
+          >
+            🔄 إعادة تعيين العرض
+          </button>
+
           <div className="grid grid-cols-2 gap-4 text-sm mb-24">
             <div className="bg-slate-800 p-4 rounded-xl border border-slate-700">
               <p className="text-slate-400 mb-1">المدخرات</p>
-              <p className="font-bold text-xl text-green-400">{savings.toFixed(2)}</p>
+              <p className="font-bold text-xl text-green-400">{user.savedAmount.toFixed(2)}</p>
             </div>
             <div className="bg-slate-800 p-4 rounded-xl border border-slate-700">
-              <p className="text-slate-400 mb-1">نقاط مكافأة</p>
-              <p className="font-bold text-xl text-amber-400">{mokafaaPoints}</p>
+              <p className="text-slate-400 mb-1">الرصيد</p>
+              <p className="font-bold text-xl text-amber-400">{user.balance.toFixed(2)}</p>
             </div>
             <div className="bg-slate-800 p-4 rounded-xl border border-slate-700">
               <p className="text-slate-400 mb-1">مزاج المرافق</p>
-              <p className="font-bold text-lg text-white">{petState.mood}</p>
+              <p className="font-bold text-lg text-white">{pet.mood}</p>
             </div>
             <div className="bg-slate-800 p-4 rounded-xl border border-slate-700">
-              <p className="text-slate-400 mb-1">الصحة / المستوى</p>
-              <p className="font-bold text-lg text-white">Lvl {petState.level} ({petState.health}%)</p>
+              <p className="text-slate-400 mb-1">الصحة</p>
+              <p className="font-bold text-lg text-white">{pet.health}%</p>
             </div>
           </div>
         </div>
       </div>
     );
+  };
+
+export default function App() {
+  const { user, pet, emergencyShield, transactions, loading } = useBackendData();
+  const [activeView, setActiveView] = useState('mobile_home');
+
+  const [petType, setPetType] = useState('falcon');
+  const [isPetted, setIsPetted] = useState(false); // Touch interaction state
+
+  // Gamification Effects
+  const [isShaking, setIsShaking] = useState(false);
+  const [flashColor, setFlashColor] = useState(null);
+  const [actionError, setActionError] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const currentPet = PET_TYPES[petType];
+  const CurrentPetGraphic = currentPet.Graphic;
+
+  // Track pet.health across renders to trigger screen-shake / heal-flash
+  // reactively whenever the backend pushes a new value.
+  const [lastHealth, setLastHealth] = useState(null);
+  useEffect(() => {
+    if (!pet) return;
+    if (lastHealth !== null && pet.health < lastHealth) {
+      setIsShaking(true);
+      setFlashColor('rgba(239, 68, 68, 0.2)');
+      setTimeout(() => { setIsShaking(false); setFlashColor(null); }, 400);
+    } else if (lastHealth !== null && pet.health > lastHealth) {
+      setFlashColor('rgba(16, 185, 129, 0.2)');
+      setTimeout(() => setFlashColor(null), 400);
+    }
+    setLastHealth(pet.health);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pet?.health]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-neutral-900 text-white font-sans" dir="rtl">
+        <p className="animate-pulse">جاري الاتصال بالخادم...</p>
+      </div>
+    );
   }
+
+  const isSick = pet.mood === 'sick';
+  const isSad = pet.mood === 'sad';
+  const isHappy = pet.mood === 'happy';
+  const goalProgress = user.goalAmount > 0
+    ? Math.min(100, Math.round((user.savedAmount / user.goalAmount) * 100))
+    : 0;
+
+  // Squish animation on tap (No stats change, just visual interaction)
+  const handlePetInteraction = () => {
+    if (isSick) return; // Don't interact if sick
+    setIsPetted(true);
+    setTimeout(() => setIsPetted(false), 200); // Remove squish after 200ms
+  };
+
+  const getPetAnimationClass = () => {
+    let animClass = 'pet-normal';
+    if (isSick) animClass = 'pet-sick';
+    else if (isHappy) animClass = 'pet-happy';
+
+    if (isPetted) return `${animClass} pet-squish`;
+    return animClass;
+  };
+
+  // Wraps a backend call: clears/sets the error banner, no local state
+  // mutation needed — the Firebase listener updates the UI once the
+  // backend writes the new state.
+  const runAction = async (fn) => {
+    setIsSubmitting(true);
+    setActionError(null);
+    try {
+      await fn();
+    } catch (err) {
+      setActionError(err.message === 'insufficient_funds' ? 'الرصيد غير كافٍ لإتمام هذه العملية'
+        : err.message === 'invalid_goal' ? 'قيمة الهدف غير صالحة'
+        : 'حدث خطأ، حاول مرة أخرى');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const viewProps = {
+    user, pet, emergencyShield, transactions,
+    isSick, isSad, isHappy, goalProgress,
+    currentPet, CurrentPetGraphic, petType, setPetType,
+    isPetted, handlePetInteraction, getPetAnimationClass,
+    isShaking, flashColor, actionError, isSubmitting, runAction,
+    setActiveView,
+  };
 
   return (
     <>
       <style>{customStyles}</style>
       <div className="relative min-h-screen bg-neutral-900 flex justify-center overflow-hidden font-sans">
-        
+
         {/* Mobile Device Frame for Demo */}
         <div className="w-full max-w-md bg-white shadow-2xl relative h-screen overflow-hidden sm:border-x sm:border-gray-800">
-          {activeView === 'mobile_home' && <MobileHome />}
-          {activeView === 'mobile_pet' && <MobilePetPage />}
-          {activeView === 'simulator' && <SimulatorController />}
+          {activeView === 'mobile_home' && <MobileHome {...viewProps} />}
+          {activeView === 'mobile_pet' && <MobilePetPage {...viewProps} />}
+          {activeView === 'simulator' && <SimulatorController {...viewProps} />}
         </div>
 
         {/* Persistent Toggle Button for Presentation */}
@@ -614,7 +647,7 @@ export default function App() {
             ) : (
               <Settings size={28} className="text-emerald-400 group-hover:rotate-90 transition-transform" />
             )}
-            
+
             <span className="absolute right-full mr-4 bg-slate-900 text-white text-xs font-bold px-3 py-2 rounded shadow-xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
               {activeView === 'simulator' ? 'العودة لتطبيق الإنماء' : 'لوحة تحكم لجنة التحكيم'}
             </span>
