@@ -1,25 +1,16 @@
-# Frontend (Flutter + Lottie) — STUB
+# React + Vite
 
-Owned by the Frontend Developer. This folder is a placeholder so the monorepo stays in sync.
+This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
 
-## Your contract
+Currently, two official plugins are available:
 
-Read **[`../docs/DATA_MODEL.md`](../docs/DATA_MODEL.md)** — it defines the exact Firebase Realtime DB
-tree you listen to. You never write to the DB; you only render what the backend puts there.
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
 
-## Build targets
+## React Compiler
 
-1. **Dashboard Widget** — a small card showing the pet + goal-progress %.
-2. **Expanded View** — full screen: pet animation, health bar, AI message speech bubble.
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-## Wiring
+## Expanding the Oxlint configuration
 
-- Listen to `/pet` → swap Lottie animation on `animationState` (`idle | happy | sad | eating | sick`),
-  show `pet.message` in a speech bubble, drive the health bar off `pet.health`.
-- Read `/user` → progress bar = `savedAmount / goalAmount * 100`.
-- **Do NOT build login/signup.** Hardcode the app to open straight to the dashboard.
-
-## Local testing
-
-Point the Firebase SDK at the local emulator (`127.0.0.1:9000`) so you can develop against the same
-data the backend seeds. Ask the backend dev to run `npm run seed` + `npm run dev`.
+If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
