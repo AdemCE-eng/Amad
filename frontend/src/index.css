@@ -1,3 +1,42 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* App-wide feedback effects (screen shake on health loss). Mascot ambient
+   loops (breathe, flame flicker, Zzz) also live here — CSS keyframes cost
+   zero JS per frame, unlike spring-driven animations. */
+@keyframes shakeScreen {
+  0%, 100% { transform: translateX(0) rotate(0deg); }
+  25% { transform: translateX(-8px) rotate(-2deg); }
+  50% { transform: translateX(8px) rotate(2deg); }
+  75% { transform: translateX(-8px) rotate(-2deg); }
+}
+.animate-screen-shake {
+  animation: shakeScreen 0.4s ease-in-out;
+}
+
+@keyframes breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+.pet-normal { animation: breathe 3s infinite ease-in-out; }
+
+@keyframes sickDrop {
+  0% { transform: rotate(0deg) translateY(0); filter: grayscale(0); }
+  100% { transform: rotate(90deg) translateY(20px); filter: grayscale(0.8); }
+}
+.pet-sick { animation: sickDrop 0.5s forwards ease-in-out; }
+
+@keyframes happyJump {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-15px) scale(1.1); }
+}
+.pet-happy {
+  animation: happyJump 1s infinite ease-in-out;
+  filter: drop-shadow(0 0 15px rgba(52, 211, 153, 0.6));
+}
+
+.pet-squish {
+  transform: scale(1.1, 0.85) translateY(10px) !important;
+  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
