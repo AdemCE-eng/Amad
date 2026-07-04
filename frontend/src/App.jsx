@@ -4,6 +4,7 @@ import { AppDataProvider, useAppData } from './context/AppDataContext';
 import HomeView from './views/HomeView';
 import PetRoomView from './views/PetRoomView';
 import SimulatorView from './views/SimulatorView';
+import MascotLab from './views/MascotLab';
 
 // Shell only: device frame, view switching, and the demo-operator FAB.
 // All state lives in AppDataContext; all UI lives in views/.
@@ -50,6 +51,10 @@ function AppShell() {
 }
 
 export default function App() {
+  // Dev review grid for the mascot's emotional range: /?lab=1
+  if (new URLSearchParams(window.location.search).get('lab')) {
+    return <MascotLab />;
+  }
   return (
     <AppDataProvider>
       <AppShell />
