@@ -3,18 +3,17 @@ import { ChevronRight, ShieldAlert, HeartPulse } from 'lucide-react';
 import { useAppData } from '../context/AppDataContext';
 import { PET_TYPES } from '../lib/petGraphics';
 import { api } from '../lib/api';
+import Mascot from '../components/mascot/Mascot';
+import { useMascotEmotion } from '../components/mascot/useMascotEmotion';
 
-// The hero screen. The static SVG here is a placeholder — the animated
-// Mascot component replaces it in M1.
+// The hero screen — the living mascot, full pupil tracking, tap to squish.
 export default function PetRoomView() {
   const {
-    user, pet, emergencyShield, currentPet, petType, setPetType,
+    user, pet, emergencyShield, petType, setPetType,
     isSick, isHappy, goalProgress,
-    isPetted, handlePetInteraction, isSubmitting, runAction, setActiveView,
+    handlePetInteraction, isSubmitting, runAction, setActiveView,
   } = useAppData();
-  const CurrentPetGraphic = currentPet.Graphic;
-
-  const petAnimClass = `${isSick ? 'pet-sick' : isHappy ? 'pet-happy' : 'pet-normal'}${isPetted ? ' pet-squish' : ''}`;
+  const { emotion, poke } = useMascotEmotion(pet);
 
   return (
     <div className={`bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] ${
@@ -33,29 +32,23 @@ export default function PetRoomView() {
       <div className="flex-1 flex flex-col items-center justify-start p-6 overflow-y-auto pb-24 z-10">
 
         {/* --- MAIN INTERACTIVE PET AREA --- */}
-        <div
-          className="relative w-56 h-56 mb-6 flex items-center justify-center mt-4 cursor-pointer group"
-          onClick={handlePetInteraction}
-        >
+        <div className="relative w-64 h-64 mb-6 flex items-center justify-center mt-2">
           {/* Background Glow */}
-          <div className={`absolute inset-0 rounded-full blur-2xl transition-all duration-1000 ${
+          <div className={`absolute inset-6 rounded-full blur-2xl transition-all duration-1000 ${
             isSick ? 'bg-red-400/40 animate-pulse' :
-            isHappy ? 'bg-yellow-400/60 animate-[spin_4s_linear_infinite]' :
-            'bg-alinma/30 animate-pulse'
+            isHappy ? 'bg-yellow-400/50 animate-pulse' :
+            'bg-alinma/25 animate-pulse'
           }`}></div>
 
-          {/* The Pet Character Frame */}
-          <div className={`relative z-10 w-48 h-48 bg-white/90 backdrop-blur-sm rounded-full shadow-2xl flex items-center justify-center transition-all duration-500 ${
-            isSick ? 'border-4 border-red-400' :
-            isHappy ? 'border-4 border-green-400 shadow-[0_0_30px_rgba(52,211,153,0.5)]' :
-            'border-4 border-alinma'
-          }`}>
-            <div className={`w-32 h-32 select-none pointer-events-none transition-all duration-500 transform ${petAnimClass} group-hover:scale-105`}>
-              <CurrentPetGraphic />
-            </div>
-
-            {isSick && <span className="absolute -top-4 -right-4 text-4xl animate-bounce drop-shadow-lg">🤒</span>}
-            {isHappy && <span className="absolute -top-4 -right-4 text-4xl animate-ping drop-shadow-lg">✨</span>}
+          {/* The living mascot — tap to squish */}
+          <div className="relative z-10 cursor-pointer select-none">
+            <Mascot
+              emotion={emotion}
+              stage={1}
+              size={250}
+              track
+              onTap={() => { poke(); handlePetInteraction(); }}
+            />
           </div>
 
           {/* Health Badge Overlay */}
