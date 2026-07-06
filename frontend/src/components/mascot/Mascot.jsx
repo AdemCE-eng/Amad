@@ -1,5 +1,5 @@
 /* eslint-disable react/no-unknown-property */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useId, useState } from 'react';
 import { motion, useMotionValue, useTransform } from 'motion/react';
 import { EMOTIONS } from './emotions';
 import { springs } from './springs';
@@ -75,22 +75,37 @@ const BODY_LOOP_CLASS = {
   sway: 'anim-sway',
 };
 
-function Eye({ cx, lid, blinking }) {
+function Eye({ cx, lid, blinking, clipId }) {
   const closed = blinking ? 1 : lid;
+  // Clip the eye+highlights with an ellipse that squishes vertically from
+  // the center — a smooth curved lid, unlike a flat rect sliding down (which
+  // cuts a hard straight chord across the circle and strands a highlight
+  // dot floating on the seam, reading as a "slash" instead of a sleepy eye).
+  const openFrac = Math.max(0.05, 1 - closed);
   return (
     <g>
-      <circle cx={cx} cy="92" r="14" fill={C.eye} />
-      {/* Fixed highlights — never blink, never move; they're the life. */}
-      <circle cx={cx - 4} cy="87" r="4.5" fill="#fff" />
-      <circle cx={cx + 4.5} cy="95.5" r="2" fill="#fff" opacity="0.75" />
-      {/* Eyelid: head-colored rect sliding down over the eye (origin = top). */}
-      <Pivot
-        x={cx} y={76}
-        animate={{ scaleY: Math.max(0.001, closed) }}
-        transition={blinking ? { duration: 0.06 } : springs.gentle}
-      >
-        <rect x={cx - 15} y="76" width="30" height="31" fill={C.body} />
-      </Pivot>
+      <clipPath id={clipId}>
+        <motion.ellipse
+          initial={false}
+          cx={cx} cy="92" rx="16"
+          animate={{ ry: 14 * openFrac }}
+          transition={blinking ? { duration: 0.06 } : springs.gentle}
+        />
+      </clipPath>
+      <g clipPath={`url(#${clipId})`}>
+        <circle cx={cx} cy="92" r="14" fill={C.eye} />
+        {/* Fixed highlights — never blink, never move; they're the life. */}
+        <circle cx={cx - 4} cy="87" r="4.5" fill="#fff" />
+        <circle cx={cx + 4.5} cy="95.5" r="2" fill="#fff" opacity="0.75" />
+      </g>
+      {/* Closed-eye lash line, crossfades in once the lid is mostly shut. */}
+      <motion.path
+        initial={false}
+        d={`M${cx - 12},92 Q${cx},96 ${cx + 12},92`}
+        fill="none" stroke={C.eye} strokeWidth="3" strokeLinecap="round"
+        animate={{ opacity: closed > 0.85 ? 1 : 0 }}
+        transition={springs.gentle}
+      />
     </g>
   );
 }
@@ -193,6 +208,10 @@ function Accessory({ id }) {
 
 function Mascot({ emotion = 'idle', stage = 1, size = 240, track = true, equipped = null, onTap }) {
   const e = EMOTIONS[emotion] || EMOTIONS.idle;
+  // Unique clipPath ids — multiple Mascots can share a page (MascotLab,
+  // onboarding). Strip colons from useId()'s output: some SVG renderers
+  // (librsvg, used by the golden-frame script) mishandle them in url(#…).
+  const uid = useId().replace(/:/g, '');
 
   // Blink on a randomized timer; double-blink 15% of the time.
   const [blinking, setBlinking] = useState(false);
@@ -316,8 +335,8 @@ function Mascot({ emotion = 'idle', stage = 1, size = 240, track = true, equippe
             <Brow cx={144} rot={e.brow.rot} y={e.brow.y} side={1} />
 
             <motion.g initial={false} style={{ x: pupilX, y: pupilY }}>
-              <Eye cx={96} lid={e.lid} blinking={blinking} />
-              <Eye cx={144} lid={e.lid} blinking={blinking} />
+              <Eye cx={96} lid={e.lid} blinking={blinking} clipId={`${uid}-eyeL`} />
+              <Eye cx={144} lid={e.lid} blinking={blinking} clipId={`${uid}-eyeR`} />
             </motion.g>
 
             <motion.g initial={false} animate={{ opacity: e.cheeks }} transition={springs.gentle}>
