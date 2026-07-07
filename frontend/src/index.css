@@ -2,6 +2,48 @@
 @tailwind components;
 @tailwind utilities;
 
+html,
+body,
+#root {
+  width: 100%;
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: #111827;
+  overflow: hidden;
+}
+
+.app-shell {
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: #111827;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  overflow: hidden;
+}
+
+.app-frame {
+  width: min(100%, 28rem);
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  background: #ffffff;
+  position: relative;
+  overflow: hidden;
+}
+
+@media (min-width: 640px) {
+  .app-frame {
+    border-left: 1px solid #1f2937;
+    border-right: 1px solid #1f2937;
+    box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  }
+}
+
 /* App-wide feedback effects (screen shake on health loss). Mascot ambient
    loops (breathe, flame flicker, Zzz) also live here — CSS keyframes cost
    zero JS per frame, unlike spring-driven animations. */

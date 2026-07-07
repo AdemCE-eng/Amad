@@ -24,9 +24,9 @@ function AppShell() {
   }
 
   return (
-    <div className="relative min-h-screen bg-neutral-900 flex justify-center overflow-hidden font-sans">
+    <div className="app-shell relative min-h-screen bg-neutral-900 flex justify-center overflow-hidden font-sans">
       {/* Mobile Device Frame for Demo */}
-      <div className="w-full max-w-md bg-white shadow-2xl relative h-screen overflow-hidden sm:border-x sm:border-gray-800">
+      <div className="app-frame w-full max-w-md bg-white shadow-2xl relative h-screen overflow-hidden sm:border-x sm:border-gray-800">
         {!onboarded ? (
           <OnboardingFlow onDone={() => setOnboarded(true)} />
         ) : (
