@@ -35,6 +35,11 @@ export function renderAll() {
       React.createElement(Mascot, { emotion: 'idle', stage, size: 240, track: false })
     );
   }
+  for (const emotion of ['happy', 'sad', 'sick', 'celebrating']) {
+    frames['falcon-' + emotion] = renderToStaticMarkup(
+      React.createElement(Mascot, { emotion, stage: 2, size: 240, track: false })
+    );
+  }
   for (const acc of ['shemagh', 'sunglasses', 'falcon_hood']) {
     frames['acc-' + acc] = renderToStaticMarkup(
       React.createElement(Mascot, { emotion: 'happy', stage: 1, equipped: acc, size: 240, track: false })
