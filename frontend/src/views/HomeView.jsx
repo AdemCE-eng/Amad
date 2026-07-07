@@ -3,6 +3,7 @@ import {
   Bell, Menu, ShoppingCart, HeartPulse, ArrowLeftRight, Wallet, PiggyBank, ShieldAlert,
 } from 'lucide-react';
 import { useAppData } from '../context/AppDataContext';
+import { api } from '../lib/api';
 import Mascot from '../components/mascot/Mascot';
 import { useMascotEmotion } from '../components/mascot/useMascotEmotion';
 import StreakFlame from '../components/ui/StreakFlame';
@@ -27,6 +28,7 @@ export default function HomeView() {
     user, pet, game, transactions,
     isSick, isSad, isHappy, goalProgress,
     isShaking, flashColor, setActiveView,
+    isSubmitting, runAction,
   } = useAppData();
   const { emotion } = useMascotEmotion(pet);
   const petName = user.petName || 'سنقر';
@@ -111,6 +113,22 @@ export default function HomeView() {
           </div>
           <p className="text-[10px] text-gray-500 text-left font-bold">{user.savedAmount.toFixed(0)} / {user.goalAmount.toFixed(0)} ر.س</p>
         </div>
+
+        {/* Save now — one tap feeds the companion */}
+        <button
+          disabled={isSubmitting}
+          onClick={() => {
+            const amountStr = window.prompt('كم تبغى توفر؟ (ر.س)', '500');
+            if (!amountStr) return;
+            const amt = parseFloat(amountStr);
+            if (!amt || amt <= 0) return;
+            runAction(() => api.save(amt));
+          }}
+          className="w-full py-4 rounded-2xl font-black text-white bg-gradient-to-r from-green-500 to-emerald-600 shadow-lg shadow-green-200 border-b-4 border-green-700 active:border-b-0 active:translate-y-1 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+        >
+          <PiggyBank size={22} />
+          وفّر الآن — أطعم {petName} 🪙
+        </button>
 
         {/* Weekly challenge strip */}
         <ChallengeCard challenge={game.activeChallenge} compact />

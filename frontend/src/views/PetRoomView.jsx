@@ -116,6 +116,23 @@ export default function PetRoomView() {
               <h3 className="text-xl font-black text-alinma">{user.goalAmount.toFixed(0)}</h3>
             </div>
           </div>
+
+          {/* Quick-save — the core action: feed the companion by saving */}
+          <div className="mt-4 pt-3 border-t border-gray-100">
+            <p className="text-[11px] text-gray-500 font-bold mb-2">💰 وفّر الآن — {petName} يفرح ويكبر</p>
+            <div className="grid grid-cols-3 gap-2">
+              {[100, 500, 1000].map((amt) => (
+                <button
+                  key={amt}
+                  disabled={isSubmitting}
+                  onClick={() => runAction(() => api.save(amt))}
+                  className="py-2.5 rounded-xl font-black text-sm bg-green-500 text-white shadow shadow-green-200 border-b-4 border-green-700 active:border-b-0 active:translate-y-1 transition-all disabled:opacity-50"
+                >
+                  +{amt}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Emergency Shield */}

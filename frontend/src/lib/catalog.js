@@ -13,7 +13,7 @@ export const ACHIEVEMENTS = {
 export const SHOP_ITEMS = {
   sunglasses: { name: 'نظارة شمسية', price: 50, icon: '🕶️' },
   shemagh: { name: 'شماغ وعقال', price: 100, icon: '🔴' },
-  falcon_hood: { name: 'برقع الصقر', price: 150, icon: '🪶' },
+  falcon_hood: { name: 'تاج ذهبي', price: 150, icon: '👑' },
 };
 
 export const STAGE_INFO = [

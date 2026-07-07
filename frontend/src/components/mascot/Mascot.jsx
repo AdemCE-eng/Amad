@@ -171,13 +171,6 @@ function Effects({ fx }) {
   if (fx === 'crumbs') {
     return (
       <g>
-        {/* The meal: a gold coin dropping into the beak — salary/savings
-            literally feed the companion. */}
-        <g className="anim-coin" style={{ transformOrigin: '120px 128px' }}>
-          <circle cx="120" cy="128" r="9" fill="#F5A623" stroke="#D98E1B" strokeWidth="2" />
-          <circle cx="120" cy="128" r="5.5" fill="none" stroke="#FFD98A" strokeWidth="1.5" />
-          <path d="M117,125 L123,131 M123,125 L117,131" stroke="#B8791B" strokeWidth="1.5" strokeLinecap="round" />
-        </g>
         {[[112, 132], [124, 136], [118, 130]].map(([x, y], i) => (
           <circle key={i} className="anim-crumb" style={{ animationDelay: `${i * 0.25}s` }} cx={x} cy={y} r="2.5" fill={C.wing} />
         ))}
@@ -226,19 +219,16 @@ function Accessory({ id }) {
     );
   }
   if (id === 'falcon_hood') {
-    // Falconry burqa' — structured leather dome worn on the crown (kept
-    // above the eyes so the emotion rig stays visible), center seam,
-    // front peak, side straps, and the traditional plume on top.
+    // Gold crown (item id kept for backend compatibility; displayed as تاج).
     return (
       <g>
-        <path d="M86,72 Q88,34 120,32 Q152,34 154,72 Q137,62 120,63 Q103,62 86,72 Z" fill="#A1887F" />
-        <path d="M102,62 Q120,76 138,62 Q120,68 102,62 Z" fill="#8D6E63" />
-        <path d="M120,32 L120,63" stroke="#5D4037" strokeWidth="2" />
-        <path d="M94,50 Q120,40 146,50" fill="none" stroke="#5D4037" strokeWidth="2" />
-        <path d="M88,70 q-5,9 -1,16" stroke="#5D4037" strokeWidth="3" fill="none" strokeLinecap="round" />
-        <path d="M152,70 q5,9 1,16" stroke="#5D4037" strokeWidth="3" fill="none" strokeLinecap="round" />
-        <path d="M120,30 Q112,20 118,8 Q121,16 122,8 Q127,20 120,30 Z" fill="#FFD54F" />
-        <circle cx="120" cy="29" r="4" fill="#D32F2F" />
+        <path d="M92,52 L98,30 L108,44 L120,24 L132,44 L142,30 L148,52 Q120,44 92,52 Z"
+          fill="#FFC93C" stroke="#E0A421" strokeWidth="2" strokeLinejoin="round" />
+        <path d="M92,52 Q120,44 148,52 L147,60 Q120,52 93,60 Z" fill="#E0A421" />
+        <circle cx="98" cy="30" r="3.5" fill="#EF5350" />
+        <circle cx="120" cy="24" r="4" fill="#42A5F5" />
+        <circle cx="142" cy="30" r="3.5" fill="#66BB6A" />
+        <circle cx="120" cy="50" r="3" fill="#fff" opacity="0.85" />
       </g>
     );
   }
