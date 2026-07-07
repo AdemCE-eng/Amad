@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Settings } from 'lucide-react';
 import { AppDataProvider, useAppData } from './context/AppDataContext';
 import HomeView from './views/HomeView';
@@ -13,11 +13,7 @@ import CelebrationOverlay from './components/ui/CelebrationOverlay';
 // Shell only: device frame, view switching, onboarding gate, celebrations,
 // and the demo-operator FAB. All state lives in AppDataContext.
 function AppShell() {
-  const { loading, activeView, setActiveView, user, game } = useAppData();
-  // Onboarding shows once per device (reset with ?onboard=1 for the demo).
-  const [onboarded, setOnboarded] = useState(() =>
-    Boolean(localStorage.getItem('amad_onboarded')) && !new URLSearchParams(window.location.search).get('onboard')
-  );
+  const { loading, activeView, setActiveView, user, game, onboarded, setOnboarded } = useAppData();
 
   if (loading) {
     return (

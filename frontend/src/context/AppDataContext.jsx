@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useBackendData } from '../lib/useBackendData';
 import { PET_TYPES } from '../lib/petGraphics';
+import { api } from '../lib/api';
 
 // Single provider for backend state + app-wide interaction state, so views
 // consume `useAppData()` instead of a 20-prop drill. Views stay top-level
@@ -10,6 +11,13 @@ const AppDataContext = createContext(null);
 export function AppDataProvider({ children }) {
   const backend = useBackendData();
   const { user, pet } = backend;
+
+  // Onboarding shows once per device; lives here (not in AppShell) so any
+  // view can trigger a full restart, not just the initial mount check.
+  const [onboarded, setOnboarded] = useState(() =>
+    Boolean(localStorage.getItem('amad_onboarded')) && !new URLSearchParams(window.location.search).get('onboard')
+  );
+  const [restarting, setRestarting] = useState(false);
 
   const [activeView, setActiveView] = useState('home');
   const [petType, setPetType] = useState('falcon');
@@ -69,8 +77,23 @@ export function AppDataProvider({ children }) {
     }
   };
 
+  // Full "start over" — wipes the backend to the pristine demo state (health,
+  // streak, coins, achievements) AND drops back to onboarding so the operator
+  // can re-pick the companion and set a fresh goal. Used between judges.
+  const restartOnboarding = async () => {
+    setRestarting(true);
+    try {
+      await api.reset();
+    } catch { /* offline demo still proceeds to onboarding */ }
+    localStorage.removeItem('amad_onboarded');
+    setActiveView('home');
+    setOnboarded(false);
+    setRestarting(false);
+  };
+
   const value = {
     ...backend,
+    onboarded, setOnboarded, restartOnboarding, restarting,
     activeView, setActiveView,
     petType, setPetType, currentPet,
     isPetted, handlePetInteraction,

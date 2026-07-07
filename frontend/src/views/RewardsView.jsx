@@ -12,7 +12,7 @@ const MILESTONES = [3, 7, 14];
 // المكافآت — streak hero, weekly challenge, achievements grid, and the
 // accessory shop (cosmetics render instantly on the mascot).
 export default function RewardsView() {
-  const { user, game, isSubmitting, runAction } = useAppData();
+  const { user, game, isSubmitting, runAction, restartOnboarding, restarting } = useAppData();
   if (!game) return null;
   const { streak, coins, achievements, activeChallenge, inventory, equipped } = game;
 
@@ -112,6 +112,23 @@ export default function RewardsView() {
               );
             })}
           </div>
+        </div>
+
+        {/* Danger zone — full restart: wipes health/streak/coins AND
+            re-runs onboarding (pick companion, name, goal). For switching
+            between demo audiences/judges. */}
+        <div className="pt-2">
+          <button
+            disabled={restarting}
+            onClick={() => {
+              if (window.confirm('هذا سيعيد كل شيء من الصفر (الصحة، السلسلة، العملات) ويرجعك لاختيار المرافق والهدف من جديد. متأكد؟')) {
+                restartOnboarding();
+              }
+            }}
+            className="w-full py-3 rounded-2xl font-bold text-sm border-2 border-red-200 text-red-500 bg-red-50 disabled:opacity-50 active:scale-95 transition-transform"
+          >
+            {restarting ? '...جارٍ إعادة البدء' : '🔄 البدء من جديد (اختيار مرافق وهدف)'}
+          </button>
         </div>
       </div>
     </div>
