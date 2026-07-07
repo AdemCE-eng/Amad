@@ -55,11 +55,13 @@ The launcher will:
 - install Firebase CLI if it is missing,
 - install missing backend/frontend dependencies,
 - create `backend/.env` from `backend/.env.example` if needed,
-- start the Firebase Realtime Database emulator,
-- seed the demo data,
-- start the backend and Cheat Controller at `http://localhost:3000/`,
-- start the React frontend at `http://localhost:5173/`,
-- open both browser tabs.
+- start the Firebase Realtime Database emulator on an available port,
+- seed the demo data into that emulator,
+- start the backend and Cheat Controller on an available port,
+- start the React frontend on an available port, wired to the selected backend and Firebase ports,
+- open both browser tabs using the selected ports.
+
+The exact ports are printed in the launcher window. If the default ports are busy, the launcher automatically picks the next available ports.
 
 Keep the three terminal windows open while using the demo. Close those windows to stop the project.
 

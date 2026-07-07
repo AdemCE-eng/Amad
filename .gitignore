@@ -21,3 +21,4 @@ emu-err.log
 *-debug.log
 backend-out.log
 backend-err.log
+.firebase.launcher.json
