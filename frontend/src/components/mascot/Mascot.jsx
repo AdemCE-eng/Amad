@@ -13,16 +13,15 @@ import { springs } from './springs';
 // size (px) · track (pupils follow cursor) · equipped (accessory id) ·
 // onTap. Memoized — parents can re-render freely on Firebase pushes.
 
+// Chick palette (stages 0-1): bright, baby, cute.
 const C = {
   body: '#F5B841',
   belly: '#FDEBC8',
   wing: '#E8A62E',
-  wingDark: '#8A5A22',   // falcon primary tips / breast streaks / tail bars
-  cap: '#7A4E1D',        // grown falcon crown + malar stripe
+  wingDark: '#8A5A22',
+  cap: '#7A4E1D',
   beakTop: '#E8833A',
   beakBottom: '#D96F2B',
-  beakHook: '#4A4A4A',   // raptor beak (grown)
-  cere: '#F5C24B',       // fleshy base of the beak (grown)
   mouthInner: '#8C3A1D',
   brow: '#7A4E1D',
   eye: '#2B1E12',
@@ -31,6 +30,27 @@ const C = {
   shell: '#FDF6E3',
   shellEdge: '#E8D9B5',
 };
+
+// Grown falcon palette (stage 2): the baby-yellow is what most read as
+// "chick", so the adult goes tawny-brown like a real saqr/peregrine — dark
+// slate hood, pale cheek, cream streaked breast. Emotion rig colors
+// (eye/mouthInner/blush) stay shared.
+const FALCON = {
+  ...C,
+  body: '#B9793B',       // tawny brown plumage
+  belly: '#F2E7D0',      // pale cream breast
+  wing: '#9A6230',       // darker brown wing
+  wingDark: '#4A2F16',   // primary tips / tail bars / breast streaks
+  hood: '#4E3620',       // dark slate-brown head hood
+  cheek: '#F3E7D2',      // pale cheek patch (peregrine mask)
+  malar: '#3A2412',      // moustache stripe
+  beakHook: '#3A3A3A',   // slate raptor beak
+  cere: '#E7B84E',       // fleshy beak base
+  brow: '#241708',       // near-black, reads on the hood
+  feet: '#E0A93E',       // yellow talons (falcons have yellow legs)
+};
+
+const paletteFor = (stage) => (stage >= 2 ? FALCON : C);
 
 // Rotation/scale pivot with the origin baked into SVG translates instead of
 // CSS transform-origin — identical results in every renderer (browsers,
@@ -258,6 +278,7 @@ function Mascot({ emotion = 'idle', stage = 1, size = 240, track = true, equippe
   const pupilY = useTransform(my, (v) => v * 2.5);
 
   const grown = stage >= 2;
+  const P = grown ? FALCON : C;
   const bodyLoop = BODY_LOOP_CLASS[e.body] ?? '';
   const flapping = emotion === 'celebrating' || emotion === 'happy';
 
@@ -284,26 +305,26 @@ function Mascot({ emotion = 'idle', stage = 1, size = 240, track = true, equippe
               chick keeps a small stub. */}
           {grown ? (
             <g>
-              <path d="M104,182 L120,232 L136,182 Q120,192 104,182 Z" fill={C.wing} />
-              <path d="M110,196 L120,214 L130,196 Q120,201 110,196 Z" fill={C.wingDark} opacity="0.7" />
-              <path d="M113,186 L120,198 L127,186 Q120,190 113,186 Z" fill={C.wingDark} opacity="0.5" />
+              <path d="M104,182 L120,232 L136,182 Q120,192 104,182 Z" fill={P.wing} />
+              <path d="M110,196 L120,214 L130,196 Q120,201 110,196 Z" fill={P.wingDark} opacity="0.8" />
+              <path d="M113,186 L120,198 L127,186 Q120,190 113,186 Z" fill={P.wingDark} opacity="0.6" />
             </g>
           ) : stage >= 1 && (
-            <g fill={C.wing}>
+            <g fill={P.wing}>
               <ellipse cx="112" cy="196" rx="6" ry="12" transform="rotate(18 112 196)" />
               <ellipse cx="128" cy="196" rx="6" ry="12" transform="rotate(-18 128 196)" />
             </g>
           )}
 
           {/* Body */}
-          <ellipse cx="120" cy="158" rx="56" ry="50" fill={C.body} />
-          <ellipse cx="120" cy="170" rx="34" ry="28" fill={C.belly} />
+          <ellipse cx="120" cy="158" rx="56" ry="50" fill={P.body} />
+          <ellipse cx="120" cy="170" rx="34" ry="28" fill={P.belly} />
 
           {/* Breast streaks — falcon plumage pattern (grown only) */}
           {grown && (
-            <g fill={C.wingDark} opacity="0.45">
-              {[[104, 166], [120, 172], [136, 166], [112, 182], [128, 182]].map(([x, y], i) => (
-                <path key={i} d={`M${x},${y} q2,7 0,13 q-2,-6 0,-13 Z`} />
+            <g fill={P.wingDark} opacity="0.55">
+              {[[106, 164], [120, 170], [134, 164], [113, 180], [127, 180], [120, 190]].map(([x, y], i) => (
+                <path key={i} d={`M${x},${y} q2.5,8 0,15 q-2.5,-7 0,-15 Z`} />
               ))}
             </g>
           )}
@@ -314,14 +335,16 @@ function Mascot({ emotion = 'idle', stage = 1, size = 240, track = true, equippe
             <>
               <g className={flapping ? 'anim-flap-l' : ''} style={{ transformOrigin: '70px 136px' }}>
                 <Pivot x={70} y={136} animate={{ rotate: e.body === 'droop' ? 12 : 0 }} transition={springs.gentle}>
-                  <path d="M72,132 Q40,150 46,200 Q58,196 70,168 Q68,148 80,142 Z" fill={C.wing} />
-                  <path d="M46,200 Q52,182 62,170 Q58,190 54,200 Z" fill={C.wingDark} />
+                  <path d="M72,130 Q36,150 44,202 Q58,198 71,166 Q68,146 81,140 Z" fill={P.wing} />
+                  <path d="M44,202 Q50,180 63,166 Q58,190 53,203 Z" fill={P.wingDark} />
+                  <path d="M55,200 Q60,184 69,172 Q65,190 62,201 Z" fill={P.wingDark} opacity="0.7" />
                 </Pivot>
               </g>
               <g className={flapping ? 'anim-flap-r' : ''} style={{ transformOrigin: '170px 136px' }}>
                 <Pivot x={170} y={136} animate={{ rotate: e.body === 'droop' ? -12 : 0 }} transition={springs.gentle}>
-                  <path d="M168,132 Q200,150 194,200 Q182,196 170,168 Q172,148 160,142 Z" fill={C.wing} />
-                  <path d="M194,200 Q188,182 178,170 Q182,190 186,200 Z" fill={C.wingDark} />
+                  <path d="M168,130 Q204,150 196,202 Q182,198 169,166 Q172,146 159,140 Z" fill={P.wing} />
+                  <path d="M196,202 Q190,180 177,166 Q182,190 187,203 Z" fill={P.wingDark} />
+                  <path d="M185,200 Q180,184 171,172 Q175,190 178,201 Z" fill={P.wingDark} opacity="0.7" />
                 </Pivot>
               </g>
             </>
@@ -329,20 +352,20 @@ function Mascot({ emotion = 'idle', stage = 1, size = 240, track = true, equippe
             <>
               <g className={flapping ? 'anim-flap-l' : ''} style={{ transformOrigin: '68px 144px' }}>
                 <Pivot x={68} y={144} animate={{ rotate: e.body === 'droop' ? 10 : 0 }} transition={springs.gentle}>
-                  <path d="M66,140 Q46,158 58,186 Q72,178 74,156 Z" fill={C.wing} />
+                  <path d="M66,140 Q46,158 58,186 Q72,178 74,156 Z" fill={P.wing} />
                 </Pivot>
               </g>
               <g className={flapping ? 'anim-flap-r' : ''} style={{ transformOrigin: '172px 144px' }}>
                 <Pivot x={172} y={144} animate={{ rotate: e.body === 'droop' ? -10 : 0 }} transition={springs.gentle}>
-                  <path d="M174,140 Q194,158 182,186 Q168,178 166,156 Z" fill={C.wing} />
+                  <path d="M174,140 Q194,158 182,186 Q168,178 166,156 Z" fill={P.wing} />
                 </Pivot>
               </g>
             </>
           ))}
 
-          {/* Feet */}
+          {/* Feet — yellow talons on the grown falcon */}
           {stage >= 1 && (
-            <g fill={C.feet}>
+            <g fill={P.feet}>
               <ellipse cx="100" cy="206" rx="10" ry="5" />
               <ellipse cx="140" cy="206" rx="10" ry="5" />
             </g>
@@ -350,39 +373,48 @@ function Mascot({ emotion = 'idle', stage = 1, size = 240, track = true, equippe
 
           {/* Head — tilt pivot at the neck. */}
           <Pivot x={120} y={150} animate={{ rotate: e.headTilt }} transition={springs.gentle}>
-            <circle cx="120" cy="92" r="58" fill={C.body} />
+            <circle cx="120" cy="92" r="58" fill={P.body} />
 
-            {/* Crown cap — dark falcon head, swept-back crest (grown only) */}
-            {grown && (
-              <g fill={C.cap}>
-                <path d="M64,90 Q66,46 120,42 Q174,46 176,90 Q150,72 120,70 Q90,72 64,90 Z" />
-                {/* swept-back crest feathers off the crown */}
-                <path d="M104,44 Q98,24 112,34 Q108,42 104,44 Z" />
-                <path d="M118,41 Q120,18 130,34 Q124,40 118,41 Z" />
-                <path d="M132,44 Q142,26 142,44 Q136,46 132,44 Z" />
-              </g>
+            {grown ? (
+              <>
+                {/* Peregrine/saqr face pattern: pale cheeks, dark hood over
+                    the crown dipping to a widow's-peak between the eyes,
+                    swept crest feathers. The eyes sit on the pale cheek at
+                    the hood's edge — the classic falcon "helmet" look. */}
+                <ellipse cx="94" cy="104" rx="22" ry="20" fill={P.cheek} />
+                <ellipse cx="146" cy="104" rx="22" ry="20" fill={P.cheek} />
+                <path
+                  d="M62,96 Q64,46 120,44 Q176,46 178,96 Q152,80 138,92 Q130,74 120,84 Q110,74 102,92 Q88,80 62,96 Z"
+                  fill={P.hood}
+                />
+                <g fill={P.hood}>
+                  <path d="M102,46 Q94,24 110,34 Q106,42 102,46 Z" />
+                  <path d="M118,43 Q120,18 132,34 Q124,42 118,43 Z" />
+                  <path d="M134,46 Q148,26 146,46 Q138,48 134,46 Z" />
+                </g>
+              </>
+            ) : (
+              <path d="M112,38 Q120,24 128,38 Q120,34 112,38" fill={P.wing} />
             )}
-            {!grown && <path d="M112,38 Q120,24 128,38 Q120,34 112,38" fill={C.wing} />}
 
             {/* Face */}
             {/* side −1/+1: positive EMOTIONS rot must RAISE the inner ends
                 (worry); SVG-positive rotation is clockwise, so left flips. */}
-            {/* Grown falcon: brows sit on the dark crown, so darken them to
-                keep the emotion readable (brown-on-brown would vanish). */}
-            <Brow cx={96} rot={e.brow.rot} y={e.brow.y} side={-1} color={grown ? '#2E1C0A' : C.brow} />
-            <Brow cx={144} rot={e.brow.rot} y={e.brow.y} side={1} color={grown ? '#2E1C0A' : C.brow} />
+            <Brow cx={96} rot={e.brow.rot} y={e.brow.y} side={-1} color={P.brow} />
+            <Brow cx={144} rot={e.brow.rot} y={e.brow.y} side={1} color={P.brow} />
 
             <motion.g initial={false} style={{ x: pupilX, y: pupilY }}>
               <Eye cx={96} lid={e.lid} blinking={blinking} clipId={`${uid}-eyeL`} />
               <Eye cx={144} lid={e.lid} blinking={blinking} clipId={`${uid}-eyeR`} />
             </motion.g>
 
-            {/* Malar stripe — the signature dark falcon "moustache" teardrop
-                below each eye. THE marking that says peregrine/saqr. */}
+            {/* Malar stripe — the signature dark falcon "moustache" running
+                down from the eye through the pale cheek. THE marking that
+                says peregrine/saqr. */}
             {grown && (
-              <g fill={C.cap}>
-                <path d="M90,108 Q83,124 90,138 Q98,124 96,109 Z" />
-                <path d="M150,108 Q157,124 150,138 Q142,124 144,109 Z" />
+              <g fill={P.malar}>
+                <path d="M92,106 Q86,122 93,138 Q100,122 97,107 Z" />
+                <path d="M148,106 Q154,122 147,138 Q140,122 143,107 Z" />
               </g>
             )}
 
@@ -396,13 +428,13 @@ function Mascot({ emotion = 'idle', stage = 1, size = 240, track = true, equippe
                 emotion mouth) render over both. */}
             {grown ? (
               <g>
-                <ellipse cx="120" cy="110" rx="12" ry="7" fill={C.cere} />
-                <path d="M108,111 Q120,106 132,111 Q130,122 123,127 Q120,133 120,127 Q118,133 117,127 Q110,122 108,111 Z" fill={C.beakHook} />
-                <circle cx="114" cy="110" r="1.3" fill="#2A2A2A" />
-                <circle cx="126" cy="110" r="1.3" fill="#2A2A2A" />
+                <ellipse cx="120" cy="109" rx="13" ry="8" fill={P.cere} />
+                <path d="M107,110 Q120,105 133,110 Q131,122 123,128 Q120,135 120,128 Q118,135 117,128 Q109,122 107,110 Z" fill={P.beakHook} />
+                <circle cx="114" cy="109" r="1.4" fill="#1F1F1F" />
+                <circle cx="126" cy="109" r="1.4" fill="#1F1F1F" />
               </g>
             ) : (
-              <path d="M106,112 Q120,102 134,112 L120,124 Z" fill={C.beakTop} />
+              <path d="M106,112 Q120,102 134,112 L120,124 Z" fill={P.beakTop} />
             )}
             {Object.entries(BEAK_VARIANTS).map(([id, node]) => (
               <Pivot
