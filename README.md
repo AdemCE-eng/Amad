@@ -25,6 +25,44 @@ anything — the controller triggers endpoints, and the frontend only listens to
 | `frontend/` | Frontend (React) | ✅ built |
 | `design/` | UI/UX Designer | 🔲 stub |
 
+## Open the project
+
+In File Explorer, open:
+
+```text
+D:\guedr\Desktop\Adam\Projects\Amad
+```
+
+To edit the code in VS Code, right-click the folder and choose **Open with Code**, or run:
+
+```powershell
+code "D:\guedr\Desktop\Adam\Projects\Amad"
+```
+
+To run the full demo, double-click:
+
+```text
+run-project.bat
+```
+
+## One-click Windows launch
+
+Double-click `run-project.bat` from the project folder.
+
+The launcher will:
+
+- add the local Java runtime to `PATH` when it exists,
+- install Firebase CLI if it is missing,
+- install missing backend/frontend dependencies,
+- create `backend/.env` from `backend/.env.example` if needed,
+- start the Firebase Realtime Database emulator,
+- seed the demo data,
+- start the backend and Cheat Controller at `http://localhost:3000/`,
+- start the React frontend at `http://localhost:5173/`,
+- open both browser tabs.
+
+Keep the three terminal windows open while using the demo. Close those windows to stop the project.
+
 ## Cheat Controller — what the demo operator (PM) sees
 
 Open `http://localhost:3000/`. Every action button has its own editable input — type any amount
@@ -41,27 +79,40 @@ before clicking, nothing is fixed:
 If you try to spend more than the balance, nothing breaks — you'll see a red "insufficient funds"
 banner and no state changes. See [`docs/API.md`](docs/API.md) for the full endpoint reference.
 
-## Run it locally (no cloud credentials needed)
+## Manual run (if you do not use the one-click launcher)
 
-Two terminals.
+Use three terminals.
 
-**1 — Firebase Realtime DB emulator**
+**1 - Firebase Realtime DB emulator**
+
 ```bash
 npm install -g firebase-tools      # once
 firebase emulators:start --only database
 ```
 
-**2 — Backend + Cheat Controller**
+**2 - Backend + Cheat Controller**
+
 ```bash
 cd backend
-cp .env.example .env               # defaults are emulator + mock AI
-npm install
-npm run seed                       # inject mock user + pet + transactions
-npm run dev                        # Express on http://localhost:3000
+cp .env.example .env               # first run only
+npm install                         # first run only
+npm run seed                        # inject mock user + pet + transactions
+npm run dev                         # Express on http://localhost:3000
 ```
 
-Open **http://localhost:3000/** → the Cheat Controller. Click the buttons and watch the
-pet state change live in the emulator UI (http://localhost:4000).
+**3 - React frontend**
+
+```bash
+cd frontend
+npm install                         # first run only
+npm run dev -- --host 127.0.0.1 --port 5173
+```
+
+Open:
+
+- Cheat Controller: `http://localhost:3000/`
+- React app: `http://localhost:5173/`
+- Firebase emulator UI: `http://localhost:4000`
 
 ## Current status
 
