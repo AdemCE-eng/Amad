@@ -52,6 +52,11 @@ function Assert-RequiredCommand {
 function Test-PortAvailable {
   param([int]$Port)
 
+  $existing = Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue
+  if ($existing) {
+    return $false
+  }
+
   $listener = $null
   try {
     $listener = [System.Net.Sockets.TcpListener]::new([System.Net.IPAddress]::Parse('127.0.0.1'), $Port)
@@ -257,8 +262,8 @@ function Start-Project {
   $ports = Get-LaunchPorts
 
   $emulatorHost = "127.0.0.1:$($ports.Database)"
-  $backendUrl = "http://localhost:$($ports.Backend)/"
-  $frontendUrl = "http://localhost:$($ports.Frontend)/"
+  $backendUrl = "http://127.0.0.1:$($ports.Backend)/"
+  $frontendUrl = "http://127.0.0.1:$($ports.Frontend)/"
   $emulatorUiUrl = "http://localhost:$($ports.EmulatorUi)"
 
   Write-Host "[PORTS] Firebase DB: $($ports.Database)"
@@ -321,7 +326,7 @@ function Start-Project {
 
   Write-Step "Starting React frontend on $frontendUrl..."
   Start-CmdWindow 'Amad React Frontend' $FrontendDir @(
-    "set `"VITE_API_BASE_URL=http://localhost:$($ports.Backend)`"",
+    "set `"VITE_API_BASE_URL=http://127.0.0.1:$($ports.Backend)`"",
     "set `"VITE_FIREBASE_EMULATOR_HOST=$emulatorHost`"",
     "npm run dev -- --host 127.0.0.1 --port $($ports.Frontend) --strictPort"
   )
