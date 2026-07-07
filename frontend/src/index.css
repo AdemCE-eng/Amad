@@ -89,6 +89,15 @@
 }
 .anim-crumb { animation: crumbFall 0.8s ease-in infinite; }
 
+@keyframes coinFeed {
+  0% { opacity: 0; transform: translate(16px, -38px) scale(1); }
+  20% { opacity: 1; }
+  65% { opacity: 1; transform: translate(0, -8px) scale(0.95); }
+  90% { opacity: 0; transform: translate(0, 2px) scale(0.55); }
+  100% { opacity: 0; transform: translate(0, 2px) scale(0.55); }
+}
+.anim-coin { animation: coinFeed 1.3s ease-in infinite; }
+
 @keyframes zzzFloat {
   0% { opacity: 0; transform: translate(0, 0); }
   30% { opacity: 1; }

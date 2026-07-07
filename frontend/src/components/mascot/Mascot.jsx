@@ -171,6 +171,13 @@ function Effects({ fx }) {
   if (fx === 'crumbs') {
     return (
       <g>
+        {/* The meal: a gold coin dropping into the beak — salary/savings
+            literally feed the companion. */}
+        <g className="anim-coin" style={{ transformOrigin: '120px 128px' }}>
+          <circle cx="120" cy="128" r="9" fill="#F5A623" stroke="#D98E1B" strokeWidth="2" />
+          <circle cx="120" cy="128" r="5.5" fill="none" stroke="#FFD98A" strokeWidth="1.5" />
+          <path d="M117,125 L123,131 M123,125 L117,131" stroke="#B8791B" strokeWidth="1.5" strokeLinecap="round" />
+        </g>
         {[[112, 132], [124, 136], [118, 130]].map(([x, y], i) => (
           <circle key={i} className="anim-crumb" style={{ animationDelay: `${i * 0.25}s` }} cx={x} cy={y} r="2.5" fill={C.wing} />
         ))}
@@ -219,11 +226,19 @@ function Accessory({ id }) {
     );
   }
   if (id === 'falcon_hood') {
+    // Falconry burqa' — structured leather dome worn on the crown (kept
+    // above the eyes so the emotion rig stays visible), center seam,
+    // front peak, side straps, and the traditional plume on top.
     return (
       <g>
-        <path d="M86,58 Q120,20 154,58 Q154,74 120,72 Q86,74 86,58 Z" fill="#8D6E63" />
-        <path d="M86,58 Q120,20 154,58" fill="none" stroke="#5D4037" strokeWidth="3" />
-        <circle cx="120" cy="30" r="5" fill="#FFD54F" />
+        <path d="M86,72 Q88,34 120,32 Q152,34 154,72 Q137,62 120,63 Q103,62 86,72 Z" fill="#A1887F" />
+        <path d="M102,62 Q120,76 138,62 Q120,68 102,62 Z" fill="#8D6E63" />
+        <path d="M120,32 L120,63" stroke="#5D4037" strokeWidth="2" />
+        <path d="M94,50 Q120,40 146,50" fill="none" stroke="#5D4037" strokeWidth="2" />
+        <path d="M88,70 q-5,9 -1,16" stroke="#5D4037" strokeWidth="3" fill="none" strokeLinecap="round" />
+        <path d="M152,70 q5,9 1,16" stroke="#5D4037" strokeWidth="3" fill="none" strokeLinecap="round" />
+        <path d="M120,30 Q112,20 118,8 Q121,16 122,8 Q127,20 120,30 Z" fill="#FFD54F" />
+        <circle cx="120" cy="29" r="4" fill="#D32F2F" />
       </g>
     );
   }

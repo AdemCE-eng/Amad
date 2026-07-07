@@ -44,6 +44,9 @@ export function renderAll() {
     frames['acc-' + acc] = renderToStaticMarkup(
       React.createElement(Mascot, { emotion: 'happy', stage: 1, equipped: acc, size: 240, track: false })
     );
+    frames['falcon-acc-' + acc] = renderToStaticMarkup(
+      React.createElement(Mascot, { emotion: 'happy', stage: 2, equipped: acc, size: 240, track: false })
+    );
   }
   return frames;
 }
