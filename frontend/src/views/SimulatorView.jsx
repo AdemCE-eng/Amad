@@ -6,7 +6,7 @@ import { api } from '../lib/api';
 // Judge/demo control panel. Local form state lives here (not in context) so
 // Firebase pushes never clobber half-typed inputs.
 export default function SimulatorView() {
-  const { user, pet, actionError, isSubmitting, runAction } = useAppData();
+  const { user, pet, actionError, isSubmitting, runAction, restartOnboarding, restarting } = useAppData();
 
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('coffee');
@@ -116,12 +116,35 @@ export default function SimulatorView() {
           </form>
         </div>
 
+        <div className="grid grid-cols-2 gap-3 mb-3">
+          <button
+            onClick={() => runAction(() => api.advanceDay())}
+            disabled={isSubmitting}
+            className="bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white font-bold py-3 rounded-xl transition-transform active:scale-95"
+          >
+            🌅 اليوم التالي
+          </button>
+          <button
+            onClick={() => runAction(() => api.completeChallenge())}
+            disabled={isSubmitting}
+            className="bg-teal-600 hover:bg-teal-500 disabled:opacity-50 text-white font-bold py-3 rounded-xl transition-transform active:scale-95"
+          >
+            ✅ إنجاز التحدي
+          </button>
+        </div>
         <button
           onClick={() => runAction(() => api.reset())}
           disabled={isSubmitting}
-          className="w-full bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white font-bold py-3 rounded-xl mb-8 transition-transform active:scale-95"
+          className="w-full bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white font-bold py-3 rounded-xl mb-3 transition-transform active:scale-95"
         >
-          🔄 إعادة تعيين العرض
+          🔄 إعادة تعيين البيانات (بدون شاشة الترحيب)
+        </button>
+        <button
+          onClick={restartOnboarding}
+          disabled={restarting}
+          className="w-full bg-red-700 hover:bg-red-600 disabled:opacity-50 text-white font-bold py-3 rounded-xl mb-8 transition-transform active:scale-95"
+        >
+          {restarting ? '...جارٍ إعادة البدء' : '🆕 إعادة البدء الكاملة (اختيار مرافق وهدف)'}
         </button>
 
         <div className="grid grid-cols-2 gap-4 text-sm mb-24">

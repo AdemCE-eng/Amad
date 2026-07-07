@@ -16,3 +16,8 @@ ui-debug.log
 .DS_Store
 Thumbs.db
 frontend/scripts/.tmp/
+emu-out.log
+emu-err.log
+*-debug.log
+backend-out.log
+backend-err.log

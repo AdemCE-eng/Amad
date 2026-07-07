@@ -5,6 +5,7 @@ import cors from "cors";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import simulateRoutes from "./routes/simulate.js";
+import gameRoutes from "./routes/game.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 3000;
@@ -15,6 +16,7 @@ app.use(express.json());
 
 // API
 app.use("/api", simulateRoutes);
+app.use("/api", gameRoutes);
 app.get("/health", (_req, res) => res.json({ ok: true, service: "amad-backend" }));
 
 // Serve the Cheat Controller (static) at the root.

@@ -11,12 +11,13 @@ import {
   initialState,
   hasSufficientFunds,
 } from "../logic/petEngine.js";
+import { applyGameEffects } from "../logic/gameEngine.js";
 import { generatePetMessage } from "../ai/gemini.js";
 
 const router = Router();
 
 // ── Firebase helpers ─────────────────────────────────────
-async function readState() {
+export async function readState() {
   const snap = await db.ref("/").get();
   const val = snap.val() || {};
   // Fall back to a fresh state if the DB is empty (e.g. seed not run yet).
@@ -25,12 +26,27 @@ async function readState() {
     user: val.user || fresh.user,
     pet: val.pet || fresh.pet,
     emergencyShield: val.emergencyShield || fresh.emergencyShield,
+    game: val.game || fresh.game,
     meta: val.meta || fresh.meta,
   };
 }
 
+// Gamification layer: streaks/coins/achievements/stage react to the same
+// event the health engine just processed.
+function withGame(next) {
+  const ctx = next._aiContext || {};
+  return applyGameEffects(next, {
+    event: ctx.event,
+    amount: ctx.amount,
+    savedPortion: ctx.savedPortion,
+    category: ctx.txnCategory || ctx.category,
+    overBudget: ctx.overBudget,
+    shielded: ctx.event === "emergency", // unshielded emergencies arrive as `purchase`
+  });
+}
+
 // Persist the engine result, attach the AI message, and log a transaction.
-async function commit(next, txn) {
+export async function commit(next, txn) {
   const { text: message, source: aiSource } = await generatePetMessage(next._aiContext);
   const pet = { ...next.pet, message, updatedAt: Date.now() };
 
@@ -40,6 +56,7 @@ async function commit(next, txn) {
     "/emergencyShield": next.emergencyShield,
     "/meta": next.meta,
   };
+  if (next.game) updates["/game"] = next.game;
   await db.ref("/").update(updates);
 
   if (txn) await db.ref("/transactions").push({ ...txn, timestamp: Date.now() });
@@ -47,7 +64,7 @@ async function commit(next, txn) {
   // aiSource is NOT stored in Firebase (the frontend never needs it) — it's
   // only surfaced in the HTTP response so the Cheat Controller can show
   // whether the message just came from a real Gemini call or a fallback.
-  return { user: next.user, pet, emergencyShield: next.emergencyShield, meta: next.meta, aiSource };
+  return { user: next.user, pet, emergencyShield: next.emergencyShield, game: next.game, meta: next.meta, aiSource };
 }
 
 function insufficientFunds(res, state) {
@@ -70,7 +87,7 @@ router.post("/simulate/salary", async (req, res, next) => {
     const savePercent = Number(req.body.savePercent);
     const saveRate = Number.isFinite(savePercent) ? savePercent / 100 : undefined;
     const state = await readState();
-    const out = await commit(applySalary(state, amount, saveRate), {
+    const out = await commit(withGame(applySalary(state, amount, saveRate)), {
       type: "salary",
       amount,
       category: "income",
@@ -88,7 +105,7 @@ router.post("/simulate/save", async (req, res, next) => {
     const amount = Number(req.body.amount) || 300;
     const state = await readState();
     if (!hasSufficientFunds(state, amount)) return insufficientFunds(res, state);
-    const out = await commit(applyInstantSave(state, amount), {
+    const out = await commit(withGame(applyInstantSave(state, amount)), {
       type: "save",
       amount,
       category: "savings",
@@ -107,7 +124,7 @@ router.post("/simulate/purchase", async (req, res, next) => {
     const { category = "coffee", label = "قهوة" } = req.body;
     const state = await readState();
     if (!hasSufficientFunds(state, amount)) return insufficientFunds(res, state);
-    const out = await commit(applyPurchase(state, { amount, category, label }), {
+    const out = await commit(withGame(applyPurchase(state, { amount, category, label })), {
       type: "purchase",
       amount,
       category,
@@ -126,7 +143,7 @@ router.post("/simulate/emergency", async (req, res, next) => {
     const { label = "سحب طارئ" } = req.body;
     const state = await readState();
     if (!hasSufficientFunds(state, amount)) return insufficientFunds(res, state);
-    const out = await commit(applyEmergency(state, { amount, label }), {
+    const out = await commit(withGame(applyEmergency(state, { amount, label })), {
       type: "emergency",
       amount,
       category: "emergency",
@@ -168,6 +185,7 @@ router.post("/reset", async (_req, res, next) => {
       user: fresh.user,
       pet: fresh.pet,
       emergencyShield: fresh.emergencyShield,
+      game: fresh.game,
       meta: { lastEvent: "reset" },
       transactions: null,
     });

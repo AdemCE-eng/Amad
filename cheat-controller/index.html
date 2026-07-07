@@ -104,6 +104,12 @@
         <input class="amt" type="number" id="amt-emergency" value="1500" min="0" step="100">
         <button class="emergency" onclick="callAmt('emergency', '/api/simulate/emergency', 'amt-emergency')">🛡️ درع الطوارئ</button>
       </div>
+      <div class="action">
+        <button class="save" style="grid-column:1/-1" onclick="call('/api/demo/advance-day', {})">🌅 اليوم التالي (تقدّم السلسلة)</button>
+      </div>
+      <div class="action">
+        <button class="salary" style="grid-column:1/-1" onclick="call('/api/demo/complete-challenge', {})">✅ إنجاز تحدي الأسبوع</button>
+      </div>
       <button class="reset" onclick="call('/api/reset', {})">🔄 إعادة تعيين العرض (Panic Reset)</button>
     </div>
 
@@ -115,6 +121,10 @@
       <div class="row"><span>الصحة</span><div class="bar"><span id="healthBar" style="width:100%"></span></div><b id="healthNum">—</b></div>
       <div class="row"><span>التقدم نحو الهدف</span><div class="bar"><span id="goalBar" style="width:0%; background:var(--alinma)"></span></div><b id="goalNum">—</b></div>
       <div class="row"><span>درع الطوارئ المتبقي</span><b id="shield">—</b></div>
+      <div class="row"><span>🔥 السلسلة</span><b id="streak">—</b></div>
+      <div class="row"><span>🪙 العملات</span><b id="coins">—</b></div>
+      <div class="row"><span>🐣 المرحلة</span><b id="stage">—</b></div>
+      <div class="row"><span>📅 اليوم</span><b id="day">—</b></div>
       <div class="bubble" id="bubble">…</div>
       <div style="text-align:center"><span class="badge" id="aiBadge">—</span></div>
       <div class="errBanner" id="errBanner"></div>
@@ -204,6 +214,17 @@
         document.getElementById('healthBar').style.background =
           pet.health >= 50 ? 'var(--green)' : pet.health >= 20 ? 'var(--amber)' : 'var(--red)';
         document.getElementById('bubble').textContent = pet.message || '…';
+      }
+
+      const game = data.game;
+      if (game) {
+        const frozen = game.streak?.status === 'frozen';
+        document.getElementById('streak').textContent =
+          (game.streak?.current ?? 0) + ' يوم' + (frozen ? ' ❄️ (محمية)' : '') +
+          ' · درع ×' + (game.streak?.freezesLeft ?? 0);
+        document.getElementById('coins').textContent = game.coins ?? 0;
+        document.getElementById('stage').textContent = ['بيضة 🥚', 'فرخ 🐤', 'صقر 🦅'][game.stage ?? 0];
+        document.getElementById('day').textContent = game.day ?? 1;
       }
 
       // Makes it obvious whether this reply came from a real Gemini call, the
