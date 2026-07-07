@@ -151,7 +151,7 @@ function Resolve-FirebaseRunner {
   }
 
   Write-Step 'Firebase CLI not found. Installing firebase-tools globally...'
-  & npm install -g firebase-tools
+  & npm install -g firebase-tools | Out-Host
   if ($LASTEXITCODE -ne 0) {
     throw 'Could not install firebase-tools.'
   }
