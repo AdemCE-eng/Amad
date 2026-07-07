@@ -3,6 +3,13 @@ import {
   Bell, Menu, ShoppingCart, HeartPulse, ArrowLeftRight, Wallet, PiggyBank, ShieldAlert,
 } from 'lucide-react';
 import { useAppData } from '../context/AppDataContext';
+import { api } from '../lib/api';
+import Mascot from '../components/mascot/Mascot';
+import { useMascotEmotion } from '../components/mascot/useMascotEmotion';
+import StreakFlame from '../components/ui/StreakFlame';
+import CoinPill from '../components/ui/CoinPill';
+import ChallengeCard from '../components/ui/ChallengeCard';
+import CountUp from '../components/ui/CountUp';
 
 const TX_LABELS = {
   purchase: { icon: ShoppingCart, sign: '-' },
@@ -18,11 +25,13 @@ function formatDate(ts) {
 
 export default function HomeView() {
   const {
-    user, pet, transactions, currentPet,
+    user, pet, game, transactions,
     isSick, isSad, isHappy, goalProgress,
     isShaking, flashColor, setActiveView,
+    isSubmitting, runAction,
   } = useAppData();
-  const CurrentPetGraphic = currentPet.Graphic;
+  const { emotion } = useMascotEmotion(pet);
+  const petName = user.petName || 'سنقر';
 
   return (
     <div className={`bg-gray-50 min-h-screen flex flex-col font-sans transition-all duration-300 ${isShaking ? 'animate-screen-shake' : ''}`} dir="rtl">
@@ -41,13 +50,19 @@ export default function HomeView() {
       </div>
 
       <div className="p-4 space-y-6 flex-1 overflow-y-auto pb-24 z-10">
+        {/* Streak + coins strip */}
+        <div className="flex justify-between items-center -mb-2">
+          <StreakFlame streak={game.streak} />
+          <CoinPill coins={game.coins} />
+        </div>
+
         {/* Welcome & Balance Card */}
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
           <p className="text-gray-500 text-sm mb-1">مرحباً بك، {user.name}</p>
           <div className="flex justify-between items-end">
             <div>
               <p className="text-sm text-gray-400 mb-1">الحساب الجاري المتميز</p>
-              <h2 className="text-3xl font-bold text-alinma-dark">{user.balance.toFixed(2)} <span className="text-sm text-gray-500">ر.س</span></h2>
+              <h2 className="text-3xl font-bold text-alinma-dark"><CountUp value={user.balance} /> <span className="text-sm text-gray-500">ر.س</span></h2>
             </div>
             <img src={`https://api.dicebear.com/7.x/initials/svg?seed=A&backgroundColor=009C8E`} alt="avatar" className="w-12 h-12 rounded-full border-2 border-alinma" />
           </div>
@@ -65,15 +80,14 @@ export default function HomeView() {
         >
           <div className="flex justify-between items-start mb-3">
             <div className="flex items-center gap-3">
-              <div className={`w-14 h-14 flex items-center justify-center rounded-full border-2 overflow-hidden bg-white/80 p-1 ${
+              <div className={`w-16 h-16 flex items-center justify-center rounded-full border-2 overflow-hidden bg-white/80 ${
                 isSick ? 'border-red-400' : 'border-alinma'
               }`}>
-                <div className={`w-full h-full transform ${isSick ? 'grayscale opacity-70 rotate-90 scale-90' : ''}`}>
-                  <CurrentPetGraphic />
-                </div>
+                {/* live mini mascot — same emotion pipeline as the pet room */}
+                <Mascot emotion={emotion} stage={game.stage} equipped={game.equipped} size={56} track={false} />
               </div>
               <div>
-                <h3 className="font-bold text-gray-800">مرافقك: {currentPet.name}</h3>
+                <h3 className="font-bold text-gray-800">مرافقك: {petName}</h3>
                 <div className="flex items-center gap-1 text-xs font-bold mt-1">
                   <HeartPulse size={12} className={isSick ? 'text-red-500' : 'text-green-500'} />
                   <span className={isSick ? 'text-red-600' : 'text-green-600'}>{pet.health}% صحة</span>
@@ -99,6 +113,25 @@ export default function HomeView() {
           </div>
           <p className="text-[10px] text-gray-500 text-left font-bold">{user.savedAmount.toFixed(0)} / {user.goalAmount.toFixed(0)} ر.س</p>
         </div>
+
+        {/* Save now — one tap feeds the companion */}
+        <button
+          disabled={isSubmitting}
+          onClick={() => {
+            const amountStr = window.prompt('كم تبغى توفر؟ (ر.س)', '500');
+            if (!amountStr) return;
+            const amt = parseFloat(amountStr);
+            if (!amt || amt <= 0) return;
+            runAction(() => api.save(amt));
+          }}
+          className="w-full py-4 rounded-2xl font-black text-white bg-gradient-to-r from-green-500 to-emerald-600 shadow-lg shadow-green-200 border-b-4 border-green-700 active:border-b-0 active:translate-y-1 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+        >
+          <PiggyBank size={22} />
+          وفّر الآن — أطعم {petName} 🪙
+        </button>
+
+        {/* Weekly challenge strip */}
+        <ChallengeCard challenge={game.activeChallenge} compact />
 
         {/* Quick Actions */}
         <div className="grid grid-cols-4 gap-4">

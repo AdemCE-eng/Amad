@@ -20,4 +20,9 @@ export const api = {
   emergency: (amount, label) => post('/api/simulate/emergency', { amount, label }),
   setGoal: (goalAmount) => post('/api/user/goal', { goalAmount }),
   reset: () => post('/api/reset'),
+  advanceDay: () => post('/api/demo/advance-day'),
+  completeChallenge: () => post('/api/demo/complete-challenge'),
+  buyItem: (itemId) => post('/api/shop/buy', { itemId }),
+  equipItem: (itemId) => post('/api/pet/equip', { itemId }),
+  setProfile: (profile) => post('/api/user/profile', profile),
 };

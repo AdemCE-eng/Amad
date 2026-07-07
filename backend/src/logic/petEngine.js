@@ -39,6 +39,8 @@ export function initialState() {
   return {
     user: {
       name: "Adam",
+      petName: "سنقر",
+      petType: "falcon",
       goalAmount: 5000,
       savedAmount: 1200,
       balance: 8000,
@@ -53,6 +55,29 @@ export function initialState() {
       updatedAt: Date.now(),
     },
     emergencyShield: { usesRemaining: 1 },
+    // Demo-tuned: streak 6 (one day from the 7-milestone), 24% of goal (one
+    // save from evolution), 60 coins (one milestone from the shemagh), and a
+    // live coffee challenge — the 3-minute script hits every payoff.
+    game: {
+      day: 7,
+      streak: { current: 6, best: 6, freezesLeft: 1, status: "alive" },
+      coins: 60,
+      stage: 0,
+      today: { spent: 0, saved: 0, overBudget: false, coffees: 0 },
+      achievements: { first_save: { unlockedAt: Date.now() - 5 * 86400000 } },
+      activeChallenge: {
+        id: "less_coffee",
+        title: "قهوة أقل هذا الأسبوع",
+        desc: "حافظ على ٣ زيارات مقهى أو أقل",
+        limit: 3,
+        used: 1,
+        reward: 50,
+        status: "active",
+      },
+      inventory: {},
+      equipped: null,
+      lastCelebration: { type: "none", id: "none", at: 0 },
+    },
     meta: { lastEvent: "idle" },
   };
 }
