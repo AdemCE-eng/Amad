@@ -1,19 +1,23 @@
 import React from 'react';
 import { ChevronRight, ShieldAlert, HeartPulse } from 'lucide-react';
 import { useAppData } from '../context/AppDataContext';
-import { PET_TYPES } from '../lib/petGraphics';
 import { api } from '../lib/api';
 import Mascot from '../components/mascot/Mascot';
 import { useMascotEmotion } from '../components/mascot/useMascotEmotion';
+import StreakFlame from '../components/ui/StreakFlame';
+import CoinPill from '../components/ui/CoinPill';
+import { STAGE_INFO } from '../lib/catalog';
 
-// The hero screen — the living mascot, full pupil tracking, tap to squish.
+// The hero screen — YOUR companion, singular and named. Full pupil tracking,
+// tap to squish, accessories on, evolution meter toward the goal.
 export default function PetRoomView() {
   const {
-    user, pet, emergencyShield, petType, setPetType,
+    user, pet, game, emergencyShield,
     isSick, isHappy, goalProgress,
     handlePetInteraction, isSubmitting, runAction, setActiveView,
   } = useAppData();
   const { emotion, poke } = useMascotEmotion(pet);
+  const petName = user.petName || 'سنقر';
 
   return (
     <div className={`bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] ${
@@ -25,14 +29,20 @@ export default function PetRoomView() {
         <button onClick={() => setActiveView('home')} className="bg-white/80 backdrop-blur p-2 rounded-full shadow-sm text-gray-700 hover:bg-white transition-all">
           <ChevronRight size={24} />
         </button>
-        <h1 className="font-bold text-gray-800 text-lg tracking-wide">مرافقي المالي</h1>
+        <h1 className="font-black text-gray-800 text-lg tracking-wide">غرفة {petName}</h1>
         <div className="w-10"></div>
       </div>
 
-      <div className="flex-1 flex flex-col items-center justify-start p-6 overflow-y-auto pb-24 z-10">
+      {/* streak + coins strip */}
+      <div className="flex justify-center gap-3 z-20">
+        <StreakFlame streak={game.streak} />
+        <CoinPill coins={game.coins} />
+      </div>
+
+      <div className="flex-1 flex flex-col items-center justify-start p-6 overflow-y-auto pb-28 z-10">
 
         {/* --- MAIN INTERACTIVE PET AREA --- */}
-        <div className="relative w-64 h-64 mb-6 flex items-center justify-center mt-2">
+        <div className="relative w-64 h-64 mb-6 flex items-center justify-center mt-1">
           {/* Background Glow */}
           <div className={`absolute inset-6 rounded-full blur-2xl transition-all duration-1000 ${
             isSick ? 'bg-red-400/40 animate-pulse' :
@@ -44,7 +54,8 @@ export default function PetRoomView() {
           <div className="relative z-10 cursor-pointer select-none">
             <Mascot
               emotion={emotion}
-              stage={1}
+              stage={game.stage}
+              equipped={game.equipped}
               size={250}
               track
               onTap={() => { poke(); handlePetInteraction(); }}
@@ -69,40 +80,33 @@ export default function PetRoomView() {
           </p>
         </div>
 
-        {/* --- COMPANION SELECTOR --- */}
-        <div className="w-full bg-white/90 backdrop-blur rounded-2xl p-4 shadow-sm border border-white/50 mb-6">
-          <div className="flex justify-between items-center mb-3">
-            <h3 className="font-bold text-gray-800 text-sm">متجر الرفقاء</h3>
-            <span className="text-xs text-alinma-dark bg-alinma-light border border-alinma/30 px-2 py-1 rounded-md font-bold">مفتوح لك</span>
+        {/* --- EVOLUTION METER — growth tied to the savings goal --- */}
+        <div className="w-full bg-white/90 backdrop-blur rounded-2xl p-5 shadow-sm border border-white/50 mb-6">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="font-black text-gray-800 text-sm">نمو {petName}</h3>
+            <span className="text-xs font-bold text-gray-500">{goalProgress}% من الهدف</span>
           </div>
-          <div className="flex justify-between gap-2 overflow-x-auto pb-2 scrollbar-hide">
-            {Object.values(PET_TYPES).map((p) => {
-              const Graphic = p.Graphic;
-              return (
-                <button
-                  key={p.id}
-                  onClick={() => setPetType(p.id)}
-                  className={`flex flex-col items-center justify-center p-2 rounded-xl transition-all min-w-[70px] border-2 ${
-                    petType === p.id
-                      ? 'bg-alinma-light border-alinma shadow-md scale-105'
-                      : 'bg-white border-gray-100 hover:border-alinma/40 opacity-70 hover:opacity-100'
-                  }`}
-                >
-                  <div className="w-10 h-10 mb-1 drop-shadow-sm">
-                    <Graphic />
+          <div className="relative">
+            <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
+              <div className="h-3 rounded-full transition-all duration-1000 ease-out bg-gradient-to-l from-alinma to-emerald-400" style={{ width: `${goalProgress}%` }}></div>
+            </div>
+            <div className="flex justify-between mt-2">
+              {STAGE_INFO.map((s, i) => {
+                const reached = game.stage >= i;
+                return (
+                  <div key={s.name} className={`flex flex-col items-center ${reached ? '' : 'opacity-40 grayscale'}`}>
+                    <span className="text-xl">{s.icon}</span>
+                    <span className="text-[9px] font-bold text-gray-500">{s.name}{i > 0 ? ` · ${s.at}%` : ''}</span>
                   </div>
-                  <span className={`text-[10px] font-bold ${petType === p.id ? 'text-alinma-dark' : 'text-gray-500'}`}>
-                    {p.name}
-                  </span>
-                </button>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         </div>
 
-        {/* Progress Card */}
+        {/* Savings card */}
         <div className="w-full bg-white/90 backdrop-blur rounded-2xl p-5 shadow-sm border border-white/50 mb-6">
-          <div className="flex justify-between items-center mb-4 border-b border-gray-100 pb-4">
+          <div className="flex justify-between items-center">
             <div>
               <p className="text-[11px] text-gray-500 mb-1 font-bold">إجمالي المدخرات</p>
               <h3 className="text-2xl font-black text-green-600 drop-shadow-sm">{user.savedAmount.toFixed(2)} <span className="text-sm">ر.س</span></h3>
@@ -110,18 +114,6 @@ export default function PetRoomView() {
             <div className="text-left bg-alinma-light p-2 rounded-xl border border-alinma/20">
               <p className="text-[10px] text-alinma-dark mb-1 font-bold">هدف الادخار</p>
               <h3 className="text-xl font-black text-alinma">{user.goalAmount.toFixed(0)}</h3>
-            </div>
-          </div>
-
-          <div>
-            <div className="flex justify-between text-xs mb-2 font-black text-gray-700 uppercase">
-              <span>التقدم نحو الهدف</span>
-              <span>{goalProgress}%</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-4 shadow-inner overflow-hidden border border-gray-300">
-              <div className="h-4 rounded-full transition-all duration-1000 ease-out bg-gradient-to-l from-coin to-orange-500 relative" style={{ width: `${goalProgress}%` }}>
-                <div className="absolute top-0 bottom-0 left-0 right-0 bg-gradient-to-b from-white/30 to-transparent"></div>
-              </div>
             </div>
           </div>
         </div>

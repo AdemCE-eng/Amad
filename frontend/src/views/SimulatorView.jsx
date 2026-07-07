@@ -116,6 +116,22 @@ export default function SimulatorView() {
           </form>
         </div>
 
+        <div className="grid grid-cols-2 gap-3 mb-3">
+          <button
+            onClick={() => runAction(() => api.advanceDay())}
+            disabled={isSubmitting}
+            className="bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white font-bold py-3 rounded-xl transition-transform active:scale-95"
+          >
+            🌅 اليوم التالي
+          </button>
+          <button
+            onClick={() => runAction(() => api.completeChallenge())}
+            disabled={isSubmitting}
+            className="bg-teal-600 hover:bg-teal-500 disabled:opacity-50 text-white font-bold py-3 rounded-xl transition-transform active:scale-95"
+          >
+            ✅ إنجاز التحدي
+          </button>
+        </div>
         <button
           onClick={() => runAction(() => api.reset())}
           disabled={isSubmitting}
