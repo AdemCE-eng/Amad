@@ -17,7 +17,7 @@ export default function RewardsView() {
   const { streak, coins, achievements, activeChallenge, inventory, equipped } = game;
 
   return (
-    <div className="bg-ink min-h-screen font-sans pb-24 text-cream" dir="rtl">
+    <div className="bg-ink h-full overflow-y-auto font-sans pb-24 text-cream" dir="rtl">
       <div className="px-5 pt-5 pb-3 flex justify-between items-center">
         <h1 className="text-2xl font-black text-cream">المكافآت</h1>
         <CoinPill coins={coins} />

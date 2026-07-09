@@ -51,7 +51,7 @@ export default function HomeView() {
   };
 
   return (
-    <div className={`bg-ink min-h-screen flex flex-col font-sans text-cream transition-all duration-300 ${isShaking ? 'animate-screen-shake' : ''}`} dir="rtl">
+    <div className={`bg-ink h-full flex flex-col font-sans text-cream transition-all duration-300 ${isShaking ? 'animate-screen-shake' : ''}`} dir="rtl">
       {flashColor && <div className="absolute inset-0 z-50 pointer-events-none transition-colors duration-300" style={{ backgroundColor: flashColor }}></div>}
 
       {/* Header — dark Alinma: avatar + name right, line icons left */}
