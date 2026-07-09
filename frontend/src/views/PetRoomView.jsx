@@ -21,7 +21,7 @@ export default function PetRoomView() {
 
   return (
     <div className={`bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] ${
-      isSick ? 'from-red-50 to-gray-100' : 'from-alinma-light to-amber-50'
+      isSick ? 'from-red-50 to-gray-100' : 'from-coral-light/70 to-alinma-light'
     } min-h-screen flex flex-col font-sans transition-colors duration-500`} dir="rtl">
 
       {/* Header — back arrow points right in RTL */}
@@ -47,7 +47,7 @@ export default function PetRoomView() {
           <div className={`absolute inset-6 rounded-full blur-2xl transition-all duration-1000 ${
             isSick ? 'bg-red-400/40 animate-pulse' :
             isHappy ? 'bg-yellow-400/50 animate-pulse' :
-            'bg-alinma/25 animate-pulse'
+            'bg-coral/25 animate-pulse'
           }`}></div>
 
           {/* The living mascot — tap to squish */}
@@ -88,7 +88,7 @@ export default function PetRoomView() {
           </div>
           <div className="relative">
             <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
-              <div className="h-3 rounded-full transition-all duration-1000 ease-out bg-gradient-to-l from-alinma to-emerald-400" style={{ width: `${goalProgress}%` }}></div>
+              <div className="h-3 rounded-full transition-all duration-1000 ease-out bg-gradient-to-l from-coral to-coin" style={{ width: `${goalProgress}%` }}></div>
             </div>
             <div className="flex justify-between mt-2">
               {STAGE_INFO.map((s, i) => {
@@ -126,7 +126,7 @@ export default function PetRoomView() {
                   key={amt}
                   disabled={isSubmitting}
                   onClick={() => runAction(() => api.save(amt))}
-                  className="py-2.5 rounded-xl font-black text-sm bg-green-500 text-white shadow shadow-green-200 border-b-4 border-green-700 active:border-b-0 active:translate-y-1 transition-all disabled:opacity-50"
+                  className="py-2.5 rounded-xl font-black text-sm bg-alinma text-white shadow shadow-alinma/20 active:scale-95 transition-all disabled:opacity-50"
                 >
                   +{amt}
                 </button>
@@ -145,7 +145,7 @@ export default function PetRoomView() {
             if (!amt || amt <= 0) return;
             runAction(() => api.emergency(amt, 'سحب طارئ'));
           }}
-          className="w-full py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all duration-300 border-b-4 active:border-b-0 active:translate-y-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-blue-800 shadow-xl shadow-blue-200 disabled:opacity-50"
+          className="w-full py-4 rounded-3xl font-bold flex items-center justify-center gap-2 transition-all duration-300 active:scale-[0.98] bg-alinma-dark text-white shadow-lg shadow-alinma/20 disabled:opacity-50"
         >
           <ShieldAlert size={20} className="animate-pulse" />
           سحب طارئ ({emergencyShield.usesRemaining} متبقٍ)
