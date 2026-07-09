@@ -32,7 +32,7 @@ export default function OnboardingFlow({ onDone }) {
   };
 
   return (
-    <div className="bg-gradient-to-b from-ink-soft to-ink min-h-screen flex flex-col font-sans" dir="rtl">
+    <div className="bg-gradient-to-b from-ink-soft to-ink h-full overflow-y-auto flex flex-col font-sans" dir="rtl">
       {/* progress dots */}
       <div className="flex justify-center gap-2 pt-8">
         {[0, 1, 2].map((i) => (

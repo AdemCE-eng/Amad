@@ -22,7 +22,7 @@ export default function PetRoomView() {
   return (
     <div className={`bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] ${
       isSick ? 'from-red-950 to-ink' : 'from-ink-soft to-ink'
-    } min-h-screen flex flex-col font-sans text-cream transition-colors duration-500`} dir="rtl">
+    } h-full flex flex-col font-sans text-cream transition-colors duration-500`} dir="rtl">
 
       {/* Header — back arrow points right in RTL */}
       <div className="p-4 flex items-center justify-between z-20">
