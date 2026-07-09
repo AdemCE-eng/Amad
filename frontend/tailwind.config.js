@@ -7,12 +7,16 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Alinma brand: teal is the primary identity; the warm brown the app
-        // used before is Alinma's real secondary, demoted to accent duty.
+        // Matched to the real Alinma app (2026 design): warm cream canvas,
+        // dark navy ink as the primary, coral as the sparing accent.
         alinma: {
-          DEFAULT: '#009C8E',
-          dark: '#00766B',
-          light: '#E6F5F3',
+          DEFAULT: '#1B2B45', // navy ink — buttons, icons, headings
+          dark: '#0F1D33',
+          light: '#F7F1EA',   // cream canvas
+        },
+        coral: {
+          DEFAULT: '#E97C61', // accent — active states, highlights
+          light: '#F6DFD3',   // avatar/chip tint
         },
         sand: '#8c5e3c',
         coin: '#F5A623',
