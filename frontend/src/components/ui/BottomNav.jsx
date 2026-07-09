@@ -1,26 +1,42 @@
 import React from 'react';
-import { Home, Trophy } from 'lucide-react';
+import { Home, Trophy, ArrowLeftRight, Grid } from 'lucide-react';
 
-// Three-tab bottom nav, styled like the real Alinma app: cream bar, navy
-// line icons, active tab bold. Center slot is the mascot's room.
+// Five-tab dark nav mirroring the real Alinma app; رفيق sits in the
+// AutoFlow slot with the "جديد" treatment (violet bubble + badge).
+// التحويل / الخدمات are decorative — they exist so the bar reads like the
+// real bank app, not a 3-screen demo.
 export default function BottomNav({ activeView, setActiveView, petName }) {
   const tabs = [
-    { id: 'home', label: 'الرئيسية', icon: <Home size={22} strokeWidth={1.8} /> },
-    { id: 'pet', label: `غرفة ${petName || 'المرافق'}`, icon: <span className="text-xl leading-none">🐤</span>, center: true },
-    { id: 'rewards', label: 'المكافآت', icon: <Trophy size={22} strokeWidth={1.8} /> },
+    { id: 'home', label: 'الرئيسية', icon: <Home size={21} strokeWidth={1.8} /> },
+    { id: '_transfer', label: 'التحويل', icon: <ArrowLeftRight size={21} strokeWidth={1.8} />, dead: true },
+    { id: 'pet', label: petName || 'رفيق', icon: <span className="text-xl leading-none">🐤</span>, center: true },
+    { id: 'rewards', label: 'المكافآت', icon: <Trophy size={21} strokeWidth={1.8} /> },
+    { id: '_services', label: 'الخدمات', icon: <Grid size={21} strokeWidth={1.8} />, dead: true },
   ];
   return (
-    <nav className="absolute bottom-0 inset-x-0 bg-alinma-light border-t border-black/5 flex justify-around items-stretch z-30 pb-1" dir="rtl">
+    <nav className="absolute bottom-0 inset-x-0 bg-ink border-t border-white/5 flex justify-around items-stretch z-30 pb-1" dir="rtl">
+      {/* "new feature" bubble above the center tab */}
+      {activeView !== 'pet' && (
+        <div className="absolute -top-9 left-1/2 -translate-x-1/2 bg-violet text-white text-[11px] font-black px-3.5 py-1.5 rounded-full whitespace-nowrap shadow-lg pointer-events-none">
+          جديد · جرّب {petName || 'رفيق'}
+          <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-violet rotate-45"></span>
+        </div>
+      )}
       {tabs.map((t) => {
         const active = activeView === t.id;
         return (
           <button
             key={t.id}
-            onClick={() => setActiveView(t.id)}
-            className={`flex flex-col items-center gap-0.5 py-2 px-4 transition-colors ${active ? 'text-alinma' : 'text-gray-400'}`}
+            onClick={() => !t.dead && setActiveView(t.id)}
+            className={`relative flex flex-col items-center gap-1 py-2.5 px-3 transition-colors ${
+              active ? 'text-coral' : t.dead ? 'text-cream/30' : 'text-cream/60'
+            }`}
           >
-            <span className={`${t.center ? 'bg-white rounded-full p-2 -mt-4 border-4 border-alinma-light shadow-sm' : ''} ${active && t.center ? 'ring-2 ring-coral' : ''}`}>
+            <span className={t.center ? 'relative bg-white/10 rounded-2xl px-2.5 py-1' : ''}>
               {t.icon}
+              {t.center && (
+                <span className="absolute -top-2 -right-3 bg-coral-deep text-white text-[8px] font-black px-1.5 py-0.5 rounded-full">جديد</span>
+              )}
             </span>
             <span className={`text-[10px] ${active ? 'font-black' : 'font-bold'}`}>{t.label}</span>
           </button>
