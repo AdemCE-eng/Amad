@@ -56,7 +56,7 @@ function AppShell() {
       <div className="absolute w-[720px] h-[720px] rounded-full border border-white/5 pointer-events-none"></div>
 
       {/* iPhone frame: black bezel, rounded screen, dynamic island */}
-      <div className="app-frame relative w-full h-screen sm:w-[400px] sm:h-[850px] sm:max-h-[94vh] bg-black sm:rounded-[3.4rem] sm:p-[10px] shadow-[0_30px_90px_-20px_rgba(0,0,0,0.9)] sm:ring-1 sm:ring-white/15">
+      <div className="app-frame relative w-full h-screen sm:h-[min(96vh,1000px)] sm:w-auto sm:aspect-[420/880] bg-black sm:rounded-[3.4rem] sm:p-[10px] shadow-[0_30px_90px_-20px_rgba(0,0,0,0.9)] sm:ring-1 sm:ring-white/15">
         <div className="relative w-full h-full bg-ink sm:rounded-[2.8rem] overflow-hidden flex flex-col">
           <StatusBar />
           {/* app viewport — views fill this, nav anchors to it */}
