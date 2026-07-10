@@ -10,26 +10,24 @@ import { api } from '../lib/api';
 const MILESTONES = [3, 7, 14];
 
 // المكافآت — streak hero, weekly challenge, achievements grid, and the
-// accessory shop (cosmetics render instantly on the mascot).
+// accessory shop (cosmetics render instantly on the mascot). Dark ink theme.
 export default function RewardsView() {
   const { user, game, isSubmitting, runAction, restartOnboarding, restarting } = useAppData();
   if (!game) return null;
   const { streak, coins, achievements, activeChallenge, inventory, equipped } = game;
 
   return (
-    <div className="bg-gray-50 min-h-screen font-sans pb-24" dir="rtl">
-      <div className="bg-alinma text-white p-4 rounded-b-2xl shadow-md">
-        <div className="flex justify-between items-center">
-          <h1 className="text-lg font-black">المكافآت</h1>
-          <CoinPill coins={coins} />
-        </div>
+    <div className="bg-ink h-full overflow-y-auto font-sans pb-24 text-cream" dir="rtl">
+      <div className="px-5 pt-5 pb-3 flex justify-between items-center">
+        <h1 className="text-2xl font-black text-cream">المكافآت</h1>
+        <CoinPill coins={coins} />
       </div>
 
-      <div className="p-4 space-y-5">
+      <div className="px-4 space-y-5">
         {/* Streak hero */}
-        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 text-center">
+        <div className="bg-ink-card rounded-3xl p-5 text-center">
           <StreakFlame streak={streak} size="lg" />
-          <p className="text-xs text-gray-500 mt-3 font-medium">
+          <p className="text-xs text-cream/50 mt-3 font-medium">
             {streak.status === 'frozen'
               ? 'درع الحماية حفظ سلسلتك اليوم — الغلطة تعدي ❄️'
               : 'أيام متتالية داخل الميزانية — كل يوم +10 🪙'}
@@ -38,17 +36,17 @@ export default function RewardsView() {
           <div className="flex items-center justify-between mt-5 px-2">
             {MILESTONES.map((m, i) => (
               <React.Fragment key={m}>
-                {i > 0 && <div className={`flex-1 h-1 rounded mx-1 ${streak.current >= m ? 'bg-orange-400' : 'bg-gray-200'}`} />}
+                {i > 0 && <div className={`flex-1 h-1 rounded mx-1 ${streak.current >= m ? 'bg-orange-400' : 'bg-white/10'}`} />}
                 <div className={`flex flex-col items-center gap-1 ${streak.current >= m ? '' : 'opacity-40'}`}>
-                  <span className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-black ${streak.current >= m ? 'bg-orange-100 text-orange-600' : 'bg-gray-100 text-gray-400'}`}>
+                  <span className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-black ${streak.current >= m ? 'bg-orange-400/20 text-orange-300' : 'bg-white/5 text-cream/40'}`}>
                     {m}
                   </span>
-                  <span className="text-[9px] font-bold text-gray-500">+{{ 3: 30, 7: 70, 14: 150 }[m]} 🪙</span>
+                  <span className="text-[9px] font-bold text-cream/50">+{{ 3: 30, 7: 70, 14: 150 }[m]} 🪙</span>
                 </div>
               </React.Fragment>
             ))}
           </div>
-          <p className="text-[10px] text-gray-400 mt-3">أفضل سلسلة: {streak.best} يوم · دروع الحماية: {streak.freezesLeft} ❄️</p>
+          <p className="text-[10px] text-cream/40 mt-3">أفضل سلسلة: {streak.best} يوم · دروع الحماية: {streak.freezesLeft} ❄️</p>
         </div>
 
         {/* Weekly challenge */}
@@ -56,18 +54,18 @@ export default function RewardsView() {
 
         {/* Achievements */}
         <div>
-          <h3 className="font-black text-gray-800 mb-3 px-1">الإنجازات</h3>
+          <h3 className="font-black text-cream mb-3 px-1">الإنجازات</h3>
           <div className="grid grid-cols-3 gap-3">
             {Object.entries(ACHIEVEMENTS).map(([key, a]) => {
               const unlocked = Boolean(achievements[key]);
               return (
                 <div
                   key={key}
-                  className={`bg-white rounded-2xl p-3 border text-center ${unlocked ? 'border-amber-200 shadow-sm' : 'border-gray-100 opacity-50 grayscale'}`}
+                  className={`rounded-3xl p-3 text-center ${unlocked ? 'bg-ink-card border border-amber-400/25' : 'bg-ink-card/50 opacity-50 grayscale'}`}
                 >
                   <span className="text-3xl block">{unlocked ? a.icon : '🔒'}</span>
-                  <p className="text-[10px] font-black text-gray-700 mt-1 leading-tight">{a.title}</p>
-                  <p className="text-[9px] font-bold text-amber-600 mt-0.5">+{a.coins} 🪙</p>
+                  <p className="text-[10px] font-black text-cream mt-1 leading-tight">{a.title}</p>
+                  <p className="text-[9px] font-bold text-amber-300 mt-0.5">+{a.coins} 🪙</p>
                 </div>
               );
             })}
@@ -76,26 +74,26 @@ export default function RewardsView() {
 
         {/* Shop */}
         <div>
-          <h3 className="font-black text-gray-800 mb-3 px-1">متجر الإكسسوارات</h3>
+          <h3 className="font-black text-cream mb-3 px-1">متجر الإكسسوارات</h3>
           <div className="space-y-3">
             {Object.entries(SHOP_ITEMS).map(([id, item]) => {
               const owned = Boolean(inventory[id]);
               const isEquipped = equipped === id;
               const affordable = coins >= item.price;
               return (
-                <div key={id} className="bg-white rounded-2xl p-3 border border-gray-100 shadow-sm flex items-center gap-3">
-                  <div className="w-16 h-16 bg-alinma-light rounded-xl flex items-center justify-center overflow-hidden">
+                <div key={id} className="bg-ink-card rounded-3xl p-3 flex items-center gap-3">
+                  <div className="w-16 h-16 bg-cream rounded-2xl flex items-center justify-center overflow-hidden">
                     <Mascot emotion="idle" stage={1} size={58} track={false} equipped={id} />
                   </div>
                   <div className="flex-1">
-                    <p className="font-black text-gray-800 text-sm">{item.icon} {item.name}</p>
-                    <p className="text-[11px] font-bold text-amber-600 mt-0.5">{item.price} 🪙</p>
+                    <p className="font-black text-cream text-sm">{item.icon} {item.name}</p>
+                    <p className="text-[11px] font-bold text-amber-300 mt-0.5">{item.price} 🪙</p>
                   </div>
                   {owned ? (
                     <button
                       disabled={isSubmitting}
                       onClick={() => runAction(() => api.equipItem(isEquipped ? null : id))}
-                      className={`px-4 py-2 rounded-xl text-xs font-black border ${isEquipped ? 'bg-alinma text-white border-alinma' : 'bg-white text-alinma border-alinma'}`}
+                      className={`px-4 py-2 rounded-xl text-xs font-black border ${isEquipped ? 'bg-coral text-ink border-coral' : 'bg-transparent text-coral border-coral/50'}`}
                     >
                       {isEquipped ? 'يلبسه ✓' : 'ألبسه'}
                     </button>
@@ -103,7 +101,7 @@ export default function RewardsView() {
                     <button
                       disabled={isSubmitting || !affordable}
                       onClick={() => runAction(() => api.buyItem(id))}
-                      className={`px-4 py-2 rounded-xl text-xs font-black ${affordable ? 'bg-coin text-white shadow' : 'bg-gray-100 text-gray-400'}`}
+                      className={`px-4 py-2 rounded-xl text-xs font-black ${affordable ? 'bg-coin text-ink shadow' : 'bg-white/5 text-cream/30'}`}
                     >
                       {affordable ? 'اشتره' : 'وفّر له'}
                     </button>
@@ -125,7 +123,7 @@ export default function RewardsView() {
                 restartOnboarding();
               }
             }}
-            className="w-full py-3 rounded-2xl font-bold text-sm border-2 border-red-200 text-red-500 bg-red-50 disabled:opacity-50 active:scale-95 transition-transform"
+            className="w-full py-3 rounded-3xl font-bold text-sm border border-red-400/30 text-red-400 bg-red-400/10 disabled:opacity-50 active:scale-95 transition-transform"
           >
             {restarting ? '...جارٍ إعادة البدء' : '🔄 البدء من جديد (اختيار مرافق وهدف)'}
           </button>

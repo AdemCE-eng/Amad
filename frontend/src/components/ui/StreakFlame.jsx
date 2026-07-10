@@ -2,6 +2,7 @@ import React from 'react';
 
 // Streak chip: flame + day count. Frozen state shows the shield that saved
 // it (compassion made visible — the bank protects, never shames).
+// Translucent styling works on both the dark ink canvas and white cards.
 export default function StreakFlame({ streak, size = 'md' }) {
   if (!streak) return null;
   const frozen = streak.status === 'frozen';
@@ -10,7 +11,7 @@ export default function StreakFlame({ streak, size = 'md' }) {
     <div
       className={`inline-flex items-center gap-1.5 rounded-full font-black ${
         big ? 'px-4 py-2 text-lg' : 'px-3 py-1 text-sm'
-      } ${frozen ? 'bg-sky-50 text-sky-700 border border-sky-200' : 'bg-orange-50 text-orange-600 border border-orange-200'}`}
+      } ${frozen ? 'bg-sky-400/15 text-sky-300 border border-sky-400/25' : 'bg-orange-400/15 text-orange-300 border border-orange-400/25'}`}
     >
       <span className={big ? 'text-2xl' : 'text-base'}>{frozen ? '❄️' : '🔥'}</span>
       <span>{streak.current}</span>

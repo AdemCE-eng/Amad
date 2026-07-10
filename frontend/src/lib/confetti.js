@@ -4,7 +4,7 @@ import confetti from 'canvas-confetti';
 // canvas, fully outside the React tree, so firing mid-Firebase-update never
 // couples to re-renders.
 
-const ALINMA = ['#009C8E', '#F5B841', '#FFD54F', '#E8833A'];
+const ALINMA = ['#E97C61', '#F5B841', '#FFD54F', '#1B2B45'];
 
 export function burst() {
   confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 }, colors: ALINMA });
