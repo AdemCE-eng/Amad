@@ -113,7 +113,7 @@ export default function OnboardingFlow({ onDone }) {
           {step === 2 && (
             <>
               <h1 className="text-2xl font-black text-cream text-center">حدد هدف ادخارك</h1>
-              <p className="text-sm text-cream/50 mt-2 text-center font-medium">{petName || 'مرافقك'} يكبر كل ما اقتربت من هدفك 🥚→🐤→🦅</p>
+              <p className="text-sm text-cream/50 mt-2 text-center font-medium">{petName || 'مرافقك'} يكبر كل ما اقتربت من هدفك 🥚←🐤←🦅</p>
               <div className="mt-6">
                 <Mascot emotion="celebrating" stage={0} size={150} />
               </div>
