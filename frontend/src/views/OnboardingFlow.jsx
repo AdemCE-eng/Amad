@@ -32,11 +32,11 @@ export default function OnboardingFlow({ onDone }) {
   };
 
   return (
-    <div className="bg-gradient-to-b from-alinma-light to-white min-h-screen flex flex-col font-sans" dir="rtl">
+    <div className="bg-gradient-to-b from-ink-soft to-ink h-full overflow-y-auto flex flex-col font-sans" dir="rtl">
       {/* progress dots */}
       <div className="flex justify-center gap-2 pt-8">
         {[0, 1, 2].map((i) => (
-          <span key={i} className={`h-2 rounded-full transition-all duration-300 ${i === step ? 'w-8 bg-alinma' : 'w-2 bg-gray-300'}`} />
+          <span key={i} className={`h-2 rounded-full transition-all duration-300 ${i === step ? 'w-8 bg-coral' : 'w-2 bg-white/20'}`} />
         ))}
       </div>
 
@@ -52,8 +52,8 @@ export default function OnboardingFlow({ onDone }) {
         >
           {step === 0 && (
             <>
-              <h1 className="text-2xl font-black text-gray-800 text-center">اختر مرافقك المالي</h1>
-              <p className="text-sm text-gray-500 mt-2 text-center font-medium">يعيش معك، يفرح لما توفر، ويتعب لما تسرف</p>
+              <h1 className="text-2xl font-black text-cream text-center">اختر مرافقك المالي</h1>
+              <p className="text-sm text-cream/50 mt-2 text-center font-medium">يعيش معك، يفرح لما توفر، ويتعب لما تسرف</p>
               <div className="mt-8">
                 <Mascot emotion="happy" stage={1} size={190} />
               </div>
@@ -64,8 +64,8 @@ export default function OnboardingFlow({ onDone }) {
                     disabled={!c.available}
                     className={`px-5 py-3 rounded-2xl font-bold text-sm border-2 ${
                       c.available
-                        ? 'bg-white border-alinma text-alinma shadow-md scale-105'
-                        : 'bg-gray-50 border-gray-200 text-gray-400'
+                        ? 'bg-white border-coral text-ink shadow-md scale-105'
+                        : 'bg-white/5 border-white/10 text-cream/30'
                     }`}
                   >
                     {c.name}
@@ -73,7 +73,7 @@ export default function OnboardingFlow({ onDone }) {
                   </button>
                 ))}
               </div>
-              <button onClick={() => setStep(1)} className="mt-auto w-full bg-alinma text-white font-black py-4 rounded-2xl shadow-lg shadow-alinma/30 active:scale-95 transition-transform">
+              <button onClick={() => setStep(1)} className="mt-auto w-full bg-coral text-ink font-black py-4 rounded-2xl shadow-lg shadow-coral/20 active:scale-95 transition-transform">
                 أبيه!
               </button>
             </>
@@ -81,8 +81,8 @@ export default function OnboardingFlow({ onDone }) {
 
           {step === 1 && (
             <>
-              <h1 className="text-2xl font-black text-gray-800 text-center">سمِّه على كيفك</h1>
-              <p className="text-sm text-gray-500 mt-2 text-center font-medium">الاسم يخليه صديقك مو مجرد تطبيق</p>
+              <h1 className="text-2xl font-black text-cream text-center">سمِّه على كيفك</h1>
+              <p className="text-sm text-cream/50 mt-2 text-center font-medium">الاسم يخليه صديقك مو مجرد تطبيق</p>
               <div className="mt-6">
                 <Mascot emotion={petName ? 'happy' : 'idle'} stage={1} size={160} />
               </div>
@@ -91,11 +91,11 @@ export default function OnboardingFlow({ onDone }) {
                 onChange={(e) => setPetName(e.target.value)}
                 placeholder="اكتب اسمه…"
                 maxLength={20}
-                className="mt-6 w-full text-center text-2xl font-black bg-white border-2 border-alinma/30 focus:border-alinma rounded-2xl py-4 outline-none"
+                className="mt-6 w-full text-center text-2xl font-black bg-white/10 text-cream placeholder:text-cream/30 border-2 border-white/15 focus:border-coral rounded-2xl py-4 outline-none"
               />
               <div className="flex gap-2 mt-4 flex-wrap justify-center">
                 {NAME_SUGGESTIONS.map((n) => (
-                  <button key={n} onClick={() => setPetName(n)} className="px-4 py-2 bg-white border border-gray-200 rounded-full text-sm font-bold text-gray-600 hover:border-alinma">
+                  <button key={n} onClick={() => setPetName(n)} className="px-4 py-2 bg-white/10 border border-white/10 rounded-full text-sm font-bold text-cream/80 hover:border-coral">
                     {n}
                   </button>
                 ))}
@@ -103,7 +103,7 @@ export default function OnboardingFlow({ onDone }) {
               <button
                 onClick={() => setStep(2)}
                 disabled={!petName.trim()}
-                className="mt-auto w-full bg-alinma disabled:bg-gray-300 text-white font-black py-4 rounded-2xl shadow-lg shadow-alinma/30 active:scale-95 transition-transform"
+                className="mt-auto w-full bg-coral disabled:bg-white/10 disabled:text-cream/30 text-ink font-black py-4 rounded-2xl shadow-lg shadow-coral/20 active:scale-95 transition-transform"
               >
                 يلا نكمل
               </button>
@@ -112,20 +112,20 @@ export default function OnboardingFlow({ onDone }) {
 
           {step === 2 && (
             <>
-              <h1 className="text-2xl font-black text-gray-800 text-center">حدد هدف ادخارك</h1>
-              <p className="text-sm text-gray-500 mt-2 text-center font-medium">{petName || 'مرافقك'} يكبر كل ما اقتربت من هدفك 🥚←🐤←🦅</p>
+              <h1 className="text-2xl font-black text-cream text-center">حدد هدف ادخارك</h1>
+              <p className="text-sm text-cream/50 mt-2 text-center font-medium">{petName || 'مرافقك'} يكبر كل ما اقتربت من هدفك 🥚←🐤←🦅</p>
               <div className="mt-6">
                 <Mascot emotion="celebrating" stage={0} size={150} />
               </div>
-              <div className="text-4xl font-black text-alinma mt-6">{goal.toLocaleString('ar-SA')} <span className="text-base text-gray-500">ر.س</span></div>
+              <div className="text-4xl font-black text-coral mt-6">{goal.toLocaleString('ar-SA')} <span className="text-base text-cream/40">ر.س</span></div>
               <input
                 type="range" min="1000" max="50000" step="500" value={goal}
                 onChange={(e) => setGoal(Number(e.target.value))}
-                className="w-full mt-4 accent-alinma"
+                className="w-full mt-4 accent-[#F0846A]"
               />
               <div className="flex gap-2 mt-4">
                 {GOAL_PRESETS.map((g) => (
-                  <button key={g} onClick={() => setGoal(g)} className={`px-4 py-2 rounded-full text-sm font-bold border ${goal === g ? 'bg-alinma text-white border-alinma' : 'bg-white border-gray-200 text-gray-600'}`}>
+                  <button key={g} onClick={() => setGoal(g)} className={`px-4 py-2 rounded-full text-sm font-bold border ${goal === g ? 'bg-coral text-ink border-coral' : 'bg-white/10 border-white/10 text-cream/70'}`}>
                     {g.toLocaleString('ar-SA')}
                   </button>
                 ))}
@@ -133,7 +133,7 @@ export default function OnboardingFlow({ onDone }) {
               <button
                 onClick={finish}
                 disabled={saving}
-                className="mt-auto w-full bg-alinma disabled:opacity-60 text-white font-black py-4 rounded-2xl shadow-lg shadow-alinma/30 active:scale-95 transition-transform"
+                className="mt-auto w-full bg-coral disabled:opacity-60 text-ink font-black py-4 rounded-2xl shadow-lg shadow-coral/20 active:scale-95 transition-transform"
               >
                 {saving ? '…' : `ابدأ الرحلة مع ${petName || 'مرافقك'} 🚀`}
               </button>
