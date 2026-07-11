@@ -55,11 +55,13 @@ The launcher will:
 - install Firebase CLI if it is missing,
 - install missing backend/frontend dependencies,
 - create `backend/.env` from `backend/.env.example` if needed,
-- start the Firebase Realtime Database emulator,
-- seed the demo data,
-- start the backend and Cheat Controller at `http://localhost:3000/`,
-- start the React frontend at `http://localhost:5173/`,
-- open both browser tabs.
+- start the Firebase Realtime Database emulator on an available port,
+- seed the demo data into that emulator,
+- start the backend and Cheat Controller on an available port,
+- start the React frontend on an available port, wired to the selected backend and Firebase ports,
+- open both browser tabs using the selected ports.
+
+The exact ports are printed in the launcher window. If the default ports are busy, the launcher automatically picks the next available ports.
 
 Keep the three terminal windows open while using the demo. Close those windows to stop the project.
 
@@ -79,7 +81,7 @@ before clicking, nothing is fixed:
 If you try to spend more than the balance, nothing breaks — you'll see a red "insufficient funds"
 banner and no state changes. See [`docs/API.md`](docs/API.md) for the full endpoint reference.
 
-## Manual run (if you do not use the one-click launcher)
+## Manual run on localhost (if you do not use the one-click launcher)
 
 Use three terminals.
 
@@ -107,6 +109,40 @@ cd frontend
 npm install                         # first run only
 npm run dev -- --host 127.0.0.1 --port 5173
 ```
+
+## Manual run to host on LAN (if you do not use the one-click launcher)
+Use three terminals.
+
+**1 - Firebase Realtime DB emulator**
+
+```bash
+npm install -g firebase-tools      # once
+firebase emulators:start --only database
+```
+
+**2 - Backend + Cheat Controller**
+
+```bash
+cd backend
+cp .env.example .env
+```
+In .env make FIREBASE_DATABASE_EMULATOR_HOST = [YOUR IP HERE]:9000
+
+```bash
+npm run seed                        # inject mock user + pet + transactions
+npm run dev                         # Express on http://localhost:3000
+```
+
+**3 - React frontend**
+
+```bash
+cd frontend
+npm install                         # first run only
+set VITE_FIREBASE_EMULATOR_HOST=[YOURIPADDR]:9000
+set VITE_API_BASE_URL=http://[YOURIPADDR]:3000
+npm run dev -- --host 0.0.0.0 --port 5173
+```
+
 
 Open:
 

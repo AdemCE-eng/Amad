@@ -40,7 +40,7 @@ export default function SimulatorView() {
   };
 
   return (
-    <div className="bg-slate-900 min-h-screen text-slate-100 p-6 font-sans" dir="rtl">
+    <div className="bg-slate-900 h-full overflow-y-auto text-slate-100 p-6 font-sans" dir="rtl">
       <div className="max-w-md mx-auto">
         <div className="flex items-center gap-3 mb-8 border-b border-slate-700 pb-4">
           <Settings className="text-emerald-400" size={28} />
