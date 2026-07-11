@@ -77,8 +77,9 @@ export function initialState() {
       inventory: {},
       equipped: null,
       lastCelebration: { type: "none", id: "none", at: 0 },
+      
     },
-    meta: { lastEvent: "idle" },
+    meta: { lastEvent: "idle", currentDate: Date.now()},
   };
 }
 
@@ -123,7 +124,7 @@ export function applySalary(state, amount, saveRate = SAVE_RATE) {
     ...state,
     user,
     pet,
-    meta: { lastEvent: "salary" },
+    meta: { ...state.meta, lastEvent: "salary" },
     _aiContext: { category: "happy", event: "salary", amount, savedPortion, healthDelta },
   };
 }
@@ -147,7 +148,7 @@ export function applyInstantSave(state, amount) {
     ...state,
     user,
     pet,
-    meta: { lastEvent: "save" },
+    meta: { ...state.meta, lastEvent: "save" },
     _aiContext: { category: "happy", event: "save", amount, healthDelta },
   };
 }
@@ -178,7 +179,7 @@ export function applyPurchase(state, { amount, category = "general", label = "ع
     ...state,
     user,
     pet,
-    meta: { lastEvent: "purchase" },
+    meta: { ...state.meta, lastEvent: "purchase" },
     _aiContext: {
       category: pet.mood, // AI reaction always matches what the health bar shows
       event: "purchase",
@@ -208,7 +209,7 @@ export function applyEmergency(state, { amount, label = "سحب طارئ" }) {
     user,
     pet,
     emergencyShield,
-    meta: { lastEvent: "emergency" },
+    meta: { ...state.meta, lastEvent: "emergency" },
     _aiContext: { category: "emergency", event: "emergency", amount, label },
   };
 }

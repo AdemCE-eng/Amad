@@ -40,7 +40,8 @@ on the `mood` and `animationState` strings. **The frontend never writes to the D
   },
 
   "meta": {
-    "lastEvent": "idle"        // last action processed: salary | save | purchase | emergency | reset | idle
+    "currentDate": 1719849600000, // Timestamp for notifications about holidays and certain celebrations
+    "lastEvent": "idle"           // last action processed: salary | save | purchase | emergency | reset | idle
   }
 }
 ```
