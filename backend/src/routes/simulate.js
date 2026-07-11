@@ -202,7 +202,7 @@ router.post("/reset", async (_req, res, next) => {
       emergencyShield: fresh.emergencyShield,
       game: fresh.game,
       jameya_pod: fresh.jameya_pod,
-      meta: { lastEvent: "reset" },
+      meta: { ...fresh.meta, lastEvent: "reset" },
       transactions: null,
     });
     res.json({ ok: true, message: "Demo reset.", ...fresh });
