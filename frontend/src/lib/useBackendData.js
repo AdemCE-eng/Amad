@@ -19,7 +19,8 @@ export function useBackendData() {
       watch('/game', (g) => setGame({
         day: g?.day ?? 1,
         streak: { current: 0, best: 0, freezesLeft: 0, status: 'alive', ...(g?.streak || {}) },
-        coins: g?.coins ?? 0,
+        nxp_balance: g?.nxp_balance ?? 0,
+        akthr_balance: g?.akthr_balance ?? 0,
         stage: g?.stage ?? 0,
         achievements: g?.achievements || {},
         activeChallenge: g?.activeChallenge || null,

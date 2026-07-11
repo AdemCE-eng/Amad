@@ -47,8 +47,13 @@ function withGame(next) {
 }
 
 // Persist the engine result, attach the AI message, and log a transaction.
+// `_aiMessage` (set by e.g. applyPredictiveOffer) bypasses Gemini entirely —
+// some advisories are deterministic/merchant-specific text the guardrail
+// forbids an LLM from generating, so the engine writes the final string itself.
 export async function commit(next, txn) {
-  const { text: message, source: aiSource } = await generatePetMessage(next._aiContext);
+  const { text: message, source: aiSource } = next._aiMessage
+    ? { text: next._aiMessage, source: "deterministic" }
+    : await generatePetMessage(next._aiContext);
   const pet = { ...next.pet, message, updatedAt: Date.now() };
 
   const updates = {
