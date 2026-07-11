@@ -12,6 +12,8 @@ import {
   hasSufficientFunds,
 } from "../logic/petEngine.js";
 import { applyGameEffects } from "../logic/gameEngine.js";
+import { initialFamilyState } from "../logic/familyEngine.js";
+import { initialOffersState, initialLoyaltyState } from "../logic/offerEngine.js";
 import { generatePetMessage } from "../ai/gemini.js";
 
 const router = Router();
@@ -186,6 +188,11 @@ router.post("/reset", async (_req, res, next) => {
       pet: fresh.pet,
       emergencyShield: fresh.emergencyShield,
       game: fresh.game,
+      family: initialFamilyState(),
+      offers: initialOffersState(),
+      loyalty: initialLoyaltyState(),
+      contributionPlan: null,
+      notifications: null,
       meta: { lastEvent: "reset" },
       transactions: null,
     });

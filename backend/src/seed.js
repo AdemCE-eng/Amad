@@ -2,6 +2,8 @@
 // Run with: npm run seed
 import { db } from "./firebase.js";
 import { initialState } from "./logic/petEngine.js";
+import { initialFamilyState } from "./logic/familyEngine.js";
+import { initialOffersState, initialLoyaltyState } from "./logic/offerEngine.js";
 
 // Synthetic Arabic POS history (no real customer data — safe for the demo).
 // The PM's larger dataset can be dropped in here later using the same shape.
@@ -18,11 +20,17 @@ const SEED_TRANSACTIONS = [
 
 async function seed() {
   const fresh = initialState();
+  const family = initialFamilyState();
   await db.ref("/").set({
     user: fresh.user,
     pet: fresh.pet,
     emergencyShield: fresh.emergencyShield,
     game: fresh.game,
+    family,
+    offers: initialOffersState(),
+    loyalty: initialLoyaltyState(),
+    contributionPlan: null,
+    notifications: null,
     meta: { lastEvent: "idle" },
     transactions: null,
   });
@@ -35,6 +43,7 @@ async function seed() {
   console.log(`   user: ${fresh.user.name}  goal=${fresh.user.goalAmount}  saved=${fresh.user.savedAmount}`);
   console.log(`   pet:  health=${fresh.pet.health}  mood=${fresh.pet.mood}`);
   console.log(`   transactions: ${SEED_TRANSACTIONS.length}`);
+  console.log(`   family: ${family.goalTitle}  goal=${family.goalAmount}  saved=${family.savedAmount}  members=${Object.keys(family.members).length}`);
   process.exit(0);
 }
 

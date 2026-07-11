@@ -191,6 +191,19 @@ export function applyPurchase(state, { amount, category = "general", label = "ع
   };
 }
 
+// Small positive nudge from events outside the personal account (family-goal
+// contribution, followed saving plan). Health/mood only — stays in this
+// module's domain; family/offer state lives in its own engines.
+export function applyCheer(state, { healthDelta = 5, event = "cheer", extra = {} } = {}) {
+  const pet = withHealth(state.pet, healthDelta, { animationState: "happy" });
+  return {
+    ...state,
+    pet,
+    meta: { lastEvent: event },
+    _aiContext: { category: "happy", event, ...extra },
+  };
+}
+
 // Emergency withdrawal → the Shield protects the pet: no health penalty if a use remains.
 export function applyEmergency(state, { amount, label = "سحب طارئ" }) {
   const shielded = state.emergencyShield.usesRemaining > 0;
