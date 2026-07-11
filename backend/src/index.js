@@ -9,6 +9,7 @@ import gameRoutes from "./routes/game.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 3000;
+const HOST = process.env.HOST || "0.0.0.0";
 
 const app = express();
 app.use(cors());
@@ -28,7 +29,15 @@ app.use((err, _req, res, _next) => {
   res.status(500).json({ ok: false, error: err.message });
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Backend on http://localhost:${PORT}`);
+app.listen(PORT, HOST, () => {
+  
+  if (HOST === "0.0.0.0"){
+    console.log(`🚀 Backend listening on port: ${PORT}`);
+  } else if (HOST === "127.0.0.1") {
+    console.log(`🚀 Backend on http://localhost:${PORT}`);
+  } else {
+    console.log(`🚀 Backend on http://${HOST}:${PORT}`);
+  }
+
   console.log(`🎮 Cheat Controller: http://localhost:${PORT}/`);
 });
