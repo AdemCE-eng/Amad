@@ -23,6 +23,7 @@ async function seed() {
     pet: fresh.pet,
     emergencyShield: fresh.emergencyShield,
     game: fresh.game,
+    jameya_pod: fresh.jameya_pod,
     meta: { lastEvent: "idle" },
     transactions: null,
   });

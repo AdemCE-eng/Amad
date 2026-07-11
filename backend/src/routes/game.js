@@ -9,6 +9,7 @@ import {
   buyItem,
   equipItem,
   setProfile,
+  applySimulateTrigger,
   SHOP_ITEMS,
   ACHIEVEMENTS,
 } from "../logic/gameEngine.js";
@@ -95,6 +96,34 @@ router.post("/user/profile", async (req, res, next) => {
 // GET /api/catalog — achievement + shop catalogs (static, lives in code).
 router.get("/catalog", (_req, res) => {
   res.json({ achievements: ACHIEVEMENTS, shop: SHOP_ITEMS });
+});
+
+// POST /api/game/simulate-trigger  { actionType }
+// The Cheat Controller's 4 SRS pitch buttons: QATTAH_REQUEST, JAMEYA_DEPOSIT,
+// SUKUK_PURCHASE, EARLY_LIQUIDATION. Every trigger logs a stylized mock
+// bank-API payload so judges can inspect what a real integration would send.
+router.post("/game/simulate-trigger", async (req, res, next) => {
+  try {
+    const { actionType } = req.body;
+    const state = await readState();
+    const result = applySimulateTrigger(state, actionType);
+    if (result.error) {
+      return res.status(400).json({
+        ok: false,
+        error: result.error,
+        message:
+          result.error === "insufficient_savings"
+            ? "تحتاج ١٠٠٠ ريال في مدخراتك لفتح بوابة الاستثمار."
+            : "إجراء غير معروف.",
+      });
+    }
+    console.log(`\n🏦 [MOCK BANK API] ${actionType}`);
+    console.log(JSON.stringify(result._mockPayload, null, 2));
+    const out = await commit(result);
+    res.json({ ok: true, ...out });
+  } catch (e) {
+    next(e);
+  }
 });
 
 export default router;

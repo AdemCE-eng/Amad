@@ -27,6 +27,7 @@ export async function readState() {
     pet: val.pet || fresh.pet,
     emergencyShield: val.emergencyShield || fresh.emergencyShield,
     game: val.game || fresh.game,
+    jameya_pod: val.jameya_pod || fresh.jameya_pod,
     meta: val.meta || fresh.meta,
   };
 }
@@ -57,6 +58,7 @@ export async function commit(next, txn) {
     "/meta": next.meta,
   };
   if (next.game) updates["/game"] = next.game;
+  if (next.jameya_pod) updates["/jameya_pod"] = next.jameya_pod;
   await db.ref("/").update(updates);
 
   if (txn) await db.ref("/transactions").push({ ...txn, timestamp: Date.now() });
@@ -64,7 +66,15 @@ export async function commit(next, txn) {
   // aiSource is NOT stored in Firebase (the frontend never needs it) — it's
   // only surfaced in the HTTP response so the Cheat Controller can show
   // whether the message just came from a real Gemini call or a fallback.
-  return { user: next.user, pet, emergencyShield: next.emergencyShield, game: next.game, meta: next.meta, aiSource };
+  return {
+    user: next.user,
+    pet,
+    emergencyShield: next.emergencyShield,
+    game: next.game,
+    jameya_pod: next.jameya_pod,
+    meta: next.meta,
+    aiSource,
+  };
 }
 
 function insufficientFunds(res, state) {
@@ -186,6 +196,7 @@ router.post("/reset", async (_req, res, next) => {
       pet: fresh.pet,
       emergencyShield: fresh.emergencyShield,
       game: fresh.game,
+      jameya_pod: fresh.jameya_pod,
       meta: { lastEvent: "reset" },
       transactions: null,
     });
