@@ -115,6 +115,13 @@ export function applyGameEffects(state, ctx) {
   return { ...state, game };
 }
 
+// ── Change the date (for celebrations) ───────────────────
+
+export function changeDate(state, date) {
+  state.meta.currentDate = date;
+  return state;
+}
+
 // ── Day advance (the demo-clock heart) ───────────────────
 
 export function advanceDay(state) {
@@ -161,7 +168,7 @@ export function advanceDay(state) {
     ...state,
     game,
     pet,
-    meta: { lastEvent: "advance-day" },
+    meta: { ...state.meta, lastEvent: "advance-day" },
     _aiContext: {
       category: frozen ? "emergency" : goodDay ? "happy" : "sad",
       event: frozen ? "streak_frozen" : goodDay ? "streak_up" : "streak_lost",
@@ -186,7 +193,7 @@ export function completeChallenge(state) {
     ...state,
     game,
     pet,
-    meta: { lastEvent: "challenge" },
+    meta: { ...state.meta, lastEvent: "challenge" },
     _aiContext: { category: "happy", event: "challenge_done", title: ch.title },
   };
 }
@@ -213,7 +220,7 @@ export function buyItem(state, itemId) {
       ...state,
       game,
       pet,
-      meta: { lastEvent: "shop" },
+      meta: { ...state.meta, lastEvent: "shop" },
       _aiContext: { category: "happy", event: "shop", itemName: item.name },
     },
   };
