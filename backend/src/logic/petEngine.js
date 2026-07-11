@@ -52,16 +52,21 @@ export function initialState() {
       mood: "happy",
       animationState: "idle",
       message: "أنا بخير وسعيد بوجودك!",
+      // SRS mock layer (Features 1-3): pending_qattah/pet_tier ride along on
+      // the pet slice since they're pet-displayed state, same as mood/health.
+      pending_qattah: false,
+      pet_tier: "classic",
       updatedAt: Date.now(),
     },
     emergencyShield: { usesRemaining: 1 },
     // Demo-tuned: streak 6 (one day from the 7-milestone), 24% of goal (one
-    // save from evolution), 60 coins (one milestone from the shemagh), and a
+    // save from evolution), 60 NXP (one milestone from the shemagh), and a
     // live coffee challenge — the 3-minute script hits every payoff.
     game: {
       day: 7,
       streak: { current: 6, best: 6, freezesLeft: 1, status: "alive" },
-      coins: 60,
+      nxp_balance: 60,
+      akthr_balance: 0,
       stage: 0,
       today: { spent: 0, saved: 0, overBudget: false, coffees: 0 },
       achievements: { first_save: { unlockedAt: Date.now() - 5 * 86400000 } },
@@ -78,7 +83,24 @@ export function initialState() {
       equipped: null,
       lastCelebration: { type: "none", id: "none", at: 0 },
     },
+    // SRS Feature 1 (Jameya Pods) — top-level slice, mirrors emergencyShield:
+    // not per-event pet math, just group-savings mock state.
+    jameya_pod: initialJameyaPod(),
     meta: { lastEvent: "idle" },
+  };
+}
+
+// The Jameya Pod's pristine seed — a demo circle of 3, user pending, 2 already in.
+export function initialJameyaPod() {
+  return {
+    current_pool: 0,
+    target_pool: 1000,
+    contributions_count: 0,
+    members: [
+      { name: "Khalid (You)", status: "pending", is_user: true },
+      { name: "Yousef", status: "contributed", is_user: false },
+      { name: "Sarah", status: "contributed", is_user: false },
+    ],
   };
 }
 
@@ -86,7 +108,7 @@ export function initialState() {
 // `mood` always derives from the resulting health — it must never disagree with
 // what the health bar shows. `animationState` can still be overridden per event
 // for a one-off Lottie cue (e.g. "eating"), independent of the persistent mood.
-function withHealth(pet, healthDelta, { animationState } = {}) {
+export function withHealth(pet, healthDelta, { animationState } = {}) {
   const health = clamp(Math.round(pet.health + healthDelta), 0, 100);
   const mood = moodFromHealth(health);
   return {
