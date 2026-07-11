@@ -59,9 +59,7 @@ export default function PetRoomView() {
               size={250}
               track
               onTap={() => { poke(); handlePetInteraction(); }}
-              pendingQattah={pet.pending_qattah}
               petTier={pet.pet_tier}
-              onSettleQattah={() => runAction(() => api.settleQattah())}
             />
           </div>
 

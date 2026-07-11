@@ -52,9 +52,8 @@ export function initialState() {
       mood: "happy",
       animationState: "idle",
       message: "أنا بخير وسعيد بوجودك!",
-      // SRS mock layer (Features 1-3): pending_qattah/pet_tier ride along on
-      // the pet slice since they're pet-displayed state, same as mood/health.
-      pending_qattah: false,
+      // SRS mock layer: pet_tier rides along on the pet slice since it's
+      // pet-displayed state, same as mood/health.
       pet_tier: "classic",
       updatedAt: Date.now(),
     },
@@ -83,23 +82,28 @@ export function initialState() {
       equipped: null,
       lastCelebration: { type: "none", id: "none", at: 0 },
     },
-    // SRS Feature 1 (Jameya Pods) — top-level slice, mirrors emergencyShield:
-    // not per-event pet math, just group-savings mock state.
-    jameya_pod: initialJameyaPod(),
+    // Feature (Family Shared Savings Goal) — top-level slice, mirrors
+    // emergencyShield: not per-event pet math, just group-savings mock state.
+    family_goal: initialFamilyGoal(),
     meta: { lastEvent: "idle", currentDate: Date.now() },
   };
 }
 
-// The Jameya Pod's pristine seed — a demo circle of 3, user pending, 2 already in.
-export function initialJameyaPod() {
+// The Family Goal's pristine seed — a household saving toward a trip, the
+// local user is the owner ("Father (You)") and can send reward gifts to
+// the other members from the FamilyGoalView leaderboard.
+export function initialFamilyGoal() {
   return {
-    current_pool: 0,
-    target_pool: 1000,
-    contributions_count: 0,
+    title: "رحلة الصيف إلى أبها",
+    target_amount: 5000,
+    current_amount: 3200,
+    // Populated by applyGenerateAiPlan (GENERATE_AI_PLAN trigger) — empty
+    // until the presenter generates a plan for a target amount.
+    ai_insight: "",
     members: [
-      { name: "Khalid (You)", status: "pending", is_user: true },
-      { name: "Yousef", status: "contributed", is_user: false },
-      { name: "Sarah", status: "contributed", is_user: false },
+      { id: 1, name: "Father (You)", contribution: 2000, pet: "falcon", is_owner: true },
+      { id: 2, name: "Sarah", contribution: 1000, pet: "cat", is_owner: false },
+      { id: 3, name: "Khalid", contribution: 200, pet: "camel", is_owner: false },
     ],
   };
 }

@@ -30,7 +30,7 @@ export default function RewardsView() {
           <p className="text-xs text-cream/50 mt-3 font-medium">
             {streak.status === 'frozen'
               ? 'درع الحماية حفظ سلسلتك اليوم — الغلطة تعدي ❄️'
-              : 'أيام متتالية داخل الميزانية — كل يوم +10 NXP 🪙'}
+              : 'أيام متتالية داخل الميزانية — كل يوم +10 NXP'}
           </p>
           {/* milestone track */}
           <div className="flex items-center justify-between mt-5 px-2">
@@ -41,7 +41,7 @@ export default function RewardsView() {
                   <span className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-black ${streak.current >= m ? 'bg-orange-400/20 text-orange-300' : 'bg-white/5 text-cream/40'}`}>
                     {m}
                   </span>
-                  <span className="text-[9px] font-bold text-cream/50">+{{ 3: 30, 7: 70, 14: 150 }[m]} NXP 🪙</span>
+                  <span className="text-[9px] font-bold text-cream/50">+{{ 3: 30, 7: 70, 14: 150 }[m]} NXP</span>
                 </div>
               </React.Fragment>
             ))}
@@ -65,7 +65,7 @@ export default function RewardsView() {
                 >
                   <span className="text-3xl block">{unlocked ? a.icon : '🔒'}</span>
                   <p className="text-[10px] font-black text-cream mt-1 leading-tight">{a.title}</p>
-                  <p className="text-[9px] font-bold text-amber-300 mt-0.5">+{a.coins} NXP 🪙</p>
+                  <p className="text-[9px] font-bold text-amber-300 mt-0.5">+{a.coins} NXP</p>
                 </div>
               );
             })}
@@ -87,7 +87,7 @@ export default function RewardsView() {
                   </div>
                   <div className="flex-1">
                     <p className="font-black text-cream text-sm">{item.icon} {item.name}</p>
-                    <p className="text-[11px] font-bold text-amber-300 mt-0.5">{item.price} NXP 🪙</p>
+                    <p className="text-[11px] font-bold text-amber-300 mt-0.5">{item.price} NXP</p>
                   </div>
                   {owned ? (
                     <button

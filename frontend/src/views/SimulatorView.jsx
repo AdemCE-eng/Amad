@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Settings, Zap, Sparkles, BellRing, Users, TrendingUp, TrendingDown, CalendarClock } from 'lucide-react';
+import { Settings, Zap } from 'lucide-react';
 import { useAppData } from '../context/AppDataContext';
 import { api } from '../lib/api';
 
@@ -19,17 +19,6 @@ export default function SimulatorView() {
     groceries: 'بقالة',
     dining: 'مطعم',
     transport: 'مواصلات',
-  };
-
-  // The 5 SRS pitch triggers — every click logs the mock bank-API payload to
-  // the browser console (for judges) before hitting the real endpoint.
-  const fireTrigger = (actionType, payload, label) => {
-    console.log(
-      `%c[SAMA PIS MOCK] ${label}`,
-      'color:#bada55;font-weight:bold;font-size:13px;background:#0f172a;padding:2px 8px;border-radius:4px;'
-    );
-    console.log({ actionType, ...payload, firedAt: new Date().toISOString() });
-    runAction(() => api.simulateTrigger(actionType, payload));
   };
 
   const handleSimulate = (e) => {
@@ -63,68 +52,6 @@ export default function SimulatorView() {
             {actionError}
           </div>
         )}
-
-        {/* Hackathon Pitch Triggers — the 5 SRS demo buttons (Predictive
-            Offer split into 2 merchant variants). Each fires a stylized
-            console.log of the mock bank-API payload for the judges. */}
-        <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-6 rounded-2xl border border-amber-500/30 mb-8 shadow-xl">
-          <h2 className="font-bold text-lg mb-1 text-amber-400 flex items-center gap-2">
-            <Sparkles size={20} /> Hackathon Pitch Triggers
-          </h2>
-          <p className="text-xs text-slate-400 mb-4">SRS Features 1-4 — check the browser console for the mock payload.</p>
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              onClick={() => fireTrigger('QATTAH_REQUEST', {}, 'Qattah Request')}
-              disabled={isSubmitting}
-              className="bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white font-bold py-3 rounded-xl transition-transform active:scale-95 flex flex-col items-center gap-1 text-xs text-center"
-            >
-              <BellRing size={18} /> Simulate Qattah Request
-            </button>
-            <button
-              onClick={() => fireTrigger('JAMEYA_DEPOSIT', {}, 'Jameya Deposit')}
-              disabled={isSubmitting}
-              className="bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white font-bold py-3 rounded-xl transition-transform active:scale-95 flex flex-col items-center gap-1 text-xs text-center"
-            >
-              <Users size={18} /> Simulate Jameya Deposit
-            </button>
-            <button
-              onClick={() => fireTrigger('SUKUK_PURCHASE', {}, 'Sukuk Purchase')}
-              disabled={isSubmitting}
-              className="bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white font-bold py-3 rounded-xl transition-transform active:scale-95 flex flex-col items-center gap-1 text-xs text-center"
-            >
-              <TrendingUp size={18} /> Simulate Sukuk Purchase
-            </button>
-            <button
-              onClick={() => fireTrigger('EARLY_LIQUIDATION', {}, 'Early Liquidation')}
-              disabled={isSubmitting}
-              className="bg-red-700 hover:bg-red-600 disabled:opacity-50 text-white font-bold py-3 rounded-xl transition-transform active:scale-95 flex flex-col items-center gap-1 text-xs text-center"
-            >
-              <TrendingDown size={18} /> Simulate Early Liquidation
-            </button>
-            <button
-              onClick={() => fireTrigger('PREDICTIVE_OFFER', { merchantName: 'Half Million' }, 'Predictive Offer — Half Million')}
-              disabled={isSubmitting}
-              className="bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white font-bold py-3 rounded-xl transition-transform active:scale-95 flex flex-col items-center gap-1 text-xs text-center"
-            >
-              <CalendarClock size={18} /> Predict Half Million Sale
-            </button>
-            <button
-              onClick={() => fireTrigger('PREDICTIVE_OFFER', { merchantName: 'Jarir' }, 'Predictive Offer — Jarir')}
-              disabled={isSubmitting}
-              className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-bold py-3 rounded-xl transition-transform active:scale-95 flex flex-col items-center gap-1 text-xs text-center"
-            >
-              <CalendarClock size={18} /> Predict Jarir Sale
-            </button>
-          </div>
-          {(pet.pending_qattah || pet.pet_tier !== 'classic') && (
-            <div className="mt-4 pt-3 border-t border-slate-700 flex flex-wrap gap-2 text-[11px]">
-              {pet.pending_qattah && (
-                <span className="bg-rose-500/20 text-rose-300 px-2 py-1 rounded-full font-bold">pending_qattah: true</span>
-              )}
-              <span className="bg-amber-500/20 text-amber-300 px-2 py-1 rounded-full font-bold">pet_tier: {pet.pet_tier}</span>
-            </div>
-          )}
-        </div>
 
         <div className="bg-slate-800 p-6 rounded-2xl border border-slate-700 mb-6 shadow-xl">
           <h2 className="font-bold text-lg mb-4 text-emerald-400">إيداع راتب</h2>

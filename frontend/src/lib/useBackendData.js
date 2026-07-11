@@ -8,6 +8,7 @@ export function useBackendData() {
   const [pet, setPet] = useState(null);
   const [emergencyShield, setEmergencyShield] = useState(null);
   const [game, setGame] = useState(null);
+  const [familyGoal, setFamilyGoal] = useState(null);
   const [transactions, setTransactions] = useState([]);
 
   useEffect(() => {
@@ -15,6 +16,14 @@ export function useBackendData() {
       watch('/user', setUser),
       watch('/pet', setPet),
       watch('/emergencyShield', setEmergencyShield),
+      // RTDB drops nulls/empty objects — normalize so FamilyGoalView never guards.
+      watch('/family_goal', (f) => setFamilyGoal({
+        title: f?.title ?? '',
+        target_amount: f?.target_amount ?? 0,
+        current_amount: f?.current_amount ?? 0,
+        ai_insight: f?.ai_insight ?? '',
+        members: f?.members || [],
+      })),
       // RTDB drops nulls/empty objects — normalize so views never guard.
       watch('/game', (g) => setGame({
         day: g?.day ?? 1,
@@ -42,6 +51,7 @@ export function useBackendData() {
     pet,
     emergencyShield,
     game,
+    familyGoal,
     transactions,
     loading: !user || !pet || !emergencyShield || !game,
   };
