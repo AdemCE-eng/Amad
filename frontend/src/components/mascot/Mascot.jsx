@@ -237,7 +237,7 @@ function Accessory({ id }) {
 
 function Mascot({
   emotion = 'idle', stage = 1, size = 240, track = true, equipped = null, onTap,
-  pendingQattah = false, petTier = 'classic', onSettleQattah,
+  petTier = 'classic',
 }) {
   const e = EMOTIONS[emotion] || EMOTIONS.idle;
   // Unique clipPath ids — multiple Mascots can share a page (MascotLab,
@@ -297,17 +297,6 @@ function Mascot({
 
   return (
     <div className={`relative inline-block ${tierGlow}`}>
-      {/* Feature 2 (Qattah Nudge): dark minimalist tooltip, clickable to settle. */}
-      {pendingQattah && (
-        <button
-          type="button"
-          onClick={(ev) => { ev.stopPropagation(); onSettleQattah?.(); }}
-          className="absolute -top-2 left-1/2 -translate-x-1/2 -translate-y-full z-20 whitespace-nowrap bg-neutral-900 text-white text-[11px] font-bold px-3 py-1.5 rounded-full shadow-lg border border-white/10 hover:bg-neutral-800 active:scale-95 transition-all cursor-pointer"
-        >
-          Khalid is waiting on a split bill.
-          <span className="absolute left-1/2 -translate-x-1/2 top-full w-2 h-2 -mt-1 bg-neutral-900 rotate-45 border-r border-b border-white/10" />
-        </button>
-      )}
       <motion.svg
         initial={false}
         viewBox="0 0 240 240" width={size} height={size}

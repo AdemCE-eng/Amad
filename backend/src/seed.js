@@ -23,7 +23,7 @@ async function seed() {
     pet: fresh.pet,
     emergencyShield: fresh.emergencyShield,
     game: fresh.game,
-    jameya_pod: fresh.jameya_pod,
+    family_goal: fresh.family_goal,
     meta: { ...fresh.meta, lastEvent: "idle" },
     transactions: null,
   });

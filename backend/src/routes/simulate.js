@@ -27,7 +27,7 @@ export async function readState() {
     pet: val.pet || fresh.pet,
     emergencyShield: val.emergencyShield || fresh.emergencyShield,
     game: val.game || fresh.game,
-    jameya_pod: val.jameya_pod || fresh.jameya_pod,
+    family_goal: val.family_goal || fresh.family_goal,
     meta: val.meta || fresh.meta,
   };
 }
@@ -63,7 +63,7 @@ export async function commit(next, txn) {
     "/meta": next.meta,
   };
   if (next.game) updates["/game"] = next.game;
-  if (next.jameya_pod) updates["/jameya_pod"] = next.jameya_pod;
+  if (next.family_goal) updates["/family_goal"] = next.family_goal;
   await db.ref("/").update(updates);
 
   if (txn) await db.ref("/transactions").push({ ...txn, timestamp: Date.now() });
@@ -76,7 +76,7 @@ export async function commit(next, txn) {
     pet,
     emergencyShield: next.emergencyShield,
     game: next.game,
-    jameya_pod: next.jameya_pod,
+    family_goal: next.family_goal,
     meta: next.meta,
     aiSource,
   };
@@ -201,7 +201,7 @@ router.post("/reset", async (_req, res, next) => {
       pet: fresh.pet,
       emergencyShield: fresh.emergencyShield,
       game: fresh.game,
-      jameya_pod: fresh.jameya_pod,
+      family_goal: fresh.family_goal,
       meta: { ...fresh.meta, lastEvent: "reset" },
       transactions: null,
     });

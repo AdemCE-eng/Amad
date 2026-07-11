@@ -25,6 +25,4 @@ export const api = {
   buyItem: (itemId) => post('/api/shop/buy', { itemId }),
   equipItem: (itemId) => post('/api/pet/equip', { itemId }),
   setProfile: (profile) => post('/api/user/profile', profile),
-  settleQattah: () => post('/api/game/settle-qattah'),
-  simulateTrigger: (actionType, payload) => post('/api/game/simulate-trigger', { actionType, ...payload }),
 };
