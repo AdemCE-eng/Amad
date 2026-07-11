@@ -10,6 +10,7 @@ import {
   equipItem,
   setProfile,
   applySimulateTrigger,
+  applySettleQattah,
   SHOP_ITEMS,
   ACHIEVEMENTS,
 } from "../logic/gameEngine.js";
@@ -98,26 +99,40 @@ router.get("/catalog", (_req, res) => {
   res.json({ achievements: ACHIEVEMENTS, shop: SHOP_ITEMS });
 });
 
-// POST /api/game/simulate-trigger  { actionType }
-// The Cheat Controller's 4 SRS pitch buttons: QATTAH_REQUEST, JAMEYA_DEPOSIT,
-// SUKUK_PURCHASE, EARLY_LIQUIDATION. Every trigger logs a stylized mock
-// bank-API payload so judges can inspect what a real integration would send.
+// POST /api/game/simulate-trigger  { actionType, merchantName? }
+// The Cheat Controller's 5 SRS pitch buttons: QATTAH_REQUEST, JAMEYA_DEPOSIT,
+// SUKUK_PURCHASE, EARLY_LIQUIDATION, PREDICTIVE_OFFER (merchantName required).
+// Every trigger logs a stylized mock bank-API payload so judges can inspect
+// what a real integration would send.
 router.post("/game/simulate-trigger", async (req, res, next) => {
   try {
-    const { actionType } = req.body;
+    const { actionType, merchantName } = req.body;
     const state = await readState();
-    const result = applySimulateTrigger(state, actionType);
+    const result = applySimulateTrigger(state, actionType, { merchantName });
     if (result.error) {
-      return res.status(400).json({
-        ok: false,
-        error: result.error,
-        message:
-          result.error === "insufficient_savings"
-            ? "تحتاج ١٠٠٠ ريال في مدخراتك لفتح بوابة الاستثمار."
-            : "إجراء غير معروف.",
-      });
+      const messages = {
+        insufficient_savings: "تحتاج ١٠٠٠ ريال في مدخراتك لفتح بوابة الاستثمار.",
+        merchant_not_found: "هذا التاجر غير موجود في تقويم العروض.",
+        unknown_action: "إجراء غير معروف.",
+      };
+      return res.status(400).json({ ok: false, error: result.error, message: messages[result.error] });
     }
     console.log(`\n🏦 [MOCK BANK API] ${actionType}`);
+    console.log(JSON.stringify(result._mockPayload, null, 2));
+    const out = await commit(result);
+    res.json({ ok: true, ...out });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// POST /api/game/settle-qattah — the debtor pays up: clears pending_qattah,
+// deposits +50 NXP, logs the mock SARIE A2A payload.
+router.post("/game/settle-qattah", async (_req, res, next) => {
+  try {
+    const state = await readState();
+    const result = applySettleQattah(state);
+    console.log(`\n🏦 [MOCK BANK API] SETTLE_QATTAH`);
     console.log(JSON.stringify(result._mockPayload, null, 2));
     const out = await commit(result);
     res.json({ ok: true, ...out });

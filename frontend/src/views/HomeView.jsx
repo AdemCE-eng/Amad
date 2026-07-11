@@ -68,7 +68,8 @@ export default function HomeView() {
         <div className="flex items-center gap-3">
           <div className="text-left">
             <p className="font-black text-cream text-lg leading-tight">{user.name}</p>
-            <p className="text-[11px] text-violet font-bold">✦ {game.coins}</p>
+            <p className="text-[11px] text-violet font-bold">✦ {game.nxp_balance} NXP</p>
+            <p className="text-[10px] text-amber-300 font-bold">◆ {game.akthr_balance} Akthr Points</p>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center font-black text-cream text-lg">
             {game.streak.current}
@@ -115,7 +116,7 @@ export default function HomeView() {
               </button>
             </div>
             <div className="w-24 flex-shrink-0 flex items-center justify-center">
-              <Mascot emotion={emotion} stage={game.stage} equipped={game.equipped} size={96} track={false} />
+              <Mascot emotion={emotion} stage={game.stage} equipped={game.equipped} size={96} track={false} petTier={pet.pet_tier} />
             </div>
           </div>
         </div>

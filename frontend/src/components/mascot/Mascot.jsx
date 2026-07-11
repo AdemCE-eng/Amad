@@ -235,7 +235,10 @@ function Accessory({ id }) {
   return null;
 }
 
-function Mascot({ emotion = 'idle', stage = 1, size = 240, track = true, equipped = null, onTap }) {
+function Mascot({
+  emotion = 'idle', stage = 1, size = 240, track = true, equipped = null, onTap,
+  pendingQattah = false, petTier = 'classic', onSettleQattah,
+}) {
   const e = EMOTIONS[emotion] || EMOTIONS.idle;
   // Unique clipPath ids — multiple Mascots can share a page (MascotLab,
   // onboarding). Strip colons from useId()'s output: some SVG renderers
@@ -287,16 +290,33 @@ function Mascot({ emotion = 'idle', stage = 1, size = 240, track = true, equippe
   const bodyLoop = BODY_LOOP_CLASS[e.body] ?? '';
   const flapping = emotion === 'celebrating' || emotion === 'happy';
 
+  // Feature 3 (Akthr Premium Tier): a subtle gold aura on the wrapping div,
+  // kept off the svg's own `animate` filter so it never fights the
+  // saturate() transition below.
+  const tierGlow = petTier === 'signature' ? 'drop-shadow-[0_0_14px_rgba(212,175,55,0.65)]' : '';
+
   return (
-    <motion.svg
-      initial={false}
-      viewBox="0 0 240 240" width={size} height={size}
-      animate={{ filter: `saturate(${e.sat})` }}
-      transition={{ duration: 0.6 }}
-      style={{ overflow: 'visible', touchAction: 'manipulation' }}
-      onPointerDown={onTap}
-    >
-      <ellipse cx="120" cy="212" rx="52" ry="9" fill="#000" opacity="0.08" />
+    <div className={`relative inline-block ${tierGlow}`}>
+      {/* Feature 2 (Qattah Nudge): dark minimalist tooltip, clickable to settle. */}
+      {pendingQattah && (
+        <button
+          type="button"
+          onClick={(ev) => { ev.stopPropagation(); onSettleQattah?.(); }}
+          className="absolute -top-2 left-1/2 -translate-x-1/2 -translate-y-full z-20 whitespace-nowrap bg-neutral-900 text-white text-[11px] font-bold px-3 py-1.5 rounded-full shadow-lg border border-white/10 hover:bg-neutral-800 active:scale-95 transition-all cursor-pointer"
+        >
+          Khalid is waiting on a split bill.
+          <span className="absolute left-1/2 -translate-x-1/2 top-full w-2 h-2 -mt-1 bg-neutral-900 rotate-45 border-r border-b border-white/10" />
+        </button>
+      )}
+      <motion.svg
+        initial={false}
+        viewBox="0 0 240 240" width={size} height={size}
+        animate={{ filter: `saturate(${e.sat})` }}
+        transition={{ duration: 0.6 }}
+        style={{ overflow: 'visible', touchAction: 'manipulation' }}
+        onPointerDown={onTap}
+      >
+        <ellipse cx="120" cy="212" rx="52" ry="9" fill="#000" opacity="0.08" />
 
       {/* Root: squish pivot at bottom-center; droop sinks the whole bird. */}
       <Pivot
@@ -468,7 +488,8 @@ function Mascot({ emotion = 'idle', stage = 1, size = 240, track = true, equippe
 
         <Effects fx={e.fx} />
       </Pivot>
-    </motion.svg>
+      </motion.svg>
+    </div>
   );
 }
 

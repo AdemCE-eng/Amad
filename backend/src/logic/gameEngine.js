@@ -36,12 +36,22 @@ const STREAK_MILESTONES = { 3: 30, 7: 70, 14: 150 };
 const GOOD_DAY_COINS = 10;
 const MAX_FREEZES = 2;
 
-// ── SRS pitch-trigger tunables (Features 1-3 mock layer) ──
+// ── SRS pitch-trigger tunables (Features 1-4 mock layer) ──
 const QATTAH_TOOLTIP = "Khalid is waiting on a split bill.";
+const QATTAH_SETTLE_REWARD = 50; // NXP
 const JAMEYA_DEPOSIT_AMOUNT = 333; // SAR
 const JAMEYA_AKTHR_REWARD = 500;
 const SUKUK_TIER_THRESHOLD = 1000; // SAR of savedAmount required to invest
 const EARLY_LIQUIDATION_HEALTH_PENALTY = 40;
+
+// Feature 1 (Predictive AI Spend-Shield): merchants mapped to their next
+// historical sale event. Static/mock — a real integration would pull this
+// from a retail calendar API, keyed by merchant name.
+const mockRetailCalendar = [
+  { merchant: "Half Million", event: "National Day", discount: "50%", days_away: 3 },
+  { merchant: "Jarir", event: "Back-to-School", discount: "30%", days_away: 5 },
+  { merchant: "SAUDIA", event: "Ramadan Fares", discount: "25%", days_away: 10 },
+];
 
 // ── Helpers ──────────────────────────────────────────────
 
@@ -268,6 +278,31 @@ export function applyQattahRequest(state) {
   };
 }
 
+// Feature 2 counterpart: the debtor clicks the tooltip and pays up. Not one
+// of the 4 SRS_TRIGGERS (it's a real user action, not a pitch-console demo
+// button) — wired from its own route, POST /api/game/settle-qattah.
+export function applySettleQattah(state) {
+  const game = celebrate(
+    { ...gameOf(state), nxp_balance: gameOf(state).nxp_balance + QATTAH_SETTLE_REWARD },
+    "qattah",
+    "settled"
+  );
+  const pet = { ...state.pet, pending_qattah: false, updatedAt: Date.now() };
+  return {
+    ...state,
+    pet,
+    game,
+    meta: { lastEvent: "settle_qattah" },
+    _aiContext: { category: "happy", event: "settle_qattah" },
+    _mockPayload: {
+      trigger: "SETTLE_QATTAH",
+      sarie_a2a_ref: `MOCK-SARIE-SETTLE-${Date.now()}`,
+      nxp_issued: QATTAH_SETTLE_REWARD,
+      pending_qattah: false,
+    },
+  };
+}
+
 // Feature 1 (Jameya Pods): the user's simulated monthly contribution lands —
 // pool grows, the user's own seat flips to "contributed", Akthr is issued.
 export function applyJameyaDeposit(state) {
@@ -346,6 +381,35 @@ export function applyEarlyLiquidation(state) {
   };
 }
 
+// Feature (Predictive AI Spend-Shield): cross-references a merchant name
+// against the mock retail calendar. The advisory text is deterministic and
+// merchant/percentage-specific, which the Gemini guardrail explicitly
+// forbids generating ("no specific amounts/products") — so this bypasses
+// the AI pipeline entirely via `_aiMessage`, per SAMA PDPL "Zero-Knowledge
+// AI" (no merchant names ever leave the backend to an external LLM).
+export function applyPredictiveOffer(state, merchantName) {
+  const needle = String(merchantName || "").trim().toLowerCase();
+  const hit = mockRetailCalendar.find((c) => c.merchant.toLowerCase() === needle);
+  if (!hit) return { error: "merchant_not_found" };
+
+  const message = `Wait! Historical data shows ${hit.merchant} runs a ${hit.discount} sale for ${hit.event} in ${hit.days_away} days. Hold your cash! ⏳`;
+  return {
+    ...state,
+    pet: { ...state.pet, updatedAt: Date.now() },
+    meta: { lastEvent: "predictive_offer" },
+    _aiMessage: message,
+    _mockPayload: {
+      trigger: "PREDICTIVE_OFFER",
+      calendar_engine_ref: `MOCK-CALENDAR-${Date.now()}`,
+      merchant: hit.merchant,
+      calendar_event: hit.event,
+      discount: hit.discount,
+      days_away: hit.days_away,
+      advisory: message,
+    },
+  };
+}
+
 const SRS_TRIGGERS = {
   QATTAH_REQUEST: applyQattahRequest,
   JAMEYA_DEPOSIT: applyJameyaDeposit,
@@ -353,11 +417,14 @@ const SRS_TRIGGERS = {
   EARLY_LIQUIDATION: applyEarlyLiquidation,
 };
 
-// Dispatcher behind POST /api/game/simulate-trigger { actionType }.
-export function applySimulateTrigger(state, actionType) {
+// Dispatcher behind POST /api/game/simulate-trigger { actionType, ...payload }.
+// PREDICTIVE_OFFER needs the extra merchantName, so it's handled separately
+// from the zero-arg SRS_TRIGGERS map.
+export function applySimulateTrigger(state, actionType, payload = {}) {
+  if (actionType === "PREDICTIVE_OFFER") return applyPredictiveOffer(state, payload.merchantName);
   const handler = SRS_TRIGGERS[actionType];
   if (!handler) return { error: "unknown_action" };
   return handler(state);
 }
 
-export { gameOf, clamp };
+export { gameOf, clamp, mockRetailCalendar };

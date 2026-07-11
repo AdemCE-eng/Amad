@@ -33,10 +33,10 @@ export default function PetRoomView() {
         <div className="w-10"></div>
       </div>
 
-      {/* streak + coins strip */}
+      {/* streak + NXP strip */}
       <div className="flex justify-center gap-3 z-20">
         <StreakFlame streak={game.streak} />
-        <CoinPill coins={game.coins} />
+        <CoinPill nxp={game.nxp_balance} />
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-start p-6 overflow-y-auto pb-28 z-10">
@@ -59,6 +59,9 @@ export default function PetRoomView() {
               size={250}
               track
               onTap={() => { poke(); handlePetInteraction(); }}
+              pendingQattah={pet.pending_qattah}
+              petTier={pet.pet_tier}
+              onSettleQattah={() => runAction(() => api.settleQattah())}
             />
           </div>
 
