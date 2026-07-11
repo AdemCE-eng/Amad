@@ -4,6 +4,7 @@ import { Router } from "express";
 import { db } from "../firebase.js";
 import { readState, commit } from "./simulate.js";
 import {
+  changeDate,
   advanceDay,
   completeChallenge,
   buyItem,
@@ -23,6 +24,17 @@ router.post("/demo/advance-day", async (_req, res, next) => {
   try {
     const state = await readState();
     const out = await commit(advanceDay(state));
+    res.json({ ok: true, ...out });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// POST /api/demo/change-date — used for date calculations
+router.post("/demo/change-date", async (req, res, next) => {
+  try {
+    const state = await readState();
+    const out = await commit(changeDate(state, req.body.selectedDate));
     res.json({ ok: true, ...out });
   } catch (e) {
     next(e);
