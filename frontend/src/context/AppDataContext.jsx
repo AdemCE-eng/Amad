@@ -1,7 +1,10 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useBackendData } from '../lib/useBackendData';
-import { PET_TYPES } from '../lib/petGraphics';
 import { api } from '../lib/api';
+
+// Demo-only role switch (no auth, no permissions) — which family member the
+// UI is "acting as". Persisted so a refresh keeps the same role.
+const ROLE_KEY = 'namo_active_role';
 
 // Single provider for backend state + app-wide interaction state, so views
 // consume `useAppData()` instead of a 20-prop drill. Views stay top-level
@@ -20,7 +23,16 @@ export function AppDataProvider({ children }) {
   const [restarting, setRestarting] = useState(false);
 
   const [activeView, setActiveView] = useState('home');
-  const [petType, setPetType] = useState('falcon');
+  const [activeRole, setActiveRoleState] = useState(() => {
+    const stored = localStorage.getItem(ROLE_KEY);
+    // Only rashid/ahmed are valid; anything else (incl. stale pre-migration
+    // values) maps to the child role.
+    return stored === 'ahmed' ? 'ahmed' : 'rashid';
+  });
+  const setActiveRole = (role) => {
+    localStorage.setItem(ROLE_KEY, role);
+    setActiveRoleState(role);
+  };
   const [isPetted, setIsPetted] = useState(false);
   const [isShaking, setIsShaking] = useState(false);
   const [flashColor, setFlashColor] = useState(null);
@@ -52,8 +64,6 @@ export function AppDataProvider({ children }) {
   const goalProgress = user && user.goalAmount > 0
     ? Math.min(100, Math.round((user.savedAmount / user.goalAmount) * 100))
     : 0;
-
-  const currentPet = PET_TYPES[petType] || PET_TYPES.falcon;
 
   // Tap squish — pure delight, no stats change.
   const handlePetInteraction = () => {
@@ -92,11 +102,17 @@ export function AppDataProvider({ children }) {
     setRestarting(false);
   };
 
+  // Two separate currencies — never merged. NXP lives in game.nxp_balance
+  // (game rewards); Akthr is real campaign loyalty in /loyalty.akthrPoints.
+  const nxp = backend.game?.nxp_balance ?? 0;
+  const akthrPoints = backend.loyalty?.akthrPoints ?? 0;
+
   const value = {
     ...backend,
     onboarded, setOnboarded, restartOnboarding, restarting,
     activeView, setActiveView,
-    petType, setPetType, currentPet,
+    activeRole, setActiveRole,
+    nxp, akthrPoints,
     isPetted, handlePetInteraction,
     isShaking, flashColor,
     actionError, isSubmitting, runAction,

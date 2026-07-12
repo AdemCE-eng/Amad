@@ -4,12 +4,14 @@ import { AppDataProvider, useAppData } from './context/AppDataContext';
 import HomeView from './views/HomeView';
 import PetRoomView from './views/PetRoomView';
 import RewardsView from './views/RewardsView';
+import NotificationsView from './views/NotificationsView';
 import FamilyGoalView from './views/FamilyGoalView';
 import SimulatorView from './views/SimulatorView';
 import OnboardingFlow from './views/OnboardingFlow';
 import MascotLab from './views/MascotLab';
 import BottomNav from './components/ui/BottomNav';
 import CelebrationOverlay from './components/ui/CelebrationOverlay';
+import RewardNotice from './components/ui/RewardNotice';
 
 // iOS-style status bar rendered inside the device screen (like landing-page
 // phone mockups): time on the right in RTL, signal/wifi/battery on the left.
@@ -71,9 +73,11 @@ function AppShell() {
                 {activeView === 'rewards' && <RewardsView />}
                 {activeView === 'family' && <FamilyGoalView />}
                 {activeView === 'simulator' && <SimulatorView />}
+                {activeView === 'notifications' && <NotificationsView setActiveView={setActiveView}/>}
                 {activeView !== 'simulator' && (
                   <BottomNav activeView={activeView} setActiveView={setActiveView} petName={user?.petName} />
                 )}
+                <RewardNotice />
               </>
             )}
           </div>

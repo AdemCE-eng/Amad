@@ -1,24 +1,41 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Home, Trophy, ArrowLeftRight, Grid } from 'lucide-react';
 
-// Five-tab dark nav mirroring the real Alinma app; رفيق sits in the
+// Five-tab dark nav mirroring the real Alinma app; صقر sits in the
 // AutoFlow slot with the "جديد" treatment (violet bubble + badge).
 // التحويل / الخدمات are decorative — they exist so the bar reads like the
 // real bank app, not a 3-screen demo.
+const TIP_KEY = 'namo_tip_dismissed';
+
 export default function BottomNav({ activeView, setActiveView, petName }) {
+  // "جديد · جرّب صقر" bubble: shows once per device, auto-dismisses after
+  // 3s, manually dismissible, never inside the Pet Room. Sits ABOVE the nav
+  // (-top offset) so it can never overlap the tab bar itself.
+  const [tipVisible, setTipVisible] = useState(() => localStorage.getItem(TIP_KEY) !== '1');
+  useEffect(() => {
+    if (!tipVisible) return;
+    const t = setTimeout(() => dismissTip(), 3000);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const dismissTip = () => {
+    localStorage.setItem(TIP_KEY, '1');
+    setTipVisible(false);
+  };
   const tabs = [
     { id: 'home', label: 'الرئيسية', icon: <Home size={21} strokeWidth={1.8} /> },
     { id: '_transfer', label: 'التحويل', icon: <ArrowLeftRight size={21} strokeWidth={1.8} />, dead: true },
-    { id: 'pet', label: petName || 'رفيق', icon: <span className="text-xl leading-none">🐤</span>, center: true },
+    { id: 'pet', label: petName || 'صقر', icon: <span className="text-xl leading-none">🐤</span>, center: true },
     { id: 'rewards', label: 'المكافآت', icon: <Trophy size={21} strokeWidth={1.8} /> },
     { id: '_services', label: 'الخدمات', icon: <Grid size={21} strokeWidth={1.8} />, dead: true },
   ];
   return (
     <nav className="absolute bottom-0 inset-x-0 bg-ink border-t border-white/5 flex justify-around items-stretch z-30 pb-1" dir="rtl">
-      {/* "new feature" bubble above the center tab */}
-      {activeView !== 'pet' && (
-        <div className="absolute -top-9 left-1/2 -translate-x-1/2 bg-violet text-white text-[11px] font-black px-3.5 py-1.5 rounded-full whitespace-nowrap shadow-lg pointer-events-none">
-          جديد · جرّب {petName || 'رفيق'}
+      {/* "new feature" bubble above the center tab — once per device only */}
+      {tipVisible && activeView !== 'pet' && (
+        <div className="absolute -top-9 left-1/2 -translate-x-1/2 bg-violet text-white text-[11px] font-black pr-3.5 pl-2 py-1.5 rounded-full whitespace-nowrap shadow-lg flex items-center gap-1.5">
+          جديد · جرّب {petName || 'صقر'}
+          <button onClick={dismissTip} className="text-white/70 hover:text-white leading-none text-[13px]" aria-label="إغلاق">×</button>
           <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-violet rotate-45"></span>
         </div>
       )}
