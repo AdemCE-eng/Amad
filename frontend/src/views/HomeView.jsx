@@ -10,6 +10,8 @@ import { useMascotEmotion } from '../components/mascot/useMascotEmotion';
 import StreakFlame from '../components/ui/StreakFlame';
 import ChallengeCard from '../components/ui/ChallengeCard';
 import CountUp from '../components/ui/CountUp';
+import SaveRewardTag from '../components/ui/SaveRewardTag';
+import { SAVE_PRESETS } from '../lib/catalog';
 
 const TX_LABELS = {
   purchase: { icon: ShoppingCart, sign: '-' },
@@ -34,7 +36,7 @@ function formatDate(ts) {
 export default function HomeView() {
   const {
     user, pet, game, familyGoal, transactions,
-    isSick, isSad, goalProgress,
+    isSick, isTired, goalProgress,
     isShaking, flashColor, setActiveView,
     isSubmitting, runAction,
   } = useAppData();
@@ -43,7 +45,7 @@ export default function HomeView() {
   const [showBalance, setShowBalance] = useState(true);
 
   const promptSave = () => {
-    const amountStr = window.prompt('كم تبغى توفر؟ (ر.س)', '500');
+    const amountStr = window.prompt('كم تبغى توفر؟ (ر.س)', String(SAVE_PRESETS[1]));
     if (!amountStr) return;
     const amt = parseFloat(amountStr);
     if (!amt || amt <= 0) return;
@@ -150,6 +152,10 @@ export default function HomeView() {
           <ChevronLeft size={18} className="text-cream/40 flex-shrink-0" />
         </button>
 
+        {/* Income-relative NXP receipt — proof on screen that the reward
+            scales with % of income (or the "back to your best" zero case). */}
+        <SaveRewardTag reward={game.lastSaveReward} />
+
         {/* Companion status — live health/goal at a glance */}
         <div
           onClick={() => setActiveView('pet')}
@@ -158,8 +164,8 @@ export default function HomeView() {
           <div className="flex items-center gap-3 mb-3">
             <StreakFlame streak={game.streak} />
             <div className="flex items-center gap-1 text-xs font-bold mr-auto">
-              <HeartPulse size={13} className={isSick ? 'text-red-400' : isSad ? 'text-orange-400' : 'text-emerald-400'} />
-              <span className={isSick ? 'text-red-400' : isSad ? 'text-orange-400' : 'text-emerald-400'}>{pet.health}%</span>
+              <HeartPulse size={13} className={isSick ? 'text-red-400' : isTired ? 'text-orange-400' : 'text-emerald-400'} />
+              <span className={isSick ? 'text-red-400' : isTired ? 'text-orange-400' : 'text-emerald-400'}>{pet.health}%</span>
             </div>
             <span className="text-xs font-black text-cream/70">الهدف {goalProgress}%</span>
           </div>

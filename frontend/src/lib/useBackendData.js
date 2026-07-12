@@ -36,6 +36,7 @@ export function useBackendData() {
         inventory: g?.inventory || {},
         equipped: g?.equipped ?? null,
         lastCelebration: g?.lastCelebration || { type: 'none', id: 'none', at: 0 },
+        lastSaveReward: g?.lastSaveReward || { nxp: 0, pctOfIncome: 0, at: 0 },
       })),
       watch('/transactions', (val) => {
         const list = Object.entries(val || {}).map(([id, tx]) => ({ id, ...tx }));

@@ -1,8 +1,11 @@
 /* eslint-disable react/no-unknown-property */
-import React, { useEffect, useId, useState } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import { motion, useMotionValue, useTransform } from 'motion/react';
 import { EMOTIONS } from './emotions';
 import { springs } from './springs';
+// Per-state coloured aura — single source of truth shared with the backend
+// voice/health config (deep path: mascot → components → src → frontend → repo).
+import { glowFor } from '../../../../shared/rafiqIdentity.js';
 
 // صقّور — the falcon chick. One SVG rig; every part interpolates toward the
 // EMOTIONS table with springs. Cute-proportion rules (Duolingo/Finch): head
@@ -288,15 +291,37 @@ function Mascot({
   const grown = stage >= 2;
   const P = grown ? FALCON : C;
   const bodyLoop = BODY_LOOP_CLASS[e.body] ?? '';
-  const flapping = emotion === 'celebrating' || emotion === 'happy';
+  const flapping = emotion === 'celebrating' || emotion === 'happy' || emotion === 'radiant';
 
-  // Feature 3 (Akthr Premium Tier): a subtle gold aura on the wrapping div,
-  // kept off the svg's own `animate` filter so it never fights the
-  // saturate() transition below.
-  const tierGlow = petTier === 'signature' ? 'drop-shadow-[0_0_14px_rgba(212,175,55,0.65)]' : '';
+  // Per-state coloured aura + the Akthr signature-tier gold aura, both on the
+  // wrapping div (kept off the svg's own `animate` filter so they never fight
+  // the saturate() transition below). The aura transitions smoothly between
+  // states, coordinated with the emotion morph.
+  const stateGlow = glowFor(emotion);
+  const tierShadow = petTier === 'signature' ? 'drop-shadow(0 0 14px rgba(212,175,55,0.65))' : '';
+  const stateShadow = stateGlow && stateGlow !== 'none' ? `drop-shadow(${stateGlow})` : '';
+  const wrapperFilter = [tierShadow, stateShadow].filter(Boolean).join(' ') || 'none';
+
+  // Revive burst — the most-watched pitch moment. Leaving `sick` for any
+  // healthier state fires a one-shot pop + expanding ring (~0.9s).
+  const [reviving, setReviving] = useState(false);
+  const prevEmotion = useRef(emotion);
+  useEffect(() => {
+    if (prevEmotion.current === 'sick' && emotion !== 'sick') {
+      setReviving(true);
+      const t = setTimeout(() => setReviving(false), 900);
+      prevEmotion.current = emotion;
+      return () => clearTimeout(t);
+    }
+    prevEmotion.current = emotion;
+  }, [emotion]);
 
   return (
-    <div className={`relative inline-block ${tierGlow}`}>
+    <div
+      className={`relative inline-block ${reviving ? 'anim-revive-pop' : ''}`}
+      style={{ filter: wrapperFilter, transition: 'filter 0.6s ease' }}
+    >
+      {reviving && <span className="mascot-revive-ring" aria-hidden="true" />}
       <motion.svg
         initial={false}
         viewBox="0 0 240 240" width={size} height={size}

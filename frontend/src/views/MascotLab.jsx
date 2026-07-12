@@ -3,8 +3,8 @@ import Mascot from '../components/mascot/Mascot';
 import { EMOTIONS } from '../components/mascot/emotions';
 
 const LABELS = {
-  idle: 'هادئ', happy: 'سعيد', celebrating: 'يحتفل', eating: 'يأكل',
-  sad: 'حزين', crying: 'يبكي', sick: 'مريض', sleeping: 'نائم',
+  idle: 'هادئ', radiant: 'متألق', happy: 'سعيد', celebrating: 'يحتفل', eating: 'يأكل',
+  tired: 'متعب', sad: 'حزين', crying: 'يبكي', sick: 'مريض', sleeping: 'نائم',
 };
 
 // Dev-only review grid (open with ?lab=1): every emotion × the stage/

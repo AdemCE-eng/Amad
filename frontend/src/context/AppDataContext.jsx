@@ -45,9 +45,10 @@ export function AppDataProvider({ children }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pet?.health]);
 
+  // 5-state model (shared/rafiqIdentity.js): radiant/happy/neutral/tired/sick.
   const isSick = pet?.mood === 'sick';
-  const isSad = pet?.mood === 'sad';
-  const isHappy = pet?.mood === 'happy';
+  const isTired = pet?.mood === 'tired';
+  const isHappy = pet?.mood === 'happy' || pet?.mood === 'radiant';
   const goalProgress = user && user.goalAmount > 0
     ? Math.min(100, Math.round((user.savedAmount / user.goalAmount) * 100))
     : 0;
@@ -99,7 +100,7 @@ export function AppDataProvider({ children }) {
     isPetted, handlePetInteraction,
     isShaking, flashColor,
     actionError, isSubmitting, runAction,
-    isSick, isSad, isHappy, goalProgress,
+    isSick, isTired, isHappy, goalProgress,
   };
 
   return <AppDataContext.Provider value={value}>{children}</AppDataContext.Provider>;

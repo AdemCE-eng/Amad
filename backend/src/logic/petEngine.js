@@ -5,8 +5,16 @@
 // Relative-effort principle: heal amounts scale by the % of the user's PERSONAL
 // goal, not absolute SAR — a student and an executive get comparable payoff.
 
+import { healthStateOf } from "../../../shared/rafiqIdentity.js";
+
 // ── Tunable constants ────────────────────────────────────
 const SAVE_RATE = 0.2; // portion of a salary deposit auto-routed to Instant Savings
+// Seed monthly income (SAR) — NXP save rewards scale relative to this, and
+// gameEngine falls back to it when a pre-income DB state has no user.income.
+export const DEFAULT_INCOME = 8000;
+// Seed savings (SAR) — one constant feeds both savedAmount and its NXP
+// high-water mark so they can never disagree at seed time.
+const SEED_SAVED_AMOUNT = 1200;
 const HEAL_K = 2; // scaling factor for goal-relative healing
 const HEAL_MIN = 5;
 const HEAL_MAX = 25;
@@ -27,29 +35,34 @@ export function hasSufficientFunds(state, amount) {
   return amount <= state.user.balance;
 }
 
+// The 5-state bands live in shared/rafiqIdentity.js — one source for the
+// backend math, the fallback voice, and the frontend visual treatment.
 export function moodFromHealth(health) {
-  if (health >= 80) return "happy";
-  if (health >= 50) return "neutral";
-  if (health >= 20) return "sad";
-  return "sick";
+  return healthStateOf(health);
 }
 
 // The pristine starting state — used by reset and seed.
 export function initialState() {
+  const petHealth = 100;
   return {
     user: {
       name: "Adam",
       petName: "سنقر",
       petType: "falcon",
+      income: DEFAULT_INCOME, // SAR/month — swapped live via the Cheat Controller's income profiles
       goalAmount: 5000,
-      savedAmount: 1200,
+      savedAmount: SEED_SAVED_AMOUNT,
+      // NXP high-water mark of savedAmount (anti-farming): deposits earn NXP
+      // only on the part that pushes savings past this; withdrawals never
+      // lower it. Persona-independent — all personas share the savings pool.
+      allTimeHighBalance: SEED_SAVED_AMOUNT,
       balance: 8000,
       monthlyBudget: 3000,
       spentThisMonth: 1400,
     },
     pet: {
-      health: 100,
-      mood: "happy",
+      health: petHealth,
+      mood: moodFromHealth(petHealth), // always band-derived — never hand-set
       animationState: "idle",
       message: "أنا بخير وسعيد بوجودك!",
       // SRS mock layer: pet_tier rides along on the pet slice since it's
@@ -69,6 +82,9 @@ export function initialState() {
       stage: 0,
       today: { spent: 0, saved: 0, overBudget: false, coffees: 0 },
       achievements: { first_save: { unlockedAt: Date.now() - 5 * 86400000 } },
+      // Mirrors gameEngine's CHALLENGE_POOL[0] (kept inline — gameEngine
+      // imports from this file, so importing back would be circular), with a
+      // demo-tuned used=1 so the progress bar is already alive on stage.
       activeChallenge: {
         id: "less_coffee",
         title: "قهوة أقل هذا الأسبوع",
@@ -76,11 +92,13 @@ export function initialState() {
         limit: 3,
         used: 1,
         reward: 50,
+        icon: "☕",
         status: "active",
       },
       inventory: {},
       equipped: null,
       lastCelebration: { type: "none", id: "none", at: 0 },
+      lastSaveReward: { nxp: 0, pctOfIncome: 0, at: 0 },
     },
     // Feature (Family Shared Savings Goal) — top-level slice, mirrors
     // emergencyShield: not per-event pet math, just group-savings mock state.
@@ -125,7 +143,8 @@ export function withHealth(pet, healthDelta, { animationState } = {}) {
 }
 
 function moodToAnimation(mood) {
-  return mood === "happy" ? "happy" : mood === "sick" ? "sick" : mood === "sad" ? "sad" : "idle";
+  // Every state except neutral has its own ambient pose; neutral rests on idle.
+  return mood === "neutral" ? "idle" : mood;
 }
 
 // ── Events ───────────────────────────────────────────────
@@ -179,16 +198,21 @@ export function applyInstantSave(state, amount) {
 }
 
 // Purchase → within budget = minor dip; over budget = pet gets sick.
+// Goal-secured shield: once savings have met the savings goal, ordinary
+// spending can no longer hurt the pet — health loss is suppressed entirely.
+// Budget accounting, streaks and quests still run; only health is shielded,
+// and saving can still raise it. Health earned isn't undone by spending.
 export function applyPurchase(state, { amount, category = "general", label = "عملية شراء" }) {
   const spentThisMonth = state.user.spentThisMonth + amount;
   const overBudget = spentThisMonth > state.user.monthlyBudget;
+  const goalSecured = state.user.savedAmount >= state.user.goalAmount;
   const user = {
     ...state.user,
     balance: state.user.balance - amount,
     spentThisMonth,
   };
-  let healthDelta = PURCHASE_IN_BUDGET_PENALTY;
-  if (overBudget) {
+  let healthDelta = goalSecured ? 0 : PURCHASE_IN_BUDGET_PENALTY;
+  if (overBudget && !goalSecured) {
     const overagePct = ((spentThisMonth - state.user.monthlyBudget) / state.user.monthlyBudget) * 100;
     healthDelta = -clamp(
       Math.round(overagePct * OVER_BUDGET_PENALTY_K),
@@ -212,6 +236,7 @@ export function applyPurchase(state, { amount, category = "general", label = "ع
       txnCategory: category,
       label,
       overBudget,
+      goalSecured, // voice layer: distinct reassuring tone when the shield ate the hit
       healthDelta,
     },
   };
