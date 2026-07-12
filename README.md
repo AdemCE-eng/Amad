@@ -158,3 +158,43 @@ Open:
 - **Firebase is still on the local emulator.** When the real Firebase project is ready: remove
   `FIREBASE_DATABASE_EMULATOR_HOST` from `backend/.env` and set `FIREBASE_DATABASE_URL` + a
   service-account key instead. No code changes required either way.
+
+## Demo journey (نامو — approved script)
+
+Product name **نامو**, mascot **صقر**, demo family **أحمد (parent) / سارة (parent) / راشد (child)**.
+Two currencies, never mixed: **NXP** (in-app game coins, `game.coins`) and **أكثر / Akthr**
+(campaign-funded loyalty, `/loyalty/akthrPoints`).
+
+Home → الهدف العائلي → ولّد الخطة → عرض متوقع (هاف مليون) → راشد يختار الانتظار →
+المقدم يسوّي العرض من لوحة التحكم → تحديث هدف العائلة وNXP → تبديل إلى أحمد →
+مكافأة راشد → العودة لراشد → إشعار المكافأة واحتفال صقر.
+
+Canonical values (all served by the backend — the UI never hardcodes them):
+
+| Moment | Values |
+| --- | --- |
+| Initial | family 3600 / 12000 ر.س · راشد contributed 300 · NXP 60 · Akthr 120 |
+| Plan | أحمد 700 · سارة 400 · راشد 100 (monthly required 1200) |
+| Prediction | هاف مليون · 78% · نافذة 3 أيام · توفير محتمل 15 ر.س · اليوم الوطني |
+| After settle | family 3615 · راشد 315 · NXP 70 · Akthr 120 (unchanged) |
+| After reward | Akthr 145 · sender ahmed · recipient rashid |
+
+> **Mock disclaimer:** Akthr, Open Banking, Sah Sukuk, and merchant-campaign data are
+> deterministic MOCK modules (`backend/src/mocks/`) — no real integrations, no real customer
+> data. Offer predictions are a fixed pattern-match over synthetic history (never `Math.random`).
+
+## Demo recovery (troubleshooting)
+
+| Symptom | Fix |
+| --- | --- |
+| Frontend blank / errors | `Ctrl+C` the Vite terminal, then `npm --prefix frontend run dev` again; hard-refresh (`Ctrl+Shift+R`). |
+| Backend dead (`/health` fails) | restart terminal 2: `cd backend && npm run dev`. State lives in the emulator, nothing is lost. |
+| Emulator has stale/odd data | click **🔄 إعادة تعيين العرض** in the Cheat Controller (or `curl -X POST http://localhost:3000/api/reset`). Restores every node exactly (family 3600, NXP 60, Akthr 120, plan cleared, offers pending). |
+| Offer stuck in "waiting" | click **📩 وصل عرض هاف مليون (تسوية)** in the controller — or reset and replay. |
+| Reward already sent | expected — duplicates are rejected by design (`duplicate_reward`). The controller shows "تم إرسال المكافأة مسبقاً". To replay the reward beat, reset first. |
+| Browser localStorage stale (wrong role, old notices) | DevTools console: `localStorage.clear()` then refresh — or just refresh: unknown roles auto-map to راشد. |
+| Full panic, 10 seconds to demo | controller **إعادة تعيين العرض** → app refresh → journey from Home. |
+
+Known limitations: single demo tenant (no auth — the role switch is a demo-only presenter tool);
+notification slot holds the latest reward per recipient; pet evolution stage reacts to
+**personal** savings only (family contributions cheer the pet but never change its stage).

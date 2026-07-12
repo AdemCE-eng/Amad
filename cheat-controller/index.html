@@ -117,6 +117,9 @@
       <div class="action">
         <button class="save" style="grid-column:1/-1" onclick="settleHalfMillion()">📩 وصل عرض هاف مليون (تسوية)</button>
       </div>
+      <div class="action">
+        <button class="coffee" style="grid-column:1/-1" onclick="sendParentReward()">🎖️ مكافأة الوالد لراشد (احتياطي)</button>
+      </div>
       <button class="reset" onclick="call('/api/reset', {})">🔄 إعادة تعيين العرض (Panic Reset)</button>
     </div>
 
@@ -221,6 +224,37 @@
           body: JSON.stringify({ offerId: hm.id, memberId: 'rashid' }),
         });
         render(await settle.json());
+      } catch (e) {
+        document.getElementById('raw').textContent = '❌ ' + e.message;
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    // Backup path if the in-app reward button can't be reached mid-demo.
+    // Same canonical payload as the app; duplicate replays surface a
+    // readable Arabic message instead of double-crediting.
+    async function sendParentReward() {
+      setBusy(true);
+      try {
+        const res = await fetch(API_BASE + '/api/family/reward', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            eventId: 'reward_demo_001',
+            senderId: 'ahmed',
+            recipientId: 'rashid',
+            rewardType: 'akthr',
+            amount: 25,
+            message: 'تستاهل يا بطل، استمريت داخل ميزانيتك 7 أيام.',
+          }),
+        });
+        const data = await res.json();
+        if (data.error === 'duplicate_reward') {
+          render({ ok: false, message: 'تم إرسال المكافأة مسبقاً — لا يتم التكرار.' });
+        } else {
+          render(data);
+        }
       } catch (e) {
         document.getElementById('raw').textContent = '❌ ' + e.message;
       } finally {
