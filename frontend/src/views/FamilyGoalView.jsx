@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { ChevronRight, Sparkles, Trophy, ChevronDown, TrendingUp, Hourglass, CheckCircle2 } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import { ChevronRight, Sparkles, Trophy, ChevronDown, TrendingUp, Hourglass, CheckCircle2, Search } from 'lucide-react';
 import { useAppData } from '../context/AppDataContext';
 import { api } from '../lib/api';
 import RoleSwitch from '../components/ui/RoleSwitch';
+import { cashbackState } from '../lib/cashback';
 
 // Privacy-safe explanation shown for members OTHER than the active role — the
 // backend's raw explanation (income, expenses, buffers) is never rendered for
@@ -13,17 +14,61 @@ const PRIVACY_EXPLANATION =
 const RING_R = 62;
 const RING_CIRC = 2 * Math.PI * RING_R;
 
+// No human-face emoji: consistent colored-initial avatars per member
+// (falcon belongs to the personal pet experience, identical falcons for all
+// three members would erase identity — initials keep each member distinct).
+const MEMBER_AVATARS = {
+  ahmed: { init: 'أ', bg: 'bg-coral/20', text: 'text-coral', bar: 'bg-coral' },
+  sarah: { init: 'س', bg: 'bg-violet/25', text: 'text-violet', bar: 'bg-violet' },
+  rashid: { init: 'ر', bg: 'bg-amber-400/20', text: 'text-amber-300', bar: 'bg-amber-400' },
+};
+const avatarOf = (id) => MEMBER_AVATARS[id] || { init: '؟', bg: 'bg-white/10', text: 'text-cream', bar: 'bg-white/40' };
+
+// Deterministic "analysis" theater before revealing the prediction — the
+// backend result never changes; this is presentation pacing only (≤3s).
+const ANALYSIS_STEPS = [
+  'جاري تحليل نمط مشترياتك...',
+  'جاري مقارنة المواسم السابقة...',
+  'جاري فحص عروض التجار...',
+  'تم العثور على فرصة توفير',
+];
+const ANALYSIS_STEP_MS = 700; // 4 steps ≈ 2.8s total
+const OFFERS_REVEALED_KEY = 'namo_offers_revealed';
+
 // نامو — Family Shared Savings Goal. All values come from the canonical
 // Phase 1 backend (/family + /contributionPlan). Nothing about the split is
 // hardcoded; the Explainable Saving Capacity Engine produces every amount.
 export default function FamilyGoalView() {
   const {
     family, contributionPlan, offers, activeRole,
-    nxp, akthrPoints,
+    nxp, akthrPoints, user, game,
     setActiveView, runAction, isSubmitting, actionError,
   } = useAppData();
   const [openDetails, setOpenDetails] = useState(false);
   const [rewardMsg, setRewardMsg] = useState(null);
+  // Offer-search theater: -1 = not running, 0..3 = current step.
+  const [analysisStep, setAnalysisStep] = useState(-1);
+  const [revealed, setRevealed] = useState(() => localStorage.getItem(OFFERS_REVEALED_KEY) === '1');
+  const analysisRunning = useRef(false);
+
+  const runAnalysis = () => {
+    if (analysisRunning.current) return; // duplicate-request guard
+    analysisRunning.current = true;
+    let step = 0;
+    setAnalysisStep(0);
+    const tick = setInterval(() => {
+      step += 1;
+      if (step >= ANALYSIS_STEPS.length) {
+        clearInterval(tick);
+        localStorage.setItem(OFFERS_REVEALED_KEY, '1');
+        setRevealed(true);
+        setAnalysisStep(-1);
+        analysisRunning.current = false;
+      } else {
+        setAnalysisStep(step);
+      }
+    }, ANALYSIS_STEP_MS);
+  };
 
   // Loading state — watchers haven't delivered /family yet.
   if (!family) {
@@ -51,6 +96,11 @@ export default function FamilyGoalView() {
   // predictions — never presented as guaranteed.
   const predictedList = Object.values(offers?.predicted || {}).sort((a, b) => b.probability - a.probability);
   const rewards = family.rewards || {};
+  const cashback = cashbackState(user, game);
+  // Mid-demo refresh safety: if any offer already left "pending" (decided or
+  // settled on the backend), skip the theater — state must stay refresh-safe.
+  const anyDecided = predictedList.some((o) => o.status !== 'pending');
+  const showOffers = revealed || anyDecided;
 
   // Parent reward — demo flow: أحمد rewards راشد with Akthr points.
   // eventId is fixed per demo run (reset wipes /family/rewards, so each run
@@ -88,21 +138,20 @@ export default function FamilyGoalView() {
         {/* Demo-only role switch */}
         <RoleSwitch />
 
-        {/* Two separate currencies, visually distinct: NXP (game) vs Akthr (loyalty) */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-amber-400/10 border border-amber-400/25 rounded-2xl p-3 flex items-center gap-2">
-            <span className="text-xl">🪙</span>
-            <div className="min-w-0">
-              <p className="text-[10px] font-bold text-amber-300/80">نقاط NXP</p>
-              <p className="text-lg font-black text-amber-300 leading-none">{nxp}</p>
-            </div>
+        {/* Three separate reward balances — NXP / Akthr / cashback, three
+            visual identities, never merged */}
+        <div className="grid grid-cols-3 gap-2">
+          <div className="bg-amber-400/10 border border-amber-400/25 rounded-2xl p-2.5 text-center">
+            <p className="text-[10px] font-bold text-amber-200">🪙 NXP</p>
+            <p className="text-lg font-black text-amber-300 leading-tight">{nxp}</p>
           </div>
-          <div className="bg-emerald-400/10 border border-emerald-400/25 rounded-2xl p-3 flex items-center gap-2">
-            <span className="text-xl">🟢</span>
-            <div className="min-w-0">
-              <p className="text-[10px] font-bold text-emerald-300/80">نقاط أكثر</p>
-              <p className="text-lg font-black text-emerald-300 leading-none">{akthrPoints}</p>
-            </div>
+          <div className="bg-emerald-400/10 border border-emerald-400/25 rounded-2xl p-2.5 text-center">
+            <p className="text-[10px] font-bold text-emerald-200">🟢 أكثر</p>
+            <p className="text-lg font-black text-emerald-300 leading-tight">{akthrPoints}</p>
+          </div>
+          <div className="bg-sky-400/10 border border-sky-400/25 rounded-2xl p-2.5 text-center">
+            <p className="text-[10px] font-bold text-sky-200">💳 كاش باك</p>
+            <p className="text-lg font-black text-sky-300 leading-tight">{cashback.total} <span className="text-[10px]">ر.س</span></p>
           </div>
         </div>
 
@@ -165,12 +214,15 @@ export default function FamilyGoalView() {
                 return (
                   <div key={m.id} className="bg-ink-card rounded-2xl p-3">
                     <div className="flex items-center gap-3">
-                      <span className="text-2xl">{m.role === 'child' ? '🧒' : '🧑'}</span>
+                      <span className={`w-9 h-9 rounded-full flex items-center justify-center font-black text-sm flex-shrink-0 ${avatarOf(m.id).bg} ${avatarOf(m.id).text}`}>
+                        {avatarOf(m.id).init}
+                      </span>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold text-cream truncate">
-                          {m.name}{isSelf && <span className="text-[10px] text-coral font-black mr-1">(أنت)</span>}
+                        <p className="text-sm font-bold text-cream truncate flex items-center gap-1.5">
+                          {m.name}
+                          {isSelf && <span className="text-[9px] bg-coral/15 text-coral font-black px-1.5 py-0.5 rounded-full flex-shrink-0">أنت</span>}
                         </p>
-                        <p className="text-[11px] text-cream/50 font-bold">{alloc.sharePct}% من قدرة العائلة</p>
+                        <p className="text-[11px] text-cream/60 font-bold">{alloc.sharePct}% من قدرة العائلة</p>
                       </div>
                       <span className="text-sm font-black text-coral flex-shrink-0">{alloc.amount} ر.س</span>
                     </div>
@@ -193,7 +245,7 @@ export default function FamilyGoalView() {
                       </div>
                     ) : (
                       // Privacy-safe: never expose another member's raw figures.
-                      <p className="mt-2 text-[11px] text-cream/40 leading-relaxed">{PRIVACY_EXPLANATION}</p>
+                      <p className="mt-2 text-[11px] text-cream/65 leading-relaxed">{PRIVACY_EXPLANATION}</p>
                     )}
                   </div>
                 );
@@ -203,9 +255,51 @@ export default function FamilyGoalView() {
         </div>
 
         {/* Predicted saving opportunities — MOCK, deterministic, probabilistic
-            wording only (never "guaranteed"). راشد decides to wait; the
-            presenter settles from the demo controller. */}
-        {predictedList.length > 0 && (
+            wording only (never "guaranteed"). Revealed through a short
+            deterministic "analysis" sequence (presentation pacing only — the
+            backend prediction is unchanged and refresh-safe). */}
+        {predictedList.length > 0 && !showOffers && (
+          <div>
+            <div className="flex items-center gap-2 mb-3 px-1">
+              <TrendingUp size={16} className="text-coral" />
+              <h3 className="font-black text-cream text-sm">فرص توفير متوقعة</h3>
+            </div>
+            {analysisStep === -1 ? (
+              <div className="bg-ink-card rounded-3xl p-5 text-center">
+                <p className="text-xs text-cream/70 font-medium leading-relaxed mb-3">
+                  اطلب من نامو البحث عن فرصة توفير محتملة بناءً على نمط مشترياتك.
+                </p>
+                <button
+                  onClick={runAnalysis}
+                  className="bg-coral text-ink font-black text-sm px-5 py-2.5 rounded-2xl active:scale-95 transition-transform inline-flex items-center gap-1.5"
+                >
+                  <Search size={15} />
+                  ابحث عن فرصة توفير
+                </button>
+              </div>
+            ) : (
+              <div className="bg-ink-card rounded-3xl p-5">
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="w-8 h-8 rounded-full border-2 border-coral border-t-transparent animate-spin flex-shrink-0"></span>
+                  <p className="text-sm font-black text-cream">{ANALYSIS_STEPS[analysisStep]}</p>
+                </div>
+                {/* stepped progress — not a bare spinner */}
+                <div className="flex gap-1.5">
+                  {ANALYSIS_STEPS.map((_, i) => (
+                    <div key={i} className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${i <= analysisStep ? 'bg-coral' : 'bg-white/10'}`} />
+                  ))}
+                </div>
+                <div className="mt-3 space-y-1.5">
+                  {ANALYSIS_STEPS.slice(0, analysisStep).map((s, i) => (
+                    <p key={i} className="text-[11px] text-emerald-300/90 font-bold">✓ {s.replace('جاري ', '').replace('...', '')}</p>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {predictedList.length > 0 && showOffers && (
           <div>
             <div className="flex items-center gap-2 mb-3 px-1">
               <TrendingUp size={16} className="text-coral" />
@@ -238,7 +332,7 @@ export default function FamilyGoalView() {
                       </button>
                     )}
                     {o.status === 'pending' && activeRole !== 'rashid' && (
-                      <p className="text-[11px] text-cream/40 font-bold text-center">بانتظار قرار راشد</p>
+                      <p className="text-[11px] text-cream/60 font-bold text-center">بانتظار قرار راشد</p>
                     )}
                     {o.status === 'waiting' && (
                       <p className="flex items-center justify-center gap-1.5 text-[12px] text-amber-300 font-bold bg-amber-400/10 border border-amber-400/20 rounded-2xl py-2.5">
@@ -251,7 +345,7 @@ export default function FamilyGoalView() {
                       </p>
                     )}
                     {o.status === 'ignored' && (
-                      <p className="text-[11px] text-cream/40 font-bold text-center">تم تجاهل العرض</p>
+                      <p className="text-[11px] text-cream/60 font-bold text-center">تم تجاهل العرض</p>
                     )}
                   </div>
                 </div>
@@ -269,13 +363,23 @@ export default function FamilyGoalView() {
           <div className="space-y-2">
             {sorted.map((m, i) => (
               <div key={m.id} className="bg-ink-card rounded-2xl p-3 flex items-center gap-3">
-                <span className="w-5 text-center font-black text-cream/40 text-sm">{i + 1}</span>
-                <span className="text-2xl">{m.role === 'child' ? '🧒' : '🧑'}</span>
+                <span className="w-5 text-center font-black text-cream/60 text-sm">{i + 1}</span>
+                <span className={`w-9 h-9 rounded-full flex items-center justify-center font-black text-sm flex-shrink-0 ${avatarOf(m.id).bg} ${avatarOf(m.id).text}`}>
+                  {avatarOf(m.id).init}
+                </span>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-cream truncate">
-                    {m.name}{m.id === activeRole && <span className="text-[10px] text-coral font-black mr-1">(أنت)</span>}
+                  <p className="text-sm font-bold text-cream truncate flex items-center gap-1.5">
+                    {m.name}
+                    {m.id === activeRole && <span className="text-[9px] bg-coral/15 text-coral font-black px-1.5 py-0.5 rounded-full flex-shrink-0">أنت</span>}
                   </p>
-                  <p className="text-[11px] text-cream/50 font-bold">{m.relation}</p>
+                  <p className="text-[11px] text-cream/60 font-bold">{m.relation}</p>
+                  {/* share of the family pot — derived, no backend change */}
+                  <div className="w-full bg-white/10 rounded-full h-1 mt-1.5 overflow-hidden">
+                    <div
+                      className={`h-1 rounded-full ${avatarOf(m.id).bar}`}
+                      style={{ width: `${savedAmount > 0 ? Math.round((m.contributed / savedAmount) * 100) : 0}%` }}
+                    ></div>
+                  </div>
                 </div>
                 <span className="text-sm font-black text-cream/80 flex-shrink-0">{m.contributed} ر.س</span>
                 {/* Parent reward — only a parent role sees it, on child rows */}
