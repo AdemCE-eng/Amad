@@ -52,6 +52,7 @@
     .predict   { background: #7c5cd6; }
     .nudge     { background: #3d8f6f; }
     .aiplan    { background: var(--alinma); }
+    .persona   { background: #5a6acf; }
 
     /* Section label — same light-theme heading treatment as the page title,
        just smaller, so groups of controls read as one consistent page. */
@@ -110,6 +111,19 @@
       <div class="action">
         <input class="amt" type="number" id="amt-aiplan" value="5000" min="1" step="100">
         <button class="aiplan" onclick="generateAiPlan()">توليد خطة الذكاء الاصطناعي 🧠</button>
+      </div>
+    </div>
+
+    <h2 class="sectionTitle">بروفايلات الدخل 💼 — نفس نسبة التوفير = نفس NXP</h2>
+    <div class="actions" style="margin-bottom: 20px">
+      <div class="action">
+        <button class="persona" onclick="setIncomeProfile('student')">👩‍🎓 نورة — طالبة (دخل ٢٬٠٠٠)</button>
+      </div>
+      <div class="action">
+        <button class="persona" onclick="setIncomeProfile('employee')">👨‍💼 آدم — موظف (دخل ٨٬٠٠٠)</button>
+      </div>
+      <div class="action">
+        <button class="persona" onclick="setIncomeProfile('executive')">👔 فيصل — تنفيذي (دخل ٢٥٬٠٠٠)</button>
       </div>
     </div>
 
@@ -172,7 +186,9 @@
       <div class="row"><span>التقدم نحو الهدف</span><div class="bar"><span id="goalBar" style="width:0%; background:var(--alinma)"></span></div><b id="goalNum">—</b></div>
       <div class="row"><span>درع الطوارئ المتبقي</span><b id="shield">—</b></div>
       <div class="row"><span>🔥 السلسلة</span><b id="streak">—</b></div>
+      <div class="row"><span>💼 الدخل الشهري</span><b id="income">—</b></div>
       <div class="row"><span>⭐ NXP</span><b id="nxp">—</b></div>
+      <div class="row"><span>🎯 تحدي الأسبوع</span><b id="challenge">—</b></div>
       <div class="row"><span>◆ Akthr Points</span><b id="akthr">—</b></div>
       <div class="row"><span>🐣 المرحلة</span><b id="stage">—</b></div>
       <div class="row"><span>📅 اليوم</span><b id="day">—</b></div>
@@ -186,7 +202,7 @@
   </div>
 
   <script>
-    const EMOJI = { happy: '😄', neutral: '🙂', sad: '😟', sick: '🤒' };
+    const EMOJI = { radiant: '🤩', happy: '😄', neutral: '🙂', tired: '🥱', sick: '🤒' };
 
     // Relative URLs only resolve when this page is served BY the backend
     // (http://localhost:3000/). If it's opened directly (file://) or previewed
@@ -268,6 +284,13 @@
       call('/api/user/goal', { goalAmount });
     }
 
+    // Income-persona switch — swaps name/income/balance only (pet, streak and
+    // goal progress survive), so the operator can save the same % of income
+    // from two personas back-to-back and show identical NXP payouts.
+    function setIncomeProfile(profileId) {
+      call('/api/demo/set-income-profile', { profileId });
+    }
+
     async function call(path, body) {
       setBusy(true);
       try {
@@ -319,6 +342,11 @@
         document.getElementById('akthr').textContent = game.akthr_balance ?? 0;
         document.getElementById('stage').textContent = ['بيضة 🥚', 'فرخ 🐤', 'صقر 🦅'][game.stage ?? 0];
         document.getElementById('day').textContent = game.day ?? 1;
+        // The %-of-income-saved receipt is a USER-facing surface only (Home,
+        // Pet Room) — deliberately not mirrored here in the operator console.
+        const ch = game.activeChallenge;
+        document.getElementById('challenge').textContent =
+          ch ? `${ch.title} · ${ch.used ?? 0}/${ch.limit}` : '—';
       }
 
       const familyGoal = data.family_goal;
@@ -351,6 +379,8 @@
         document.getElementById('goalBar').style.width = pct + '%';
         document.getElementById('goalNum').textContent = pct + '%';
         document.getElementById('goalInput').value = user.goalAmount;
+        document.getElementById('income').textContent =
+          user.income ? `${user.income} ر.س (${user.name})` : '—';
       }
       if (shield) document.getElementById('shield').textContent = shield.usesRemaining;
     }

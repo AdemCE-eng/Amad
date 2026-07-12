@@ -10,6 +10,7 @@ import {
   buyItem,
   equipItem,
   setProfile,
+  setIncomeProfile,
   applySimulateTrigger,
   SHOP_ITEMS,
   ACHIEVEMENTS,
@@ -50,6 +51,30 @@ router.post("/demo/complete-challenge", async (_req, res, next) => {
     }
     const out = await commit(result);
     res.json({ ok: true, ...out });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// POST /api/demo/set-income-profile  { profileId } — Cheat Controller persona
+// switch (student | employee | executive). A settings change like
+// /api/user/goal, not a financial event: no health/AI reaction, just swaps
+// name/income/balance so the next save demonstrates income-relative NXP live.
+router.post("/demo/set-income-profile", async (req, res, next) => {
+  try {
+    const state = await readState();
+    const result = setIncomeProfile(state, req.body.profileId);
+    if (result.error) {
+      return res.status(400).json({ ok: false, error: result.error, message: "بروفايل دخل غير معروف." });
+    }
+    await db.ref("/user").set(result.user);
+    res.json({
+      ok: true,
+      user: result.user,
+      pet: state.pet,
+      game: state.game,
+      emergencyShield: state.emergencyShield,
+    });
   } catch (e) {
     next(e);
   }

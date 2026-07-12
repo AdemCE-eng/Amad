@@ -10,17 +10,20 @@ on the `mood` and `animationState` strings. **The frontend never writes to the D
 {
   "user": {
     "name": "Adam",
-    "goalAmount": 5000,        // the user's personal savings goal (SAR)
-    "savedAmount": 1200,       // progress toward the goal (SAR)
-    "balance": 8000,           // account balance (SAR)
-    "monthlyBudget": 3000,     // budget ceiling for the month (SAR)
-    "spentThisMonth": 1400     // spent so far this month (SAR)
+    "income": 8000,               // monthly income (SAR) — NXP save rewards scale to % of this
+    "goalAmount": 5000,           // the user's personal savings goal (SAR)
+    "savedAmount": 1200,          // progress toward the goal (SAR)
+    "allTimeHighBalance": 1200,   // high-water mark of savedAmount (anti-farming): deposits
+                                  //   earn NXP only above this; withdrawals never lower it
+    "balance": 8000,              // account balance (SAR)
+    "monthlyBudget": 3000,        // budget ceiling for the month (SAR)
+    "spentThisMonth": 1400        // spent so far this month (SAR)
   },
 
   "pet": {
     "health": 100,             // integer 0–100
-    "mood": "happy",           // happy | neutral | sad | sick
-    "animationState": "idle",  // idle | happy | sad | eating | sick
+    "mood": "radiant",         // radiant | happy | neutral | tired | sick (5 bands, see below)
+    "animationState": "idle",  // idle | radiant | happy | tired | sad | eating | sick | celebrate
     "message": "أنا سعيد بمدخراتك!",  // AI flavor text (Arabic), shown in a speech bubble
     "updatedAt": 1719849600000 // epoch ms of last update
   },
@@ -50,21 +53,30 @@ on the `mood` and `animationState` strings. **The frontend never writes to the D
 
 | Field | Values | Frontend meaning |
 |---|---|---|
-| `pet.mood` | `happy`, `neutral`, `sad`, `sick` | tint / expression |
-| `pet.animationState` | `idle`, `happy`, `sad`, `eating`, `sick` | which Lottie file to play |
+| `pet.mood` | `radiant`, `happy`, `neutral`, `tired`, `sick` | tint / expression (the 5 states) |
+| `pet.animationState` | `idle`, `radiant`, `happy`, `tired`, `sad`, `eating`, `sick`, `celebrate` | mascot emotion |
 
 ## Derived value (compute on frontend, do NOT store)
 
 **Goal progress %** = `user.savedAmount / user.goalAmount * 100` → progress bar.
 
-## Health → mood bands (backend authoritative — listed for reference only)
+## Health → mood bands (backend authoritative — the single source is `shared/rafiqIdentity.js`)
 
-| health | mood |
+The 5 named states with fixed % bands. Both the backend `moodFromHealth`, the
+fallback/Gemini voice, and the mascot visual treatment key off these.
+
+| health | state |
 |---|---|
-| ≥ 80 | happy |
-| 50–79 | neutral |
-| 20–49 | sad |
-| < 20 | sick |
+| 90–100 | radiant |
+| 70–89 | happy |
+| 40–69 | neutral |
+| 15–39 | tired |
+| 0–14 | sick |
+
+**Goal-secured spending shield:** once `savedAmount >= goalAmount`, ordinary
+spending (in- or over-budget) applies **no** health loss — budget/streak/quest
+accounting still runs, and saving can still raise health. Health earned by
+saving can't be undone by spending once the goal is met.
 
 ---
 
@@ -83,15 +95,25 @@ on the `mood` and `animationState` strings. **The frontend never writes to the D
   "today": { "spent": 0, "saved": 0, "overBudget": false, "coffees": 0 },
   "achievements": { "first_save": { "unlockedAt": 0 } },  // unlocked only; catalog: GET /api/catalog
   "activeChallenge": { "id": "less_coffee", "title": "…", "limit": 3, "used": 1, "reward": 50, "status": "active" },
+  // ^ rotates through gameEngine's CHALLENGE_POOL: completing one immediately
+  //   swaps in the next (wraps) — status never rests at "done"
   "inventory": { "shemagh": true },
   "equipped": "shemagh",          // itemId | null — frontend renders it ON the mascot
-  "lastCelebration": { "type": "evolution|achievement|streak|challenge|shop", "id": "…", "at": 0 }
+  "lastCelebration": { "type": "evolution|achievement|streak|challenge|shop", "id": "…", "at": 0 },
+  "lastSaveReward": { "nxp": 25, "pctOfIncome": 5, "at": 0 }  // last save's income-relative NXP receipt (at-keyed, like lastCelebration)
+  // ^ nxp:0 = anti-farming case: the deposit only refilled savings back toward
+  //   allTimeHighBalance, so no reward. Home/Pet Room show a distinct "back to
+  //   your best" message instead of a +NXP line.
 }
 ```
 
 - `user` gains `petName` + `petType` (set via POST /api/user/profile from onboarding).
 - `pet.animationState` gains `celebrate`.
 - Frontend celebration overlays key off `lastCelebration.at` changing — replays impossible.
+- Save/salary events grant NXP relative to income on NEW savings only: `5 NXP per
+  1% of user.income saved`, clamped to 5–150 (gameEngine's SAVE_NXP_* tunables),
+  applied to `max(0, savedAmount - allTimeHighBalance)` so redeposits earn 0.
 - New endpoints: POST `/api/demo/advance-day`, `/api/demo/complete-challenge`,
+  `/api/demo/set-income-profile {profileId: student|employee|executive}`,
   `/api/shop/buy {itemId}`, `/api/pet/equip {itemId|null}`, `/api/user/profile`,
   GET `/api/catalog`.

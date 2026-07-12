@@ -6,7 +6,8 @@ import Mascot from '../components/mascot/Mascot';
 import { useMascotEmotion } from '../components/mascot/useMascotEmotion';
 import StreakFlame from '../components/ui/StreakFlame';
 import CoinPill from '../components/ui/CoinPill';
-import { STAGE_INFO } from '../lib/catalog';
+import SaveRewardTag from '../components/ui/SaveRewardTag';
+import { STAGE_INFO, SAVE_PRESETS } from '../lib/catalog';
 
 // The hero screen — YOUR companion, singular and named. Full pupil tracking,
 // tap to squish, accessories on, evolution meter toward the goal. Dark ink.
@@ -122,7 +123,7 @@ export default function PetRoomView() {
           <div className="mt-4 pt-3 border-t border-white/10">
             <p className="text-[11px] text-cream/50 font-bold mb-2">💰 وفّر الآن — {petName} يفرح ويكبر</p>
             <div className="grid grid-cols-3 gap-2">
-              {[100, 500, 1000].map((amt) => (
+              {SAVE_PRESETS.map((amt) => (
                 <button
                   key={amt}
                   disabled={isSubmitting}
@@ -133,6 +134,8 @@ export default function PetRoomView() {
                 </button>
               ))}
             </div>
+            {/* Income-relative NXP receipt — same backend stamp HomeView shows */}
+            <SaveRewardTag reward={game.lastSaveReward} compact />
           </div>
         </div>
 

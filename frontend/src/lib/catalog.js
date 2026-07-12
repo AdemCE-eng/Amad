@@ -21,3 +21,9 @@ export const STAGE_INFO = [
   { name: 'فرخ', icon: '🐤', at: 30 },
   { name: 'صقر', icon: '🦅', at: 80 },
 ];
+
+// Quick-save amount presets (SAR) — the single source for every "save now"
+// affordance (Pet Room quick buttons, Home save prompt default). Any future
+// savings view must reuse this so the amounts never diverge.
+export const SAVE_PRESETS = [100, 500, 1000];
+
