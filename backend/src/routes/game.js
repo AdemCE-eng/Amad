@@ -92,6 +92,43 @@ router.post("/user/profile", async (req, res, next) => {
   }
 });
 
+router.post("/user/notifications", async (req, res, next) => {
+    try {
+    const notification = {
+      title: req.body.title,
+      message: req.body.message,
+      type: req.body.type,
+      read: false,
+      createdAt: Date.now(),
+    };
+
+    const ref = db.ref("/user/notifications").push();
+    await ref.set(notification);
+
+    res.json({
+      ok: true,
+      notification,
+    });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.get("/user/notifications", async (_req, res, next) => {
+  try {
+    const snapshot = await db.ref("/user/notifications").get();
+    const data = snapshot.val() ?? {};
+    const notifications = Object.values(data);
+
+    res.json({
+      ok: true,
+      notifications: notifications
+    });
+  } catch (e) {
+    next(e);
+  }
+});
+
 // GET /api/catalog — achievement + shop catalogs (static, lives in code).
 router.get("/catalog", (_req, res) => {
   res.json({ achievements: ACHIEVEMENTS, shop: SHOP_ITEMS });
