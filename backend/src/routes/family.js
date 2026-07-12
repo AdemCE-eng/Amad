@@ -118,17 +118,33 @@ router.post("/family/reward", async (req, res, next) => {
     const nextLoyalty = { ...loyalty, akthrPoints: (loyalty.akthrPoints || 0) + amount };
     const txnKey = db.ref("/transactions").push().key;
 
+    const notifTitle = "مكافأة من ولي الأمر 🎖️";
+    const notifBody = reward.message || `${reward.senderName} كافأك بـ ${amount} نقطة أكثر`;
+
     // Single atomic multi-location update.
     await db.ref("/").update({
       "/loyalty": nextLoyalty,
       [`/family/rewards/${reward.id}`]: reward,
+      // Per-role node — drives the in-app RewardNotice celebration toast.
       [`/notifications/${reward.recipientId}/parentReward`]: {
-        title: "مكافأة من ولي الأمر 🎖️",
-        body: reward.message,
+        title: notifTitle,
+        body: notifBody,
         from: reward.senderId,
         akthrPoints: amount,
         at: reward.at,
         source: "MOCK akthr",
+      },
+      // Same event, in the shape/location the Notifications tab actually reads
+      // (GET /api/user/notifications → /user/notifications). Without this the
+      // tab is permanently empty: nothing else ever writes a real notification.
+      // Keyed by reward.id, so the endpoint's idempotency holds here too.
+      [`/user/notifications/${reward.id}`]: {
+        id: reward.id,
+        title: notifTitle,
+        message: notifBody,
+        type: "reward",
+        read: false,
+        createdAt: reward.at,
       },
       "/pet": pet,
       [`/transactions/${txnKey}`]: {

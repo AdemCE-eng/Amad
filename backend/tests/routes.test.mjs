@@ -59,7 +59,7 @@ test("P0 scenario: reset → plan → predict → wait → settle → reward", a
   const settled = (await post("/api/offers/settle", { offerId: hm.id, memberId: "rashid" })).data;
   assert.equal(settled.family.savedAmount, 3615);
   assert.equal(settled.family.members.rashid.contributed, 315);
-  assert.equal(settled.game.coins, 70);
+  assert.equal(settled.game.nxp_balance, 70); // canonical NXP field (was `coins`)
   assert.equal(settled.loyalty.nxp, 70);
   fam = (await get("/api/family/state")).data;
   assert.equal(fam.loyalty.akthrPoints, 120); // settlement never touches Akthr
