@@ -93,6 +93,7 @@ router.post("/family/reward", async (req, res, next) => {
     const { family, loyalty } = await readFamilyNodes();
     const amount = Number(req.body.amount);
     const validated = validateParentReward(family, {
+      eventId: req.body.eventId,
       senderId: req.body.senderId,
       recipientId: req.body.recipientId,
       rewardType: req.body.rewardType,
