@@ -97,7 +97,7 @@ function Card({ evt, petName }) {
         <span className="text-6xl mb-2">{a.icon}</span>
         <p className="text-xs font-bold text-alinma">إنجاز جديد</p>
         <h2 className="text-xl font-black text-gray-800 mt-1">{a.title}</h2>
-        <p className="text-sm font-bold text-amber-600 mt-2">+{a.coins} NXP</p>
+        <p className="text-sm font-bold text-amber-600 mt-2">+{a.coins} 🪙</p>
       </>
     );
   }

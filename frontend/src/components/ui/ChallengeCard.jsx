@@ -13,7 +13,7 @@ export default function ChallengeCard({ challenge, compact = false }) {
         <span className="text-2xl">{done ? '✅' : '☕'}</span>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-bold text-cream truncate">{challenge.title}</p>
-          <p className="text-[11px] text-cream/50">{done ? `أنجزته! +${challenge.reward} NXP` : `${challenge.used}/${challenge.limit} هذا الأسبوع`}</p>
+          <p className="text-[11px] text-cream/50">{done ? `أنجزته! +${challenge.reward} 🪙` : `${challenge.used}/${challenge.limit} هذا الأسبوع`}</p>
         </div>
         {!done && (
           <div className="w-16 bg-white/10 rounded-full h-2">
@@ -35,7 +35,7 @@ export default function ChallengeCard({ challenge, compact = false }) {
         <span className="text-3xl">{done ? '🎉' : '☕'}</span>
       </div>
       {done ? (
-        <p className="text-sm font-bold text-emerald-300">أنجزته! حصلت على {challenge.reward} NXP</p>
+        <p className="text-sm font-bold text-emerald-300">أنجزته! حصلت على {challenge.reward} 🪙</p>
       ) : (
         <>
           <div className="w-full bg-white/10 rounded-full h-3 mb-2">
@@ -43,7 +43,7 @@ export default function ChallengeCard({ challenge, compact = false }) {
           </div>
           <div className="flex justify-between text-xs font-bold text-cream/50">
             <span>{challenge.used} من {challenge.limit}</span>
-            <span>الجائزة: {challenge.reward} NXP</span>
+            <span>الجائزة: {challenge.reward} 🪙</span>
           </div>
         </>
       )}

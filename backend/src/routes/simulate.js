@@ -12,6 +12,8 @@ import {
   hasSufficientFunds,
 } from "../logic/petEngine.js";
 import { applyGameEffects } from "../logic/gameEngine.js";
+import { initialFamilyState } from "../logic/familyEngine.js";
+import { initialOffersState, initialLoyaltyState } from "../logic/offerEngine.js";
 import { generatePetMessage } from "../ai/gemini.js";
 
 const router = Router();
@@ -27,7 +29,6 @@ export async function readState() {
     pet: val.pet || fresh.pet,
     emergencyShield: val.emergencyShield || fresh.emergencyShield,
     game: val.game || fresh.game,
-    family_goal: val.family_goal || fresh.family_goal,
     meta: val.meta || fresh.meta,
   };
 }
@@ -47,13 +48,8 @@ function withGame(next) {
 }
 
 // Persist the engine result, attach the AI message, and log a transaction.
-// `_aiMessage` (set by e.g. applyPredictiveOffer) bypasses Gemini entirely —
-// some advisories are deterministic/merchant-specific text the guardrail
-// forbids an LLM from generating, so the engine writes the final string itself.
 export async function commit(next, txn) {
-  const { text: message, source: aiSource } = next._aiMessage
-    ? { text: next._aiMessage, source: "deterministic" }
-    : await generatePetMessage(next._aiContext);
+  const { text: message, source: aiSource } = await generatePetMessage(next._aiContext);
   const pet = { ...next.pet, message, updatedAt: Date.now() };
 
   const updates = {
@@ -63,7 +59,6 @@ export async function commit(next, txn) {
     "/meta": next.meta,
   };
   if (next.game) updates["/game"] = next.game;
-  if (next.family_goal) updates["/family_goal"] = next.family_goal;
   await db.ref("/").update(updates);
 
   if (txn) await db.ref("/transactions").push({ ...txn, timestamp: Date.now() });
@@ -71,15 +66,7 @@ export async function commit(next, txn) {
   // aiSource is NOT stored in Firebase (the frontend never needs it) — it's
   // only surfaced in the HTTP response so the Cheat Controller can show
   // whether the message just came from a real Gemini call or a fallback.
-  return {
-    user: next.user,
-    pet,
-    emergencyShield: next.emergencyShield,
-    game: next.game,
-    family_goal: next.family_goal,
-    meta: next.meta,
-    aiSource,
-  };
+  return { user: next.user, pet, emergencyShield: next.emergencyShield, game: next.game, meta: next.meta, aiSource };
 }
 
 function insufficientFunds(res, state) {
@@ -201,8 +188,12 @@ router.post("/reset", async (_req, res, next) => {
       pet: fresh.pet,
       emergencyShield: fresh.emergencyShield,
       game: fresh.game,
-      family_goal: fresh.family_goal,
-      meta: { ...fresh.meta, lastEvent: "reset" },
+      family: initialFamilyState(),
+      offers: initialOffersState(),
+      loyalty: initialLoyaltyState(),
+      contributionPlan: null,
+      notifications: null,
+      meta: { lastEvent: "reset" },
       transactions: null,
     });
     res.json({ ok: true, message: "Demo reset.", ...fresh });

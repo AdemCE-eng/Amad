@@ -46,16 +46,6 @@
     .big      { background: var(--amber); }
     .emergency{ background: #2f7fd6; }
     .reset    { background: var(--red); grid-column: 1 / -1; padding: 18px 16px; }
-    .family    { background: #2f8fd6; }
-    .sukuk     { background: #d6a52f; }
-    .liquidate { background: #b23a3a; }
-    .predict   { background: #7c5cd6; }
-    .nudge     { background: #3d8f6f; }
-    .aiplan    { background: var(--alinma); }
-
-    /* Section label — same light-theme heading treatment as the page title,
-       just smaller, so groups of controls read as one consistent page. */
-    .sectionTitle { color: var(--alinma-dark); font-size: 1.05rem; font-weight: 800; margin: 4px 0 12px; }
     .status {
       margin-top: 20px; background: var(--card); border-radius: 16px;
       padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,.06);
@@ -86,32 +76,6 @@
   <div class="wrap">
     <h1>🎮 لوحة التحكم السرية — Cheat Controller</h1>
     <div class="sub">اضغط الأزرار لتحديث Firebase مباشرة — يتفاعل الحيوان الأليف فوراً على شاشة التطبيق.</div>
-
-    <h2 class="sectionTitle">أزرار العرض التقديمي 🎯</h2>
-    <div class="actions" style="margin-bottom: 20px">
-      <div class="action">
-        <button class="family" onclick="fireTrigger('FAMILY_CONTRIBUTION', {}, 'Family Contribution')">مساهمة عائلية 👨‍👩‍👧‍👦</button>
-      </div>
-      <div class="action">
-        <button class="sukuk" onclick="fireTrigger('SUKUK_PURCHASE', {}, 'Sukuk Purchase')">محاكاة شراء صكوك صح 📈</button>
-      </div>
-      <div class="action">
-        <button class="liquidate" onclick="fireTrigger('EARLY_LIQUIDATION', {}, 'Early Liquidation')">تسييل الصكوك مبكراً 📉</button>
-      </div>
-      <div class="action">
-        <button class="nudge" onclick="fireTrigger('PRIVATE_PET_NUDGE', {}, 'Private Pet Nudge')">تنبيه خاص من نامو 💬</button>
-      </div>
-      <div class="action">
-        <button class="predict" onclick="fireTrigger('PREDICTIVE_OFFER', { merchantName: 'Half Million' }, 'Predictive Offer — Half Million')">توقع عروض هاف مليون ☕</button>
-      </div>
-      <div class="action">
-        <button class="predict" onclick="fireTrigger('PREDICTIVE_OFFER', { merchantName: 'Jarir' }, 'Predictive Offer — Jarir')">توقع عروض جرير 📚</button>
-      </div>
-      <div class="action">
-        <input class="amt" type="number" id="amt-aiplan" value="5000" min="1" step="100">
-        <button class="aiplan" onclick="generateAiPlan()">توليد خطة الذكاء الاصطناعي 🧠</button>
-      </div>
-    </div>
 
     <div class="settings">
       <input class="amt" type="number" id="goalInput" value="5000" min="1" step="100" placeholder="هدف الادخار (ر.س)">
@@ -144,21 +108,17 @@
         <button class="save" style="grid-column:1/-1" onclick="call('/api/demo/advance-day', {})">🌅 اليوم التالي (تقدّم السلسلة)</button>
       </div>
       <div class="action">
-        <input
-          class="amt"
-          style="width: 180px"
-          type="date"
-          id="selectedDate"
-        >
-        <button
-          class="coffee"
-          onclick="changeDate()"
-        >
-          📅 تغيير التاريخ
-        </button>
+        <button class="salary" style="grid-column:1/-1" onclick="call('/api/demo/complete-challenge', {})">✅ إنجاز تحدي الأسبوع</button>
+      </div>
+      <!-- Phase 2B — family journey (presenter side) -->
+      <div class="action">
+        <button class="salary" style="grid-column:1/-1" onclick="call('/api/contribution-plan/generate', {})">✨ توليد خطة نامو الذكية</button>
       </div>
       <div class="action">
-        <button class="salary" style="grid-column:1/-1" onclick="call('/api/demo/complete-challenge', {})">✅ إنجاز تحدي الأسبوع</button>
+        <button class="save" style="grid-column:1/-1" onclick="settleHalfMillion()">📩 وصل عرض هاف مليون (تسوية)</button>
+      </div>
+      <div class="action">
+        <button class="coffee" style="grid-column:1/-1" onclick="sendParentReward()">🎖️ مكافأة الوالد لراشد (احتياطي)</button>
       </div>
       <button class="reset" onclick="call('/api/reset', {})">🔄 إعادة تعيين العرض (Panic Reset)</button>
     </div>
@@ -172,12 +132,9 @@
       <div class="row"><span>التقدم نحو الهدف</span><div class="bar"><span id="goalBar" style="width:0%; background:var(--alinma)"></span></div><b id="goalNum">—</b></div>
       <div class="row"><span>درع الطوارئ المتبقي</span><b id="shield">—</b></div>
       <div class="row"><span>🔥 السلسلة</span><b id="streak">—</b></div>
-      <div class="row"><span>⭐ NXP</span><b id="nxp">—</b></div>
-      <div class="row"><span>◆ Akthr Points</span><b id="akthr">—</b></div>
+      <div class="row"><span>🪙 العملات</span><b id="coins">—</b></div>
       <div class="row"><span>🐣 المرحلة</span><b id="stage">—</b></div>
       <div class="row"><span>📅 اليوم</span><b id="day">—</b></div>
-      <div class="row"><span>pet_tier</span><b id="petTier">—</b></div>
-      <div class="row"><span>👨‍👩‍👧 family_goal</span><b id="familyGoal">—</b></div>
       <div class="bubble" id="bubble">…</div>
       <div style="text-align:center"><span class="badge" id="aiBadge">—</span></div>
       <div class="errBanner" id="errBanner"></div>
@@ -223,45 +180,6 @@
       call('/api/simulate/salary', { amount, savePercent });
     }
 
-    function changeDate() {
-      const selectedDate = document.getElementById("selectedDate").value;
-
-      if (!selectedDate) {
-        alert("اختر تاريخاً أولاً");
-        return;
-      }
-
-      // Midnight UTC of the selected day, in ms — state.meta.currentDate is a
-      // millisecond epoch everywhere else (see docs/DATA_MODEL.md and
-      // petEngine's initialState()), so this must not divide by 1000.
-      const epochMillis = new Date(`${selectedDate}T00:00:00Z`).getTime();
-
-      call("/api/demo/change-date", {
-        selectedDate: epochMillis,
-      });
-    }
-
-    // Shared dispatcher for every "Family Shared Savings" pitch trigger button
-    // (Predictive Offer has 2 merchant variants, GENERATE_AI_PLAN routes here
-    // too via generateAiPlan()). Every click logs a stylized mock bank-API
-    // payload to the browser console before hitting the real endpoint.
-    function fireTrigger(actionType, payload, label) {
-      console.log(
-        `%c[SAMA PIS MOCK] ${label}`,
-        'color:#bada55;font-weight:bold;font-size:13px;background:#0f172a;padding:2px 8px;border-radius:4px;'
-      );
-      console.log({ actionType, ...payload, firedAt: new Date().toISOString() });
-      call('/api/game/simulate-trigger', { actionType, ...payload });
-    }
-
-    // Reads the target-amount input and fires GENERATE_AI_PLAN — regenerates
-    // family_goal.ai_insight (the 60/30/10 split) for that amount.
-    function generateAiPlan() {
-      const raw = Number(document.getElementById('amt-aiplan').value);
-      const targetAmount = Number.isFinite(raw) ? Math.max(1, Math.round(raw)) : 5000;
-      fireTrigger('GENERATE_AI_PLAN', { targetAmount }, 'Generate AI Plan');
-    }
-
     function setGoal() {
       const raw = Number(document.getElementById('goalInput').value);
       const goalAmount = Number.isFinite(raw) ? Math.max(1, Math.round(raw)) : 0;
@@ -281,6 +199,64 @@
       } catch (e) {
         document.getElementById('raw').textContent = '❌ ' + e.message +
           '\n(تأكد أن الخادم يعمل: npm run dev)';
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    // Phase 2B: settle the waited Half Million offer (presenter action —
+    // "the predicted campaign arrived"). Finds the waiting offer, settles it
+    // for راشد (rashid), which moves the saving into the family goal.
+    async function settleHalfMillion() {
+      setBusy(true);
+      try {
+        const res = await fetch(API_BASE + '/api/offers/predicted');
+        const data = await res.json();
+        const hm = Object.values(data.predicted || {}).find((o) => o.merchant === 'هاف مليون');
+        if (!hm) throw new Error('لا يوجد عرض متوقع');
+        if (hm.status !== 'waiting') {
+          render({ ok: false, message: hm.status === 'settled' ? 'تمت التسوية مسبقاً' : 'راشد لم يقرر الانتظار بعد (من التطبيق)' });
+          return;
+        }
+        const settle = await fetch(API_BASE + '/api/offers/settle', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ offerId: hm.id, memberId: 'rashid' }),
+        });
+        render(await settle.json());
+      } catch (e) {
+        document.getElementById('raw').textContent = '❌ ' + e.message;
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    // Backup path if the in-app reward button can't be reached mid-demo.
+    // Same canonical payload as the app; duplicate replays surface a
+    // readable Arabic message instead of double-crediting.
+    async function sendParentReward() {
+      setBusy(true);
+      try {
+        const res = await fetch(API_BASE + '/api/family/reward', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            eventId: 'reward_demo_001',
+            senderId: 'ahmed',
+            recipientId: 'rashid',
+            rewardType: 'akthr',
+            amount: 25,
+            message: 'تستاهل يا بطل، استمريت داخل ميزانيتك 7 أيام.',
+          }),
+        });
+        const data = await res.json();
+        if (data.error === 'duplicate_reward') {
+          render({ ok: false, message: 'تم إرسال المكافأة مسبقاً — لا يتم التكرار.' });
+        } else {
+          render(data);
+        }
+      } catch (e) {
+        document.getElementById('raw').textContent = '❌ ' + e.message;
       } finally {
         setBusy(false);
       }
@@ -306,7 +282,6 @@
         document.getElementById('healthBar').style.background =
           pet.health >= 50 ? 'var(--green)' : pet.health >= 20 ? 'var(--amber)' : 'var(--red)';
         document.getElementById('bubble').textContent = pet.message || '…';
-        document.getElementById('petTier').textContent = pet.pet_tier || 'classic';
       }
 
       const game = data.game;
@@ -315,16 +290,9 @@
         document.getElementById('streak').textContent =
           (game.streak?.current ?? 0) + ' يوم' + (frozen ? ' ❄️ (محمية)' : '') +
           ' · درع ×' + (game.streak?.freezesLeft ?? 0);
-        document.getElementById('nxp').textContent = game.nxp_balance ?? 0;
-        document.getElementById('akthr').textContent = game.akthr_balance ?? 0;
+        document.getElementById('coins').textContent = game.coins ?? 0;
         document.getElementById('stage').textContent = ['بيضة 🥚', 'فرخ 🐤', 'صقر 🦅'][game.stage ?? 0];
         document.getElementById('day').textContent = game.day ?? 1;
-      }
-
-      const familyGoal = data.family_goal;
-      if (familyGoal) {
-        document.getElementById('familyGoal').textContent =
-          `${familyGoal.current_amount ?? 0} / ${familyGoal.target_amount ?? 0} ر.س`;
       }
 
       // Makes it obvious whether this reply came from a real Gemini call, the

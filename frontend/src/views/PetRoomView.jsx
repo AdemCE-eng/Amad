@@ -17,7 +17,7 @@ export default function PetRoomView() {
     handlePetInteraction, isSubmitting, runAction, setActiveView,
   } = useAppData();
   const { emotion, poke } = useMascotEmotion(pet);
-  const petName = user.petName || 'سنقر';
+  const petName = user.petName || 'صقر';
 
   return (
     <div className={`bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] ${
@@ -33,10 +33,10 @@ export default function PetRoomView() {
         <div className="w-10"></div>
       </div>
 
-      {/* streak + NXP strip */}
+      {/* streak + coins strip */}
       <div className="flex justify-center gap-3 z-20">
         <StreakFlame streak={game.streak} />
-        <CoinPill nxp={game.nxp_balance} />
+        <CoinPill coins={game.coins} />
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-start p-6 overflow-y-auto pb-28 z-10">
@@ -59,7 +59,6 @@ export default function PetRoomView() {
               size={250}
               track
               onTap={() => { poke(); handlePetInteraction(); }}
-              petTier={pet.pet_tier}
             />
           </div>
 

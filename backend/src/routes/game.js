@@ -4,13 +4,11 @@ import { Router } from "express";
 import { db } from "../firebase.js";
 import { readState, commit } from "./simulate.js";
 import {
-  changeDate,
   advanceDay,
   completeChallenge,
   buyItem,
   equipItem,
   setProfile,
-  applySimulateTrigger,
   SHOP_ITEMS,
   ACHIEVEMENTS,
 } from "../logic/gameEngine.js";
@@ -23,17 +21,6 @@ router.post("/demo/advance-day", async (_req, res, next) => {
   try {
     const state = await readState();
     const out = await commit(advanceDay(state));
-    res.json({ ok: true, ...out });
-  } catch (e) {
-    next(e);
-  }
-});
-
-// POST /api/demo/change-date — used for date calculations
-router.post("/demo/change-date", async (req, res, next) => {
-  try {
-    const state = await readState();
-    const out = await commit(changeDate(state, req.body.selectedDate));
     res.json({ ok: true, ...out });
   } catch (e) {
     next(e);
@@ -108,35 +95,6 @@ router.post("/user/profile", async (req, res, next) => {
 // GET /api/catalog — achievement + shop catalogs (static, lives in code).
 router.get("/catalog", (_req, res) => {
   res.json({ achievements: ACHIEVEMENTS, shop: SHOP_ITEMS });
-});
-
-// POST /api/game/simulate-trigger  { actionType, merchantName?, targetAmount? }
-// The Cheat Controller's pitch buttons: FAMILY_CONTRIBUTION, SUKUK_PURCHASE,
-// EARLY_LIQUIDATION, PRIVATE_PET_NUDGE, PREDICTIVE_OFFER (merchantName
-// required), GENERATE_AI_PLAN (targetAmount required). Every trigger logs a
-// stylized mock bank-API payload so judges can inspect what a real
-// integration would send.
-router.post("/game/simulate-trigger", async (req, res, next) => {
-  try {
-    const { actionType, merchantName, targetAmount } = req.body;
-    const state = await readState();
-    const result = applySimulateTrigger(state, actionType, { merchantName, targetAmount });
-    if (result.error) {
-      const messages = {
-        insufficient_savings: "تحتاج ١٠٠٠ ريال في مدخراتك لفتح بوابة الاستثمار.",
-        merchant_not_found: "هذا التاجر غير موجود في تقويم العروض.",
-        invalid_target_amount: "الرجاء إدخال مبلغ هدف صالح أكبر من صفر.",
-        unknown_action: "إجراء غير معروف.",
-      };
-      return res.status(400).json({ ok: false, error: result.error, message: messages[result.error] });
-    }
-    console.log(`\n🏦 [MOCK BANK API] ${actionType}`);
-    console.log(JSON.stringify(result._mockPayload, null, 2));
-    const out = await commit(result);
-    res.json({ ok: true, ...out });
-  } catch (e) {
-    next(e);
-  }
 });
 
 export default router;

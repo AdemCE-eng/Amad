@@ -14,13 +14,13 @@ const MILESTONES = [3, 7, 14];
 export default function RewardsView() {
   const { user, game, isSubmitting, runAction, restartOnboarding, restarting } = useAppData();
   if (!game) return null;
-  const { streak, nxp_balance, achievements, activeChallenge, inventory, equipped } = game;
+  const { streak, coins, achievements, activeChallenge, inventory, equipped } = game;
 
   return (
     <div className="bg-ink h-full overflow-y-auto font-sans pb-24 text-cream" dir="rtl">
       <div className="px-5 pt-5 pb-3 flex justify-between items-center">
         <h1 className="text-2xl font-black text-cream">المكافآت</h1>
-        <CoinPill nxp={nxp_balance} />
+        <CoinPill coins={coins} />
       </div>
 
       <div className="px-4 space-y-5">
@@ -30,7 +30,7 @@ export default function RewardsView() {
           <p className="text-xs text-cream/50 mt-3 font-medium">
             {streak.status === 'frozen'
               ? 'درع الحماية حفظ سلسلتك اليوم — الغلطة تعدي ❄️'
-              : 'أيام متتالية داخل الميزانية — كل يوم +10 NXP'}
+              : 'أيام متتالية داخل الميزانية — كل يوم +10 🪙'}
           </p>
           {/* milestone track */}
           <div className="flex items-center justify-between mt-5 px-2">
@@ -41,7 +41,7 @@ export default function RewardsView() {
                   <span className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-black ${streak.current >= m ? 'bg-orange-400/20 text-orange-300' : 'bg-white/5 text-cream/40'}`}>
                     {m}
                   </span>
-                  <span className="text-[9px] font-bold text-cream/50">+{{ 3: 30, 7: 70, 14: 150 }[m]} NXP</span>
+                  <span className="text-[9px] font-bold text-cream/50">+{{ 3: 30, 7: 70, 14: 150 }[m]} 🪙</span>
                 </div>
               </React.Fragment>
             ))}
@@ -65,7 +65,7 @@ export default function RewardsView() {
                 >
                   <span className="text-3xl block">{unlocked ? a.icon : '🔒'}</span>
                   <p className="text-[10px] font-black text-cream mt-1 leading-tight">{a.title}</p>
-                  <p className="text-[9px] font-bold text-amber-300 mt-0.5">+{a.coins} NXP</p>
+                  <p className="text-[9px] font-bold text-amber-300 mt-0.5">+{a.coins} 🪙</p>
                 </div>
               );
             })}
@@ -79,7 +79,7 @@ export default function RewardsView() {
             {Object.entries(SHOP_ITEMS).map(([id, item]) => {
               const owned = Boolean(inventory[id]);
               const isEquipped = equipped === id;
-              const affordable = nxp_balance >= item.price;
+              const affordable = coins >= item.price;
               return (
                 <div key={id} className="bg-ink-card rounded-3xl p-3 flex items-center gap-3">
                   <div className="w-16 h-16 bg-cream rounded-2xl flex items-center justify-center overflow-hidden">
@@ -87,7 +87,7 @@ export default function RewardsView() {
                   </div>
                   <div className="flex-1">
                     <p className="font-black text-cream text-sm">{item.icon} {item.name}</p>
-                    <p className="text-[11px] font-bold text-amber-300 mt-0.5">{item.price} NXP</p>
+                    <p className="text-[11px] font-bold text-amber-300 mt-0.5">{item.price} 🪙</p>
                   </div>
                   {owned ? (
                     <button
@@ -112,7 +112,7 @@ export default function RewardsView() {
           </div>
         </div>
 
-        {/* Danger zone — full restart: wipes health/streak/NXP AND
+        {/* Danger zone — full restart: wipes health/streak/coins AND
             re-runs onboarding (pick companion, name, goal). For switching
             between demo audiences/judges. */}
         <div className="pt-2">

@@ -9,7 +9,7 @@ on the `mood` and `animationState` strings. **The frontend never writes to the D
 ```jsonc
 {
   "user": {
-    "name": "Adam",
+    "name": "راشد",
     "goalAmount": 5000,        // the user's personal savings goal (SAR)
     "savedAmount": 1200,       // progress toward the goal (SAR)
     "balance": 8000,           // account balance (SAR)
@@ -40,8 +40,7 @@ on the `mood` and `animationState` strings. **The frontend never writes to the D
   },
 
   "meta": {
-    "currentDate": 1719849600000, // Timestamp for notifications about holidays and certain celebrations
-    "lastEvent": "idle"           // last action processed: salary | save | purchase | emergency | reset | idle
+    "lastEvent": "idle"        // last action processed: salary | save | purchase | emergency | reset | idle
   }
 }
 ```
