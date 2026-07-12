@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronRight, Sparkles, Trophy, ChevronDown, Users } from 'lucide-react';
+import { ChevronRight, Sparkles, Trophy, ChevronDown } from 'lucide-react';
 import { useAppData } from '../context/AppDataContext';
 import { api } from '../lib/api';
 import RoleSwitch from '../components/ui/RoleSwitch';
