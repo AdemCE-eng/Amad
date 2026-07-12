@@ -4,6 +4,7 @@ import { AppDataProvider, useAppData } from './context/AppDataContext';
 import HomeView from './views/HomeView';
 import PetRoomView from './views/PetRoomView';
 import RewardsView from './views/RewardsView';
+import FamilyGoalView from './views/FamilyGoalView';
 import SimulatorView from './views/SimulatorView';
 import OnboardingFlow from './views/OnboardingFlow';
 import MascotLab from './views/MascotLab';
@@ -68,6 +69,7 @@ function AppShell() {
                 {activeView === 'home' && <HomeView />}
                 {activeView === 'pet' && <PetRoomView />}
                 {activeView === 'rewards' && <RewardsView />}
+                {activeView === 'family' && <FamilyGoalView />}
                 {activeView === 'simulator' && <SimulatorView />}
                 {activeView !== 'simulator' && (
                   <BottomNav activeView={activeView} setActiveView={setActiveView} petName={user?.petName} />

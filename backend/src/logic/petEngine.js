@@ -39,7 +39,7 @@ export function initialState() {
   return {
     user: {
       name: "Adam",
-      petName: "سنقر",
+      petName: "صقر",
       petType: "falcon",
       goalAmount: 5000,
       savedAmount: 1200,

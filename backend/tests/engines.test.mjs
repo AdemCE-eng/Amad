@@ -171,6 +171,10 @@ test("initialLoyaltyState: Akthr only — NXP lives in game.coins", () => {
   assert.equal(loyalty.nxp, undefined); // never stored — no dual source of truth
 });
 
+test("initialState: mascot named صقر (Pixel Falcon identity)", () => {
+  assert.equal(initialState().user.petName, "صقر");
+});
+
 test("applyCheer: heals within bounds, mood follows health", () => {
   const state = { ...initialState() };
   state.pet = { ...state.pet, health: 97 };

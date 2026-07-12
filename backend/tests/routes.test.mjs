@@ -112,4 +112,7 @@ test("reset restores the exact deterministic initial state", async () => {
   assert.equal(fam.contributionPlan, null);
   const predicted = (await get("/api/offers/predicted")).data.predicted;
   for (const o of Object.values(predicted)) assert.equal(o.status, "pending");
+  // Mascot name restored to صقر (Pixel Falcon identity).
+  const state = (await get("/api/state")).data;
+  assert.equal(state.user.petName, "صقر");
 });

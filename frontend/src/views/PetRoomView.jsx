@@ -17,7 +17,7 @@ export default function PetRoomView() {
     handlePetInteraction, isSubmitting, runAction, setActiveView,
   } = useAppData();
   const { emotion, poke } = useMascotEmotion(pet);
-  const petName = user.petName || 'سنقر';
+  const petName = user.petName || 'صقر';
 
   return (
     <div className={`bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] ${
