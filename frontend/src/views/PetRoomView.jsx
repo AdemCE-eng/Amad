@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ChevronRight, ShieldAlert, HeartPulse } from 'lucide-react';
 import { useAppData } from '../context/AppDataContext';
 import { api } from '../lib/api';
@@ -6,6 +6,7 @@ import Mascot from '../components/mascot/Mascot';
 import { useMascotEmotion } from '../components/mascot/useMascotEmotion';
 import StreakFlame from '../components/ui/StreakFlame';
 import CoinPill from '../components/ui/CoinPill';
+import EmergencyWithdrawModal from '../components/ui/EmergencyWithdrawModal';
 import { STAGE_INFO } from '../lib/catalog';
 
 // The hero screen — YOUR companion, singular and named. Full pupil tracking,
@@ -18,6 +19,7 @@ export default function PetRoomView() {
   } = useAppData();
   const { emotion, poke } = useMascotEmotion(pet);
   const petName = user.petName || 'صقر';
+  const [emergencyOpen, setEmergencyOpen] = useState(false);
 
   return (
     <div className={`bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] ${
@@ -138,20 +140,37 @@ export default function PetRoomView() {
         {/* Emergency Shield */}
         <button
           disabled={isSubmitting}
-          onClick={() => {
-            const amountStr = window.prompt('مبلغ السحب الطارئ (ر.س):', '200');
-            if (!amountStr) return;
-            const amt = parseFloat(amountStr);
-            if (!amt || amt <= 0) return;
-            runAction(() => api.emergency(amt, 'سحب طارئ'));
-          }}
+          onClick={() => setEmergencyOpen(true)}
           className="w-full py-4 rounded-3xl font-bold flex items-center justify-center gap-2 transition-all duration-300 active:scale-[0.98] bg-ink-soft border border-white/10 text-cream shadow-lg disabled:opacity-50"
         >
           <ShieldAlert size={20} className="animate-pulse text-coral" />
           سحب طارئ ({emergencyShield.usesRemaining} متبقٍ)
         </button>
-        <p className="text-[10px] text-cream/40 mt-3 text-center font-medium">يفعل الدرع مؤقتاً لحماية المرافق من التأثر النفسي عند سحب مبلغ للظروف القاهرة.</p>
+        <p className="text-[10px] text-cream/60 mt-3 text-center font-medium">يفعل الدرع مؤقتاً لحماية المرافق من التأثر النفسي عند سحب مبلغ للظروف القاهرة.</p>
       </div>
+
+      <EmergencyWithdrawModal
+        open={emergencyOpen}
+        onClose={() => setEmergencyOpen(false)}
+        onConfirm={async (amt, label) => {
+          // runAction swallows errors into the global banner and never
+          // rethrows — capture failure locally so the modal's own success
+          // state only fires when the withdrawal actually succeeded.
+          let failed = false;
+          await runAction(async () => {
+            try {
+              await api.emergency(amt, label);
+            } catch (err) {
+              failed = true;
+              throw err;
+            }
+          });
+          if (failed) throw new Error('emergency_failed');
+        }}
+        balance={user.balance}
+        shieldsRemaining={emergencyShield.usesRemaining}
+        isSubmitting={isSubmitting}
+      />
     </div>
   );
 }
