@@ -38,7 +38,7 @@ export function moodFromHealth(health) {
 export function initialState() {
   return {
     user: {
-      name: "Adam",
+      name: "راشد",
       petName: "صقر",
       petType: "falcon",
       goalAmount: 5000,

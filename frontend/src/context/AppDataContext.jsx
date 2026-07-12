@@ -23,7 +23,12 @@ export function AppDataProvider({ children }) {
   const [restarting, setRestarting] = useState(false);
 
   const [activeView, setActiveView] = useState('home');
-  const [activeRole, setActiveRoleState] = useState(() => localStorage.getItem(ROLE_KEY) || 'adam');
+  const [activeRole, setActiveRoleState] = useState(() => {
+    const stored = localStorage.getItem(ROLE_KEY);
+    // Only rashid/ahmed are valid; anything else (incl. stale pre-migration
+    // values) maps to the child role.
+    return stored === 'ahmed' ? 'ahmed' : 'rashid';
+  });
   const setActiveRole = (role) => {
     localStorage.setItem(ROLE_KEY, role);
     setActiveRoleState(role);

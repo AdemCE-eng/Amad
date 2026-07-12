@@ -50,7 +50,7 @@ router.post("/offers/decide", async (req, res, next) => {
 // persisted in a single multi-location update (atomic in RTDB).
 router.post("/offers/settle", async (req, res, next) => {
   try {
-    const memberId = req.body.memberId || "adam";
+    const memberId = req.body.memberId || "rashid";
     const offers = await readOffers();
     const { family } = await readFamilyNodes();
 
