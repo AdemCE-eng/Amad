@@ -13,6 +13,15 @@ async function post(path, body) {
   return data;
 }
 
+async function get(path) {
+  const res = await fetch(`${API_BASE}${path}`);
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || data.ok === false) {
+    throw new Error(data.error || 'request_failed');
+  }
+  return data;
+}
+
 export const api = {
   salary: (amount, savePercent) => post('/api/simulate/salary', { amount, savePercent }),
   save: (amount) => post('/api/simulate/save', { amount }),
@@ -25,4 +34,8 @@ export const api = {
   buyItem: (itemId) => post('/api/shop/buy', { itemId }),
   equipItem: (itemId) => post('/api/pet/equip', { itemId }),
   setProfile: (profile) => post('/api/user/profile', profile),
+
+  // ── Phase 2A: family goal + explainable contribution plan ──
+  familyState: () => get('/api/family/state'),
+  generatePlan: () => post('/api/contribution-plan/generate'),
 };

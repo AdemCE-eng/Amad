@@ -9,6 +9,11 @@ export function useBackendData() {
   const [emergencyShield, setEmergencyShield] = useState(null);
   const [game, setGame] = useState(null);
   const [transactions, setTransactions] = useState([]);
+  // Phase 2A: family goal, contribution plan, Akthr loyalty, notifications.
+  const [family, setFamily] = useState(null);
+  const [contributionPlan, setContributionPlan] = useState(null);
+  const [loyalty, setLoyalty] = useState(null);
+  const [notifications, setNotifications] = useState(null);
 
   useEffect(() => {
     const unsubs = [
@@ -32,6 +37,12 @@ export function useBackendData() {
         list.sort((a, b) => b.timestamp - a.timestamp);
         setTransactions(list);
       }),
+      // Family goal, plan, loyalty (Akthr only — NXP stays in /game.coins),
+      // and per-role notifications. RTDB drops empty nodes → default to null.
+      watch('/family', (f) => setFamily(f || null)),
+      watch('/contributionPlan', (p) => setContributionPlan(p || null)),
+      watch('/loyalty', (l) => setLoyalty(l || { akthrPoints: 0 })),
+      watch('/notifications', (n) => setNotifications(n || null)),
     ];
     return () => unsubs.forEach((unsub) => unsub());
   }, []);
@@ -42,6 +53,10 @@ export function useBackendData() {
     emergencyShield,
     game,
     transactions,
+    family,
+    contributionPlan,
+    loyalty,
+    notifications,
     loading: !user || !pet || !emergencyShield || !game,
   };
 }
