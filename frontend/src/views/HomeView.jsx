@@ -60,7 +60,9 @@ export default function HomeView() {
           <span className="border border-white/15 rounded-xl p-1.5"><Sun size={18} strokeWidth={1.8} /></span>
           <Edit3 size={20} strokeWidth={1.8} />
           <div className="relative">
-            <Bell size={20} strokeWidth={1.8} />
+            <button onClick={() => setActiveView('notifications')} className="text-cream/60">
+              <Bell size={20} strokeWidth={1.8} />
+            </button>
             <span className="absolute -top-0.5 -left-0.5 bg-coral-deep w-2 h-2 rounded-full"></span>
           </div>
           <span className="w-4 h-6 rounded-md bg-coral inline-block" title="alinma"></span>

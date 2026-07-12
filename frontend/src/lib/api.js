@@ -35,6 +35,10 @@ export const api = {
   equipItem: (itemId) => post('/api/pet/equip', { itemId }),
   setProfile: (profile) => post('/api/user/profile', profile),
 
+  // ── Notifications
+  getNotifications: () => get('/api/user/notifications'),
+  addNotification: (notification) => post('/api/user/notifications', notification), // Mostly for testing, backend should handle notifs
+
   // ── Phase 2A: family goal + explainable contribution plan ──
   familyState: () => get('/api/family/state'),
   generatePlan: () => post('/api/contribution-plan/generate'),
