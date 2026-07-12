@@ -12,7 +12,7 @@ export const MOCK_SOURCE = "open-banking";
 // approved demo allocations 700/400/100 for a 1200 SAR monthly requirement:
 //   Ahmed: surplus 3500 → capacity 700
 //   Sarah: surplus 2000 → capacity 400
-//   Adam:  surplus  500 → capacity 100
+//   Rashid: surplus 500 → capacity 100
 export const MOCK_FINANCIAL_PROFILES = {
   ahmed: {
     memberId: "ahmed",
@@ -28,8 +28,8 @@ export const MOCK_FINANCIAL_PROFILES = {
     essentialExpenses: 3000,
     safetyBuffer: 1500,
   },
-  adam: {
-    memberId: "adam",
+  rashid: {
+    memberId: "rashid",
     income: 800, // allowance
     fixedExpenses: 0,
     essentialExpenses: 200,

@@ -30,13 +30,13 @@ anything — the controller triggers endpoints, and the frontend only listens to
 In File Explorer, open:
 
 ```text
-D:\guedr\Desktop\Adam\Projects\Amad
+<PROJECT_FOLDER>Amad
 ```
 
 To edit the code in VS Code, right-click the folder and choose **Open with Code**, or run:
 
 ```powershell
-code "D:\guedr\Desktop\Adam\Projects\Amad"
+code "<PROJECT_FOLDER>Amad"
 ```
 
 To run the full demo, double-click:

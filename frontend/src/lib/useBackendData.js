@@ -14,6 +14,7 @@ export function useBackendData() {
   const [contributionPlan, setContributionPlan] = useState(null);
   const [loyalty, setLoyalty] = useState(null);
   const [notifications, setNotifications] = useState(null);
+  const [offers, setOffers] = useState(null);
 
   useEffect(() => {
     const unsubs = [
@@ -43,6 +44,7 @@ export function useBackendData() {
       watch('/contributionPlan', (p) => setContributionPlan(p || null)),
       watch('/loyalty', (l) => setLoyalty(l || { akthrPoints: 0 })),
       watch('/notifications', (n) => setNotifications(n || null)),
+      watch('/offers', (o) => setOffers(o || null)),
     ];
     return () => unsubs.forEach((unsub) => unsub());
   }, []);
@@ -57,6 +59,7 @@ export function useBackendData() {
     contributionPlan,
     loyalty,
     notifications,
+    offers,
     loading: !user || !pet || !emergencyShield || !game,
   };
 }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronRight, Sparkles, Trophy, ChevronDown } from 'lucide-react';
+import { ChevronRight, Sparkles, Trophy, ChevronDown, TrendingUp, Hourglass, CheckCircle2 } from 'lucide-react';
 import { useAppData } from '../context/AppDataContext';
 import { api } from '../lib/api';
 import RoleSwitch from '../components/ui/RoleSwitch';
@@ -18,11 +18,12 @@ const RING_CIRC = 2 * Math.PI * RING_R;
 // hardcoded; the Explainable Saving Capacity Engine produces every amount.
 export default function FamilyGoalView() {
   const {
-    family, contributionPlan, activeRole,
+    family, contributionPlan, offers, activeRole,
     nxp, akthrPoints,
     setActiveView, runAction, isSubmitting, actionError,
   } = useAppData();
   const [openDetails, setOpenDetails] = useState(false);
+  const [rewardMsg, setRewardMsg] = useState(null);
 
   // Loading state — watchers haven't delivered /family yet.
   if (!family) {
@@ -45,6 +46,32 @@ export default function FamilyGoalView() {
   const hasPlan = Boolean(allocations);
 
   const generate = () => runAction(() => api.generatePlan());
+
+  // Predicted offers, hero (highest probability) first. Deterministic MOCK
+  // predictions — never presented as guaranteed.
+  const predictedList = Object.values(offers?.predicted || {}).sort((a, b) => b.probability - a.probability);
+  const rewards = family.rewards || {};
+
+  // Parent reward — demo flow: أحمد rewards راشد with Akthr points.
+  // eventId is fixed per demo run (reset wipes /family/rewards, so each run
+  // can reuse it); a duplicate within one run surfaces as "already sent".
+  const rewardChild = async (memberId) => {
+    setRewardMsg(null);
+    try {
+      await api.sendReward({
+        eventId: 'reward_demo_001',
+        senderId: activeRole,
+        recipientId: memberId,
+        rewardType: 'akthr',
+        amount: 25,
+        message: 'تستاهل يا بطل، استمريت داخل ميزانيتك 7 أيام.',
+      });
+      setRewardMsg('تم إرسال مكافأة أكثر 🎁');
+    } catch (e) {
+      setRewardMsg(e.message === 'duplicate_reward' ? 'تمت المكافأة مسبقاً ✓' : 'تعذر إرسال المكافأة');
+    }
+    setTimeout(() => setRewardMsg(null), 2500);
+  };
 
   return (
     <div className="bg-ink h-full overflow-y-auto font-sans text-cream" dir="rtl">
@@ -175,6 +202,64 @@ export default function FamilyGoalView() {
           )}
         </div>
 
+        {/* Predicted saving opportunities — MOCK, deterministic, probabilistic
+            wording only (never "guaranteed"). راشد decides to wait; the
+            presenter settles from the demo controller. */}
+        {predictedList.length > 0 && (
+          <div>
+            <div className="flex items-center gap-2 mb-3 px-1">
+              <TrendingUp size={16} className="text-coral" />
+              <h3 className="font-black text-cream text-sm">فرص توفير متوقعة</h3>
+            </div>
+            <div className="space-y-2">
+              {predictedList.map((o) => (
+                <div key={o.id} className={`rounded-3xl p-4 ${o.status === 'settled' ? 'bg-emerald-400/10 border border-emerald-400/25' : 'bg-ink-card'}`}>
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="font-black text-cream text-sm">{o.merchant} — {o.occasion}</p>
+                      <p className="text-[11px] text-cream/50 font-bold mt-0.5">{o.basis}</p>
+                    </div>
+                    <span className="bg-coral/15 text-coral text-[11px] font-black px-2.5 py-1 rounded-full flex-shrink-0">
+                      احتمال {o.probability}٪
+                    </span>
+                  </div>
+                  <div className="flex gap-3 mt-3 text-[11px] font-bold text-cream/60">
+                    <span>⏳ نافذة {o.windowDays} أيام</span>
+                    <span>💰 توفير محتمل {o.potentialSaving} ر.س</span>
+                  </div>
+                  <div className="mt-3">
+                    {o.status === 'pending' && activeRole === 'rashid' && (
+                      <button
+                        disabled={isSubmitting}
+                        onClick={() => runAction(() => api.decideOffer(o.id, 'wait'))}
+                        className="w-full bg-coral text-ink font-black text-sm py-2.5 rounded-2xl active:scale-95 transition-transform disabled:opacity-50"
+                      >
+                        أنتظر العرض المتوقع
+                      </button>
+                    )}
+                    {o.status === 'pending' && activeRole !== 'rashid' && (
+                      <p className="text-[11px] text-cream/40 font-bold text-center">بانتظار قرار راشد</p>
+                    )}
+                    {o.status === 'waiting' && (
+                      <p className="flex items-center justify-center gap-1.5 text-[12px] text-amber-300 font-bold bg-amber-400/10 border border-amber-400/20 rounded-2xl py-2.5">
+                        <Hourglass size={13} /> قرر راشد الانتظار — بانتظار وصول العرض
+                      </p>
+                    )}
+                    {o.status === 'settled' && (
+                      <p className="flex items-center justify-center gap-1.5 text-[12px] text-emerald-300 font-black bg-emerald-400/10 rounded-2xl py-2.5">
+                        <CheckCircle2 size={14} /> وصل العرض — تحوّل {o.potentialSaving} ر.س لهدف العائلة
+                      </p>
+                    )}
+                    {o.status === 'ignored' && (
+                      <p className="text-[11px] text-cream/40 font-bold text-center">تم تجاهل العرض</p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Leaderboard — sorted by contribution, no shaming */}
         <div>
           <div className="flex items-center gap-2 mb-3 px-1">
@@ -193,11 +278,32 @@ export default function FamilyGoalView() {
                   <p className="text-[11px] text-cream/50 font-bold">{m.relation}</p>
                 </div>
                 <span className="text-sm font-black text-cream/80 flex-shrink-0">{m.contributed} ر.س</span>
+                {/* Parent reward — only a parent role sees it, on child rows */}
+                {activeRole === 'ahmed' && m.role === 'child' && (
+                  rewards.reward_demo_001 ? (
+                    <span className="text-[11px] font-black text-emerald-300 flex-shrink-0">تمت ✓</span>
+                  ) : (
+                    <button
+                      disabled={isSubmitting}
+                      onClick={() => rewardChild(m.id)}
+                      className="bg-coral-tile text-ink text-[11px] font-black px-3 py-1.5 rounded-xl active:scale-95 transition-transform flex-shrink-0 whitespace-nowrap disabled:opacity-50"
+                    >
+                      كافئه بأكثر 🎁
+                    </button>
+                  )
+                )}
               </div>
             ))}
           </div>
         </div>
       </div>
+
+      {/* Reward toast — absolute so it stays inside the phone frame */}
+      {rewardMsg && (
+        <div className="absolute bottom-24 left-1/2 -translate-x-1/2 bg-ink-card border border-emerald-400/30 text-cream text-sm font-bold px-5 py-3 rounded-2xl shadow-2xl z-50 whitespace-nowrap">
+          {rewardMsg}
+        </div>
+      )}
     </div>
   );
 }

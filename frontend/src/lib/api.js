@@ -38,4 +38,10 @@ export const api = {
   // ── Phase 2A: family goal + explainable contribution plan ──
   familyState: () => get('/api/family/state'),
   generatePlan: () => post('/api/contribution-plan/generate'),
+
+  // ── Phase 2B: predicted offers + parent reward ──
+  predictedOffers: () => get('/api/offers/predicted'),
+  decideOffer: (offerId, decision) => post('/api/offers/decide', { offerId, decision }),
+  settleOffer: (offerId, memberId) => post('/api/offers/settle', { offerId, memberId }),
+  sendReward: (body) => post('/api/family/reward', body),
 };

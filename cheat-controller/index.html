@@ -110,6 +110,13 @@
       <div class="action">
         <button class="salary" style="grid-column:1/-1" onclick="call('/api/demo/complete-challenge', {})">✅ إنجاز تحدي الأسبوع</button>
       </div>
+      <!-- Phase 2B — family journey (presenter side) -->
+      <div class="action">
+        <button class="salary" style="grid-column:1/-1" onclick="call('/api/contribution-plan/generate', {})">✨ توليد خطة نامو الذكية</button>
+      </div>
+      <div class="action">
+        <button class="save" style="grid-column:1/-1" onclick="settleHalfMillion()">📩 وصل عرض هاف مليون (تسوية)</button>
+      </div>
       <button class="reset" onclick="call('/api/reset', {})">🔄 إعادة تعيين العرض (Panic Reset)</button>
     </div>
 
@@ -189,6 +196,33 @@
       } catch (e) {
         document.getElementById('raw').textContent = '❌ ' + e.message +
           '\n(تأكد أن الخادم يعمل: npm run dev)';
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    // Phase 2B: settle the waited Half Million offer (presenter action —
+    // "the predicted campaign arrived"). Finds the waiting offer, settles it
+    // for راشد (rashid), which moves the saving into the family goal.
+    async function settleHalfMillion() {
+      setBusy(true);
+      try {
+        const res = await fetch(API_BASE + '/api/offers/predicted');
+        const data = await res.json();
+        const hm = Object.values(data.predicted || {}).find((o) => o.merchant === 'هاف مليون');
+        if (!hm) throw new Error('لا يوجد عرض متوقع');
+        if (hm.status !== 'waiting') {
+          render({ ok: false, message: hm.status === 'settled' ? 'تمت التسوية مسبقاً' : 'راشد لم يقرر الانتظار بعد (من التطبيق)' });
+          return;
+        }
+        const settle = await fetch(API_BASE + '/api/offers/settle', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ offerId: hm.id, memberId: 'rashid' }),
+        });
+        render(await settle.json());
+      } catch (e) {
+        document.getElementById('raw').textContent = '❌ ' + e.message;
       } finally {
         setBusy(false);
       }

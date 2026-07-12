@@ -30,7 +30,7 @@ export function initialFamilyState() {
     members: {
       ahmed: { name: "أحمد", role: "parent", relation: "الأب", contributed: 2000 },
       sarah: { name: "سارة", role: "parent", relation: "الأم", contributed: 1300 },
-      adam: { name: "Adam", role: "child", relation: "الابن", contributed: 300 },
+      rashid: { name: "راشد", role: "child", relation: "الابن", contributed: 300 },
     },
   };
 }

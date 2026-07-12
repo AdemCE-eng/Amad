@@ -28,7 +28,7 @@ test("memberCapacity: safe surplus formula exact", () => {
   assert.equal(ahmed.safeSurplus, 18000 - 8000 - 4500 - 2000); // 3500
   assert.equal(ahmed.savingCapacity, 700); // 3500 * 0.2
   assert.equal(memberCapacity(MOCK_FINANCIAL_PROFILES.sarah).savingCapacity, 400);
-  assert.equal(memberCapacity(MOCK_FINANCIAL_PROFILES.adam).savingCapacity, 100);
+  assert.equal(memberCapacity(MOCK_FINANCIAL_PROFILES.rashid).savingCapacity, 100);
 });
 
 test("memberCapacity: never negative", () => {
@@ -45,7 +45,7 @@ test("generateContributionPlan: approved demo allocations emerge from inputs", (
   assert.equal(plan.totalCapacity, 1200);
   assert.equal(plan.allocations.ahmed.amount, 700);
   assert.equal(plan.allocations.sarah.amount, 400);
-  assert.equal(plan.allocations.adam.amount, 100);
+  assert.equal(plan.allocations.rashid.amount, 100);
   assert.ok(plan.allocations.sarah.explanation.includes("فائض آمن"));
   assert.equal(plan.allocations.sarah.safeSurplus, 2000);
 });
@@ -63,16 +63,16 @@ test("generateContributionPlan: deterministic — same inputs, same output", () 
 
 test("applyFamilyContribution: happy path updates member + total", () => {
   const family = initialFamilyState();
-  const { family: next, event } = applyFamilyContribution(family, { memberId: "adam", amount: 15, source: "offer-saving" });
+  const { family: next, event } = applyFamilyContribution(family, { memberId: "rashid", amount: 15, source: "offer-saving" });
   assert.equal(next.savedAmount, 3615);
-  assert.equal(next.members.adam.contributed, 315);
+  assert.equal(next.members.rashid.contributed, 315);
   assert.equal(event.source, "offer-saving");
 });
 
 test("applyFamilyContribution: errors on unknown member / bad amount", () => {
   const family = initialFamilyState();
   assert.equal(applyFamilyContribution(family, { memberId: "ghost", amount: 10 }).error, "unknown_member");
-  assert.equal(applyFamilyContribution(family, { memberId: "adam", amount: -5 }).error, "invalid_amount");
+  assert.equal(applyFamilyContribution(family, { memberId: "rashid", amount: -5 }).error, "invalid_amount");
 });
 
 test("family goal reached flips status", () => {
@@ -129,10 +129,10 @@ test("settleOffer: idempotent, no Akthr in outcome", () => {
 
 test("validateParentReward: happy path builds deterministic id", () => {
   const family = initialFamilyState();
-  const input = { senderId: "ahmed", recipientId: "adam", rewardType: "akthr", amount: 25, message: "تستاهل يا بطل" };
+  const input = { senderId: "ahmed", recipientId: "rashid", rewardType: "akthr", amount: 25, message: "تستاهل يا بطل" };
   const { reward } = validateParentReward(family, input);
   assert.equal(reward.senderId, "ahmed");
-  assert.equal(reward.recipientId, "adam");
+  assert.equal(reward.recipientId, "rashid");
   assert.equal(reward.amount, 25);
   assert.equal(reward.id, rewardId(input)); // same event → same id → idempotent
   assert.equal(rewardId(input), rewardId({ ...input })); // stable
@@ -142,7 +142,7 @@ test("validateParentReward: explicit eventId wins as idempotency key", () => {
   const family = initialFamilyState();
   const input = {
     eventId: "reward_demo_001",
-    senderId: "ahmed", recipientId: "adam", rewardType: "akthr", amount: 25,
+    senderId: "ahmed", recipientId: "rashid", rewardType: "akthr", amount: 25,
     message: "تستاهل يا بطل، استمريت داخل ميزانيتك 7 أيام.",
   };
   const { reward } = validateParentReward(family, input);
@@ -156,11 +156,11 @@ test("validateParentReward: error paths", () => {
   const family = initialFamilyState();
   const base = { rewardType: "akthr", amount: 25, message: "x" };
   assert.equal(validateParentReward(family, { ...base, senderId: "ahmed", recipientId: "ghost" }).error, "unknown_recipient");
-  assert.equal(validateParentReward(family, { ...base, senderId: "ghost", recipientId: "adam" }).error, "unknown_sender");
+  assert.equal(validateParentReward(family, { ...base, senderId: "ghost", recipientId: "rashid" }).error, "unknown_sender");
   assert.equal(validateParentReward(family, { ...base, senderId: "ahmed", recipientId: "ahmed" }).error, "self_reward");
-  assert.equal(validateParentReward(family, { ...base, senderId: "adam", recipientId: "sarah" }).error, "sender_not_parent");
-  assert.equal(validateParentReward(family, { ...base, senderId: "ahmed", recipientId: "adam", rewardType: "cash" }).error, "unsupported_reward_type");
-  assert.equal(validateParentReward(family, { ...base, senderId: "ahmed", recipientId: "adam", amount: -1 }).error, "invalid_amount");
+  assert.equal(validateParentReward(family, { ...base, senderId: "rashid", recipientId: "sarah" }).error, "sender_not_parent");
+  assert.equal(validateParentReward(family, { ...base, senderId: "ahmed", recipientId: "rashid", rewardType: "cash" }).error, "unsupported_reward_type");
+  assert.equal(validateParentReward(family, { ...base, senderId: "ahmed", recipientId: "rashid", amount: -1 }).error, "invalid_amount");
 });
 
 // ── Loyalty / pet ────────────────────────────────────────

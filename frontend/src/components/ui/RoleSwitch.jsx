@@ -2,10 +2,10 @@ import React from 'react';
 import { useAppData } from '../../context/AppDataContext';
 
 // Demo-only role switch — NOT authentication and NOT a permissions system.
-// Lets the operator present the app as either the child (آدم) or a parent
+// Lets the operator present the app as either the child (راشد) or a parent
 // (أحمد) during the demo. Persisted in localStorage via context.
 const ROLES = [
-  { id: 'adam', label: 'آدم' },
+  { id: 'rashid', label: 'راشد' },
   { id: 'ahmed', label: 'أحمد' },
 ];
 
