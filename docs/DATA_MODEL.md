@@ -9,7 +9,7 @@ on the `mood` and `animationState` strings. **The frontend never writes to the D
 ```jsonc
 {
   "user": {
-    "name": "Adam",
+    "name": "راشد",
     "income": 8000,               // monthly income (SAR) — NXP save rewards scale to % of this
     "goalAmount": 5000,           // the user's personal savings goal (SAR)
     "savedAmount": 1200,          // progress toward the goal (SAR)
@@ -43,8 +43,7 @@ on the `mood` and `animationState` strings. **The frontend never writes to the D
   },
 
   "meta": {
-    "currentDate": 1719849600000, // Timestamp for notifications about holidays and certain celebrations
-    "lastEvent": "idle"           // last action processed: salary | save | purchase | emergency | reset | idle
+    "lastEvent": "idle"        // last action processed: salary | save | purchase | emergency | reset | idle
   }
 }
 ```
@@ -90,7 +89,9 @@ saving can't be undone by spending once the goal is met.
     "freezesLeft": 1,             // compassion shields — earned weekly, consumed on a bad day
     "status": "alive"             // alive | frozen (shield consumed today, streak survived)
   },
-  "coins": 60,                    // earned via streaks/achievements/challenges — never real money
+  "nxp_balance": 60,              // THE canonical NXP field (replaced the legacy `coins`).
+                                  //   Earned via saving/streaks/achievements/challenges and
+                                  //   SPENT in the shop — one balance, never real money.
   "stage": 0,                     // 0 egg (<30% of goal) | 1 chick (30-79%) | 2 falcon (>=80%)
   "today": { "spent": 0, "saved": 0, "overBudget": false, "coffees": 0 },
   "achievements": { "first_save": { "unlockedAt": 0 } },  // unlocked only; catalog: GET /api/catalog

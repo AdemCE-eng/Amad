@@ -8,28 +8,24 @@ export function useBackendData() {
   const [pet, setPet] = useState(null);
   const [emergencyShield, setEmergencyShield] = useState(null);
   const [game, setGame] = useState(null);
-  const [familyGoal, setFamilyGoal] = useState(null);
   const [transactions, setTransactions] = useState([]);
+  // Phase 2A: family goal, contribution plan, Akthr loyalty, notifications.
+  const [family, setFamily] = useState(null);
+  const [contributionPlan, setContributionPlan] = useState(null);
+  const [loyalty, setLoyalty] = useState(null);
+  const [notifications, setNotifications] = useState(null);
+  const [offers, setOffers] = useState(null);
 
   useEffect(() => {
     const unsubs = [
       watch('/user', setUser),
       watch('/pet', setPet),
       watch('/emergencyShield', setEmergencyShield),
-      // RTDB drops nulls/empty objects — normalize so FamilyGoalView never guards.
-      watch('/family_goal', (f) => setFamilyGoal({
-        title: f?.title ?? '',
-        target_amount: f?.target_amount ?? 0,
-        current_amount: f?.current_amount ?? 0,
-        ai_insight: f?.ai_insight ?? '',
-        members: f?.members || [],
-      })),
       // RTDB drops nulls/empty objects — normalize so views never guard.
       watch('/game', (g) => setGame({
         day: g?.day ?? 1,
         streak: { current: 0, best: 0, freezesLeft: 0, status: 'alive', ...(g?.streak || {}) },
         nxp_balance: g?.nxp_balance ?? 0,
-        akthr_balance: g?.akthr_balance ?? 0,
         stage: g?.stage ?? 0,
         achievements: g?.achievements || {},
         activeChallenge: g?.activeChallenge || null,
@@ -43,6 +39,13 @@ export function useBackendData() {
         list.sort((a, b) => b.timestamp - a.timestamp);
         setTransactions(list);
       }),
+      // Family goal, plan, loyalty (Akthr only — NXP stays in /game.nxp_balance),
+      // and per-role notifications. RTDB drops empty nodes → default to null.
+      watch('/family', (f) => setFamily(f || null)),
+      watch('/contributionPlan', (p) => setContributionPlan(p || null)),
+      watch('/loyalty', (l) => setLoyalty(l || { akthrPoints: 0 })),
+      watch('/notifications', (n) => setNotifications(n || null)),
+      watch('/offers', (o) => setOffers(o || null)),
     ];
     return () => unsubs.forEach((unsub) => unsub());
   }, []);
@@ -52,8 +55,12 @@ export function useBackendData() {
     pet,
     emergencyShield,
     game,
-    familyGoal,
     transactions,
+    family,
+    contributionPlan,
+    loyalty,
+    notifications,
+    offers,
     loading: !user || !pet || !emergencyShield || !game,
   };
 }

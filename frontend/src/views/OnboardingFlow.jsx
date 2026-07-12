@@ -6,7 +6,7 @@ import { burst } from '../lib/confetti';
 
 // 3-step onboarding: choose companion → NAME it (naming = attachment) →
 // set the savings goal. Slide transitions use y/opacity (RTL-safe).
-const NAME_SUGGESTIONS = ['سنقر', 'سعود', 'رزين', 'وفرة'];
+const NAME_SUGGESTIONS = ['صقر', 'سعود', 'رزين', 'وفرة'];
 const GOAL_PRESETS = [5000, 10000, 20000];
 
 const COMPANIONS = [
@@ -24,7 +24,7 @@ export default function OnboardingFlow({ onDone }) {
   const finish = async () => {
     setSaving(true);
     try {
-      await api.setProfile({ petName: petName || 'سنقر', petType: 'falcon', goalAmount: goal });
+      await api.setProfile({ petName: petName || 'صقر', petType: 'falcon', goalAmount: goal });
     } catch { /* offline demo still proceeds */ }
     burst();
     localStorage.setItem('amad_onboarded', '1');
