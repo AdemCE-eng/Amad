@@ -74,6 +74,7 @@ test("P0 scenario: reset → plan → predict → wait → settle → reward", a
 
   // 6. Parent reward — Ahmed → Adam, Akthr 120 → 145.
   const rewardBody = {
+    eventId: "reward_demo_001",
     senderId: "ahmed",
     recipientId: "adam",
     rewardType: "akthr",
@@ -97,6 +98,7 @@ test("P0 scenario: reset → plan → predict → wait → settle → reward", a
   assert.equal((await post("/api/family/reward", { ...rewardBody, recipientId: "ghost" })).data.error, "unknown_recipient");
   assert.equal((await post("/api/family/reward", { ...rewardBody, recipientId: "ahmed" })).data.error, "self_reward");
   assert.equal((await post("/api/family/reward", { ...rewardBody, senderId: "adam", recipientId: "sarah" })).data.error, "sender_not_parent");
+  assert.equal((await post("/api/family/reward", { ...rewardBody, eventId: "reward_demo_002", amount: -5 })).data.error, "invalid_amount");
 });
 
 test("reset restores the exact deterministic initial state", async () => {

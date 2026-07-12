@@ -130,7 +130,7 @@ export function rewardId({ senderId, recipientId, rewardType, amount, message })
   return "rwd_" + h.toString(36);
 }
 
-export function validateParentReward(family, { senderId, recipientId, rewardType, amount, message }) {
+export function validateParentReward(family, { eventId, senderId, recipientId, rewardType, amount, message }) {
   const sender = family.members[senderId];
   const recipient = family.members[recipientId];
   if (!sender) return { error: "unknown_sender" };
@@ -140,7 +140,12 @@ export function validateParentReward(family, { senderId, recipientId, rewardType
   if (rewardType !== "akthr") return { error: "unsupported_reward_type" };
   if (!Number.isFinite(amount) || amount <= 0) return { error: "invalid_amount" };
 
-  const id = rewardId({ senderId, recipientId, rewardType, amount, message });
+  // Idempotency key: the caller's eventId when provided (demo controller
+  // sends e.g. "reward_demo_001"); otherwise a deterministic content hash.
+  // RTDB paths forbid . # $ [ ] / — sanitize.
+  const id = eventId
+    ? String(eventId).slice(0, 60).replace(/[.#$/\[\]]/g, "_")
+    : rewardId({ senderId, recipientId, rewardType, amount, message });
   return {
     reward: {
       id,

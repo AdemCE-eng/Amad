@@ -138,6 +138,20 @@ test("validateParentReward: happy path builds deterministic id", () => {
   assert.equal(rewardId(input), rewardId({ ...input })); // stable
 });
 
+test("validateParentReward: explicit eventId wins as idempotency key", () => {
+  const family = initialFamilyState();
+  const input = {
+    eventId: "reward_demo_001",
+    senderId: "ahmed", recipientId: "adam", rewardType: "akthr", amount: 25,
+    message: "تستاهل يا بطل، استمريت داخل ميزانيتك 7 أيام.",
+  };
+  const { reward } = validateParentReward(family, input);
+  assert.equal(reward.id, "reward_demo_001");
+  // Unsafe RTDB path chars sanitized.
+  const { reward: r2 } = validateParentReward(family, { ...input, eventId: "a.b#c$d[e]f/g" });
+  assert.equal(r2.id, "a_b_c_d_e_f_g");
+});
+
 test("validateParentReward: error paths", () => {
   const family = initialFamilyState();
   const base = { rewardType: "akthr", amount: 25, message: "x" };
