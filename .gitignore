@@ -24,7 +24,4 @@ emu-err.log
 *-debug.log
 backend-out.log
 backend-err.log
-
-# Misc
-SRS.md
 .firebase.launcher.json

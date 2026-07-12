@@ -235,10 +235,7 @@ function Accessory({ id }) {
   return null;
 }
 
-function Mascot({
-  emotion = 'idle', stage = 1, size = 240, track = true, equipped = null, onTap,
-  petTier = 'classic',
-}) {
+function Mascot({ emotion = 'idle', stage = 1, size = 240, track = true, equipped = null, onTap }) {
   const e = EMOTIONS[emotion] || EMOTIONS.idle;
   // Unique clipPath ids — multiple Mascots can share a page (MascotLab,
   // onboarding). Strip colons from useId()'s output: some SVG renderers
@@ -290,22 +287,16 @@ function Mascot({
   const bodyLoop = BODY_LOOP_CLASS[e.body] ?? '';
   const flapping = emotion === 'celebrating' || emotion === 'happy';
 
-  // Feature 3 (Akthr Premium Tier): a subtle gold aura on the wrapping div,
-  // kept off the svg's own `animate` filter so it never fights the
-  // saturate() transition below.
-  const tierGlow = petTier === 'signature' ? 'drop-shadow-[0_0_14px_rgba(212,175,55,0.65)]' : '';
-
   return (
-    <div className={`relative inline-block ${tierGlow}`}>
-      <motion.svg
-        initial={false}
-        viewBox="0 0 240 240" width={size} height={size}
-        animate={{ filter: `saturate(${e.sat})` }}
-        transition={{ duration: 0.6 }}
-        style={{ overflow: 'visible', touchAction: 'manipulation' }}
-        onPointerDown={onTap}
-      >
-        <ellipse cx="120" cy="212" rx="52" ry="9" fill="#000" opacity="0.08" />
+    <motion.svg
+      initial={false}
+      viewBox="0 0 240 240" width={size} height={size}
+      animate={{ filter: `saturate(${e.sat})` }}
+      transition={{ duration: 0.6 }}
+      style={{ overflow: 'visible', touchAction: 'manipulation' }}
+      onPointerDown={onTap}
+    >
+      <ellipse cx="120" cy="212" rx="52" ry="9" fill="#000" opacity="0.08" />
 
       {/* Root: squish pivot at bottom-center; droop sinks the whole bird. */}
       <Pivot
@@ -467,7 +458,7 @@ function Mascot({
           {stage === 0 && (
             <g>
               <path
-                d="M65,160 L80,148 L90,160 L100,148 L110,160 L120,148 L130,160 L140,148 L150,160 L160,148 L175,160 Q170,208 120,208 Q65,208 65,160 Z"
+                d="M70,160 L80,148 L90,160 L100,148 L110,160 L120,148 L130,160 L140,148 L150,160 L160,148 L170,160 Q170,208 120,208 Q70,208 70,160 Z"
                 fill={C.shell} stroke={C.shellEdge} strokeWidth="2"
               />
               <ellipse cx="102" cy="182" rx="7" ry="10" fill="#fff" opacity="0.5" />
@@ -477,8 +468,7 @@ function Mascot({
 
         <Effects fx={e.fx} />
       </Pivot>
-      </motion.svg>
-    </div>
+    </motion.svg>
   );
 }
 

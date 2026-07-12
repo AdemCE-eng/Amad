@@ -38,8 +38,8 @@ export function moodFromHealth(health) {
 export function initialState() {
   return {
     user: {
-      name: "Adam",
-      petName: "سنقر",
+      name: "راشد",
+      petName: "صقر",
       petType: "falcon",
       goalAmount: 5000,
       savedAmount: 1200,
@@ -52,20 +52,16 @@ export function initialState() {
       mood: "happy",
       animationState: "idle",
       message: "أنا بخير وسعيد بوجودك!",
-      // SRS mock layer: pet_tier rides along on the pet slice since it's
-      // pet-displayed state, same as mood/health.
-      pet_tier: "classic",
       updatedAt: Date.now(),
     },
     emergencyShield: { usesRemaining: 1 },
     // Demo-tuned: streak 6 (one day from the 7-milestone), 24% of goal (one
-    // save from evolution), 60 NXP (one milestone from the shemagh), and a
+    // save from evolution), 60 coins (one milestone from the shemagh), and a
     // live coffee challenge — the 3-minute script hits every payoff.
     game: {
       day: 7,
       streak: { current: 6, best: 6, freezesLeft: 1, status: "alive" },
-      nxp_balance: 60,
-      akthr_balance: 0,
+      coins: 60,
       stage: 0,
       today: { spent: 0, saved: 0, overBudget: false, coffees: 0 },
       achievements: { first_save: { unlockedAt: Date.now() - 5 * 86400000 } },
@@ -82,29 +78,7 @@ export function initialState() {
       equipped: null,
       lastCelebration: { type: "none", id: "none", at: 0 },
     },
-    // Feature (Family Shared Savings Goal) — top-level slice, mirrors
-    // emergencyShield: not per-event pet math, just group-savings mock state.
-    family_goal: initialFamilyGoal(),
-    meta: { lastEvent: "idle", currentDate: Date.now() },
-  };
-}
-
-// The Family Goal's pristine seed — a household saving toward a trip, the
-// local user is the owner ("Father (You)") and can send reward gifts to
-// the other members from the FamilyGoalView leaderboard.
-export function initialFamilyGoal() {
-  return {
-    title: "رحلة الصيف إلى أبها",
-    target_amount: 5000,
-    current_amount: 3200,
-    // Populated by applyGenerateAiPlan (GENERATE_AI_PLAN trigger) — empty
-    // until the presenter generates a plan for a target amount.
-    ai_insight: "",
-    members: [
-      { id: 1, name: "Father (You)", contribution: 2000, pet: "falcon", is_owner: true },
-      { id: 2, name: "Sarah", contribution: 1000, pet: "cat", is_owner: false },
-      { id: 3, name: "Khalid", contribution: 200, pet: "camel", is_owner: false },
-    ],
+    meta: { lastEvent: "idle" },
   };
 }
 
@@ -112,7 +86,7 @@ export function initialFamilyGoal() {
 // `mood` always derives from the resulting health — it must never disagree with
 // what the health bar shows. `animationState` can still be overridden per event
 // for a one-off Lottie cue (e.g. "eating"), independent of the persistent mood.
-export function withHealth(pet, healthDelta, { animationState } = {}) {
+function withHealth(pet, healthDelta, { animationState } = {}) {
   const health = clamp(Math.round(pet.health + healthDelta), 0, 100);
   const mood = moodFromHealth(health);
   return {
@@ -149,7 +123,7 @@ export function applySalary(state, amount, saveRate = SAVE_RATE) {
     ...state,
     user,
     pet,
-    meta: { ...state.meta, lastEvent: "salary" },
+    meta: { lastEvent: "salary" },
     _aiContext: { category: "happy", event: "salary", amount, savedPortion, healthDelta },
   };
 }
@@ -173,7 +147,7 @@ export function applyInstantSave(state, amount) {
     ...state,
     user,
     pet,
-    meta: { ...state.meta, lastEvent: "save" },
+    meta: { lastEvent: "save" },
     _aiContext: { category: "happy", event: "save", amount, healthDelta },
   };
 }
@@ -204,7 +178,7 @@ export function applyPurchase(state, { amount, category = "general", label = "ع
     ...state,
     user,
     pet,
-    meta: { ...state.meta, lastEvent: "purchase" },
+    meta: { lastEvent: "purchase" },
     _aiContext: {
       category: pet.mood, // AI reaction always matches what the health bar shows
       event: "purchase",
@@ -214,6 +188,19 @@ export function applyPurchase(state, { amount, category = "general", label = "ع
       overBudget,
       healthDelta,
     },
+  };
+}
+
+// Small positive nudge from events outside the personal account (family-goal
+// contribution, followed saving plan). Health/mood only — stays in this
+// module's domain; family/offer state lives in its own engines.
+export function applyCheer(state, { healthDelta = 5, event = "cheer", extra = {} } = {}) {
+  const pet = withHealth(state.pet, healthDelta, { animationState: "happy" });
+  return {
+    ...state,
+    pet,
+    meta: { lastEvent: event },
+    _aiContext: { category: "happy", event, ...extra },
   };
 }
 
@@ -234,7 +221,7 @@ export function applyEmergency(state, { amount, label = "سحب طارئ" }) {
     user,
     pet,
     emergencyShield,
-    meta: { ...state.meta, lastEvent: "emergency" },
+    meta: { lastEvent: "emergency" },
     _aiContext: { category: "emergency", event: "emergency", amount, label },
   };
 }

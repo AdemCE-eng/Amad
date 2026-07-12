@@ -33,13 +33,13 @@ function formatDate(ts) {
 
 export default function HomeView() {
   const {
-    user, pet, game, familyGoal, transactions,
+    user, pet, game, transactions, family,
     isSick, isSad, goalProgress,
     isShaking, flashColor, setActiveView,
     isSubmitting, runAction,
   } = useAppData();
   const { emotion } = useMascotEmotion(pet);
-  const petName = user.petName || 'سنقر';
+  const petName = user.petName || 'صقر';
   const [showBalance, setShowBalance] = useState(true);
 
   const promptSave = () => {
@@ -68,8 +68,7 @@ export default function HomeView() {
         <div className="flex items-center gap-3">
           <div className="text-left">
             <p className="font-black text-cream text-lg leading-tight">{user.name}</p>
-            <p className="text-[11px] text-violet font-bold">✦ {game.nxp_balance} NXP</p>
-            <p className="text-[10px] text-amber-300 font-bold">◆ {game.akthr_balance} Akthr Points</p>
+            <p className="text-[11px] text-violet font-bold">✦ {game.coins}</p>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center font-black text-cream text-lg">
             {game.streak.current}
@@ -100,23 +99,23 @@ export default function HomeView() {
           </div>
         </div>
 
-        {/* Featured product banner — رفيق gets the AutoFlow treatment */}
+        {/* Featured product banner — نامو gets the flagship treatment */}
         <div className="bg-ink-card rounded-3xl p-5 relative overflow-hidden">
           <div className="flex items-center gap-3">
             <div className="flex-1">
-              <p className="text-coral text-xs font-black mb-1">جديد الإنماء</p>
-              <h3 className="text-2xl font-black text-white leading-snug">رفيق — مرافق مالي يحس فيك</h3>
+              <p className="text-coral text-xs font-black mb-1">جديد نامو</p>
+              <h3 className="text-2xl font-black text-white leading-snug">{petName} — مرافق مالي يحس فيك</h3>
               <p className="text-sm text-cream/60 font-medium mt-1.5">يفرح لما توفر، ويتعب لما تسرف — وينمو معك.</p>
               <button
                 onClick={() => setActiveView('pet')}
                 className="mt-4 bg-white text-ink font-black text-sm px-5 py-2.5 rounded-2xl flex items-center gap-1 active:scale-95 transition-transform"
               >
-                اكتشف رفيق
+                اكتشف {petName}
                 <ChevronLeft size={16} />
               </button>
             </div>
             <div className="w-24 flex-shrink-0 flex items-center justify-center">
-              <Mascot emotion={emotion} stage={game.stage} equipped={game.equipped} size={96} track={false} petTier={pet.pet_tier} />
+              <Mascot emotion={emotion} stage={game.stage} equipped={game.equipped} size={96} track={false} />
             </div>
           </div>
         </div>
@@ -144,8 +143,25 @@ export default function HomeView() {
           </div>
           <div className="flex-1">
             <p className="text-[11px] text-cream/50 font-bold">قالب مقترح لك</p>
-            <p className="font-black text-white">وفّر الآن — أطعم {petName} ⭐</p>
+            <p className="font-black text-white">وفّر الآن — أطعم {petName} 🪙</p>
             <p className="text-[11px] text-cream/50 font-bold mt-0.5">قالب معتمد • تحت تحكمك الكامل</p>
+          </div>
+          <ChevronLeft size={18} className="text-cream/40 flex-shrink-0" />
+        </button>
+
+        {/* Family Goal — nav card into the dedicated tab, same button
+            language as the "Suggested template" save action above. */}
+        <button
+          onClick={() => setActiveView('family')}
+          className="w-full bg-ink-soft rounded-3xl p-4 flex items-center gap-4 text-right active:scale-[0.99] transition-transform"
+        >
+          <div className="bg-coral-tile text-ink p-3.5 rounded-2xl flex-shrink-0">
+            <Users size={22} strokeWidth={1.9} />
+          </div>
+          <div className="flex-1">
+            <p className="text-[11px] text-cream/50 font-bold">الهدف العائلي</p>
+            <p className="font-black text-white">{family?.goalTitle || 'رحلة العائلة'}</p>
+            <p className="text-[11px] text-cream/50 font-bold mt-0.5">{family?.savedAmount ?? 0} / {family?.goalAmount ?? 0} ر.س</p>
           </div>
           <ChevronLeft size={18} className="text-cream/40 flex-shrink-0" />
         </button>
@@ -172,23 +188,6 @@ export default function HomeView() {
           </div>
           <p className="text-[10px] text-cream/40 text-left font-bold mt-1.5">{user.savedAmount.toFixed(0)} / {user.goalAmount.toFixed(0)} ر.س</p>
         </div>
-
-        {/* Family Goal — nav card into the dedicated tab, same button
-            language as the "Suggested template" save action above. */}
-        <button
-          onClick={() => setActiveView('family')}
-          className="w-full bg-ink-soft rounded-3xl p-4 flex items-center gap-4 text-right active:scale-[0.99] transition-transform"
-        >
-          <div className="bg-coral-tile text-ink p-3.5 rounded-2xl flex-shrink-0">
-            <Users size={22} strokeWidth={1.9} />
-          </div>
-          <div className="flex-1">
-            <p className="text-[11px] text-cream/50 font-bold">الهدف العائلي</p>
-            <p className="font-black text-white">{familyGoal?.title || 'رحلة العائلة'}</p>
-            <p className="text-[11px] text-cream/50 font-bold mt-0.5">{familyGoal?.current_amount ?? 0} / {familyGoal?.target_amount ?? 0} ر.س</p>
-          </div>
-          <ChevronLeft size={18} className="text-cream/40 flex-shrink-0" />
-        </button>
 
         {/* Weekly challenge strip */}
         <ChallengeCard challenge={game.activeChallenge} compact dark />
