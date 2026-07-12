@@ -1,7 +1,7 @@
 import React from 'react';
 import { Home, Trophy, ArrowLeftRight, Grid } from 'lucide-react';
 
-// Five-tab dark nav mirroring the real Alinma app; رفيق sits in the
+// Five-tab dark nav mirroring the real Alinma app; صقر sits in the
 // AutoFlow slot with the "جديد" treatment (violet bubble + badge).
 // التحويل / الخدمات are decorative — they exist so the bar reads like the
 // real bank app, not a 3-screen demo.
@@ -9,7 +9,7 @@ export default function BottomNav({ activeView, setActiveView, petName }) {
   const tabs = [
     { id: 'home', label: 'الرئيسية', icon: <Home size={21} strokeWidth={1.8} /> },
     { id: '_transfer', label: 'التحويل', icon: <ArrowLeftRight size={21} strokeWidth={1.8} />, dead: true },
-    { id: 'pet', label: petName || 'رفيق', icon: <span className="text-xl leading-none">🐤</span>, center: true },
+    { id: 'pet', label: petName || 'صقر', icon: <span className="text-xl leading-none">🐤</span>, center: true },
     { id: 'rewards', label: 'المكافآت', icon: <Trophy size={21} strokeWidth={1.8} /> },
     { id: '_services', label: 'الخدمات', icon: <Grid size={21} strokeWidth={1.8} />, dead: true },
   ];
@@ -18,7 +18,7 @@ export default function BottomNav({ activeView, setActiveView, petName }) {
       {/* "new feature" bubble above the center tab */}
       {activeView !== 'pet' && (
         <div className="absolute -top-9 left-1/2 -translate-x-1/2 bg-violet text-white text-[11px] font-black px-3.5 py-1.5 rounded-full whitespace-nowrap shadow-lg pointer-events-none">
-          جديد · جرّب {petName || 'رفيق'}
+          جديد · جرّب {petName || 'صقر'}
           <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-violet rotate-45"></span>
         </div>
       )}
