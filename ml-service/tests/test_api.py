@@ -7,6 +7,8 @@ def test_health_and_prediction_endpoints():
         health = client.get("/health")
         assert health.status_code == 200
         assert health.json()["ready"] is True
+        assert health.json()["models"]["offer"]["name"]
+        assert health.json()["models"]["purchase"]["name"]
         offer = client.post("/v1/offers/predict", json={"merchantId": "half_million", "windowDays": 7})
         assert offer.status_code == 200
         assert 0 <= offer.json()["offerProbability"] <= 1

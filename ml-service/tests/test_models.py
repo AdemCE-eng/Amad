@@ -8,8 +8,10 @@ from app.settings import DEMO_AS_OF
 
 
 def test_saved_artifacts_are_fitted_classifiers():
-    assert is_classifier(load_offer()["model"].named_steps["classifier"])
-    assert is_classifier(load_purchase()["model"].named_steps["classifier"])
+    offer_model = load_offer()["model"]
+    purchase_model = load_purchase()["model"]
+    assert is_classifier(offer_model.named_steps["classifier"] if hasattr(offer_model, "named_steps") else offer_model)
+    assert is_classifier(purchase_model.named_steps["classifier"] if hasattr(purchase_model, "named_steps") else purchase_model)
 
 
 def test_model_probabilities_are_bounded_and_repeatable():

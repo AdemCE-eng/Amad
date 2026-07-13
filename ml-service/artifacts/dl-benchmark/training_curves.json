@@ -1,0 +1,286 @@
+{
+  "label": "MOCK / SYNTHETIC DEEP-LEARNING BENCHMARK — SAUDI MARKET",
+  "curves": {
+    "offerEmbeddingMlp": [
+      {
+        "epoch": 1,
+        "trainLoss": 0.815248,
+        "threshold": 0.36,
+        "precision": 0.4198,
+        "recall": 0.9113,
+        "f1": 0.5748,
+        "balancedAccuracy": 0.5429,
+        "predictedPositiveRate": 0.8595,
+        "constraintsSatisfied": false
+      },
+      {
+        "epoch": 2,
+        "trainLoss": 0.785165,
+        "threshold": 0.36,
+        "precision": 0.4225,
+        "recall": 0.9488,
+        "f1": 0.5846,
+        "balancedAccuracy": 0.5493,
+        "predictedPositiveRate": 0.8892,
+        "constraintsSatisfied": false
+      },
+      {
+        "epoch": 3,
+        "trainLoss": 0.777631,
+        "threshold": 0.34,
+        "precision": 0.4148,
+        "recall": 0.9727,
+        "f1": 0.5816,
+        "balancedAccuracy": 0.5367,
+        "predictedPositiveRate": 0.9284,
+        "constraintsSatisfied": false
+      },
+      {
+        "epoch": 4,
+        "trainLoss": 0.762424,
+        "threshold": 0.32,
+        "precision": 0.4106,
+        "recall": 0.9795,
+        "f1": 0.5786,
+        "balancedAccuracy": 0.5289,
+        "predictedPositiveRate": 0.9446,
+        "constraintsSatisfied": false
+      },
+      {
+        "epoch": 5,
+        "trainLoss": 0.747805,
+        "threshold": 0.32,
+        "precision": 0.4158,
+        "recall": 0.9522,
+        "f1": 0.5788,
+        "balancedAccuracy": 0.5376,
+        "predictedPositiveRate": 0.9068,
+        "constraintsSatisfied": false
+      }
+    ],
+    "purchaseEmbeddingMlp": [
+      {
+        "epoch": 1,
+        "trainLoss": 0.642714,
+        "threshold": 0.46,
+        "precision": 0.6278,
+        "recall": 0.838,
+        "f1": 0.7178,
+        "balancedAccuracy": 0.7516,
+        "predictedPositiveRate": 0.5374,
+        "constraintsSatisfied": false
+      },
+      {
+        "epoch": 2,
+        "trainLoss": 0.612141,
+        "threshold": 0.48,
+        "precision": 0.6402,
+        "recall": 0.8263,
+        "f1": 0.7215,
+        "balancedAccuracy": 0.7567,
+        "predictedPositiveRate": 0.5196,
+        "constraintsSatisfied": false
+      },
+      {
+        "epoch": 3,
+        "trainLoss": 0.60614,
+        "threshold": 0.46,
+        "precision": 0.6441,
+        "recall": 0.8299,
+        "f1": 0.7253,
+        "balancedAccuracy": 0.7605,
+        "predictedPositiveRate": 0.5187,
+        "constraintsSatisfied": false
+      },
+      {
+        "epoch": 4,
+        "trainLoss": 0.602703,
+        "threshold": 0.46,
+        "precision": 0.6418,
+        "recall": 0.8344,
+        "f1": 0.7255,
+        "balancedAccuracy": 0.7602,
+        "predictedPositiveRate": 0.5234,
+        "constraintsSatisfied": false
+      },
+      {
+        "epoch": 5,
+        "trainLoss": 0.599934,
+        "threshold": 0.44,
+        "precision": 0.6423,
+        "recall": 0.8362,
+        "f1": 0.7265,
+        "balancedAccuracy": 0.7612,
+        "predictedPositiveRate": 0.5241,
+        "constraintsSatisfied": false
+      },
+      {
+        "epoch": 6,
+        "trainLoss": 0.598802,
+        "threshold": 0.46,
+        "precision": 0.6483,
+        "recall": 0.8293,
+        "f1": 0.7277,
+        "balancedAccuracy": 0.763,
+        "predictedPositiveRate": 0.515,
+        "constraintsSatisfied": false
+      },
+      {
+        "epoch": 7,
+        "trainLoss": 0.596815,
+        "threshold": 0.46,
+        "precision": 0.644,
+        "recall": 0.8359,
+        "f1": 0.7275,
+        "balancedAccuracy": 0.7622,
+        "predictedPositiveRate": 0.5226,
+        "constraintsSatisfied": false
+      },
+      {
+        "epoch": 8,
+        "trainLoss": 0.595534,
+        "threshold": 0.46,
+        "precision": 0.65,
+        "recall": 0.8285,
+        "f1": 0.7284,
+        "balancedAccuracy": 0.7639,
+        "predictedPositiveRate": 0.5131,
+        "constraintsSatisfied": false
+      },
+      {
+        "epoch": 9,
+        "trainLoss": 0.595104,
+        "threshold": 0.42,
+        "precision": 0.63,
+        "recall": 0.8618,
+        "f1": 0.7279,
+        "balancedAccuracy": 0.7603,
+        "predictedPositiveRate": 0.5508,
+        "constraintsSatisfied": false
+      },
+      {
+        "epoch": 10,
+        "trainLoss": 0.593641,
+        "threshold": 0.48,
+        "precision": 0.6476,
+        "recall": 0.8337,
+        "f1": 0.729,
+        "balancedAccuracy": 0.764,
+        "predictedPositiveRate": 0.5183,
+        "constraintsSatisfied": false
+      },
+      {
+        "epoch": 11,
+        "trainLoss": 0.592905,
+        "threshold": 0.48,
+        "precision": 0.6563,
+        "recall": 0.8196,
+        "f1": 0.7289,
+        "balancedAccuracy": 0.7652,
+        "predictedPositiveRate": 0.5028,
+        "constraintsSatisfied": false
+      },
+      {
+        "epoch": 12,
+        "trainLoss": 0.591258,
+        "threshold": 0.46,
+        "precision": 0.6485,
+        "recall": 0.833,
+        "f1": 0.7293,
+        "balancedAccuracy": 0.7644,
+        "predictedPositiveRate": 0.5171,
+        "constraintsSatisfied": false
+      },
+      {
+        "epoch": 13,
+        "trainLoss": 0.590965,
+        "threshold": 0.5,
+        "precision": 0.6501,
+        "recall": 0.8289,
+        "f1": 0.7287,
+        "balancedAccuracy": 0.7642,
+        "predictedPositiveRate": 0.5133,
+        "constraintsSatisfied": false
+      },
+      {
+        "epoch": 14,
+        "trainLoss": 0.588737,
+        "threshold": 0.46,
+        "precision": 0.6469,
+        "recall": 0.8352,
+        "f1": 0.7291,
+        "balancedAccuracy": 0.764,
+        "predictedPositiveRate": 0.5198,
+        "constraintsSatisfied": false
+      }
+    ],
+    "purchaseGru": [
+      {
+        "epoch": 1,
+        "trainLoss": 0.636912,
+        "threshold": 0.46,
+        "precision": 0.6261,
+        "recall": 0.8381,
+        "f1": 0.7168,
+        "balancedAccuracy": 0.7504,
+        "predictedPositiveRate": 0.5389,
+        "constraintsSatisfied": false
+      },
+      {
+        "epoch": 2,
+        "trainLoss": 0.609862,
+        "threshold": 0.48,
+        "precision": 0.6398,
+        "recall": 0.8233,
+        "f1": 0.72,
+        "balancedAccuracy": 0.7554,
+        "predictedPositiveRate": 0.518,
+        "constraintsSatisfied": false
+      },
+      {
+        "epoch": 3,
+        "trainLoss": 0.605609,
+        "threshold": 0.46,
+        "precision": 0.6301,
+        "recall": 0.8475,
+        "f1": 0.7228,
+        "balancedAccuracy": 0.7561,
+        "predictedPositiveRate": 0.5415,
+        "constraintsSatisfied": false
+      },
+      {
+        "epoch": 4,
+        "trainLoss": 0.604539,
+        "threshold": 0.5,
+        "precision": 0.6516,
+        "recall": 0.8145,
+        "f1": 0.724,
+        "balancedAccuracy": 0.7605,
+        "predictedPositiveRate": 0.5033,
+        "constraintsSatisfied": false
+      },
+      {
+        "epoch": 5,
+        "trainLoss": 0.601964,
+        "threshold": 0.44,
+        "precision": 0.6384,
+        "recall": 0.8352,
+        "f1": 0.7237,
+        "balancedAccuracy": 0.7582,
+        "predictedPositiveRate": 0.5267,
+        "constraintsSatisfied": false
+      },
+      {
+        "epoch": 6,
+        "trainLoss": 0.599952,
+        "threshold": 0.46,
+        "precision": 0.6439,
+        "recall": 0.8308,
+        "f1": 0.7255,
+        "balancedAccuracy": 0.7606,
+        "predictedPositiveRate": 0.5194,
+        "constraintsSatisfied": false
+      }
+    ]
+  }
+}

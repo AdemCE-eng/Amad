@@ -7,6 +7,7 @@ ARTIFACT_DIR = ROOT / "artifacts"
 MODEL_DIR = ARTIFACT_DIR / "models"
 OFFER_MODEL_PATH = MODEL_DIR / "offer_model.joblib"
 PURCHASE_MODEL_PATH = MODEL_DIR / "purchase_model.joblib"
+SELECTED_OFFER_MODEL_PATH = ARTIFACT_DIR / "dl-benchmark" / "models" / "selected_offer_model.joblib"
 
 RANDOM_SEED = 20260923
 DEMO_AS_OF = "2026-09-20"

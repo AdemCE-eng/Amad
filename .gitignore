@@ -41,6 +41,12 @@ backend-err.log
 /ml-service/artifacts/models/*.bin
 /ml-service/artifacts/checkpoints/
 /ml-service/artifacts/**/*checkpoint*
+/ml-service/artifacts/dl-benchmark/models/
+/ml-service/artifacts/dl-benchmark/checkpoints/
+/ml-service/artifacts/dl-benchmark/generated-data/
+/ml-service/artifacts/dl-benchmark/**/*.pt
+/ml-service/artifacts/dl-benchmark/**/*.pth
+/ml-service/artifacts/dl-benchmark/**/*.cbm
 /ml-service/training-logs/
 /ml-service/**/*.log
 
