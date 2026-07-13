@@ -268,8 +268,8 @@ export default function FamilyGoalView() {
         </div>
 
         {/* Personalized opportunities. Nothing is displayed before the fresh
-            Node → FastAPI request; fallback uses the same visual journey but
-            remains explicitly labeled by its source. */}
+            Node → FastAPI request; ML and fallback share the same customer
+            journey while technical diagnostics stay in the operator console. */}
         {!recommendationResult && (
           <div>
             <div className="flex items-center gap-2 mb-3 px-1">
@@ -317,13 +317,6 @@ export default function FamilyGoalView() {
             <div className="flex items-center gap-2 mb-3 px-1">
               <TrendingUp size={16} className="text-coral" />
               <h3 className="font-black text-cream text-sm">فرص توفير متوقعة</h3>
-            </div>
-            <div className="mb-2 flex flex-wrap items-center gap-1.5 text-[9px] font-bold text-cream/45" dir="ltr">
-              <span data-testid="recommendation-source">{recommendationResult.source}</span>
-              {recommendationResult.fallbackReason && <span>· {recommendationResult.fallbackReason}</span>}
-              {recommendationResult.models && (
-                <span>· {recommendationResult.models.offer?.name} + {recommendationResult.models.purchase?.name}</span>
-              )}
             </div>
             {predictedList.length === 0 ? (
               <div className="bg-ink-card rounded-3xl p-5 text-center text-sm font-bold text-cream/60">لا توجد فرصة مناسبة حالياً.</div>

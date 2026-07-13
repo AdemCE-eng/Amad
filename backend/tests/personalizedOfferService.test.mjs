@@ -1,6 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createPersonalizedOfferService, validateMlResponse } from "../src/services/personalizedOfferService.js";
+import {
+  createPersonalizedOfferService,
+  recommendationEngineStatus,
+  validateMlResponse,
+} from "../src/services/personalizedOfferService.js";
 
 const valid = {
   userId: "rashid", merchantId: "half_million", merchant: "Half Million", merchantNameAr: "هاف مليون",
@@ -48,6 +52,30 @@ test("valid low-score response remains a live ML result", async () => {
   assert.equal(result.source, "ml-service");
   assert.equal(result.fallbackReason, null);
   assert.equal(result.recommendations[0].personalizedScore, .001);
+});
+
+test("operator status reports online models without exposing recommendations", () => {
+  const status = recommendationEngineStatus({
+    source: "ml-service",
+    fallbackReason: null,
+    models: { offer: { name: "CatBoostClassifier" }, purchase: { name: "HistGradientBoostingClassifier" } },
+    recommendations: [valid],
+  });
+  assert.equal(status.state, "online");
+  assert.equal(status.source, "ml-service");
+  assert.equal(status.models.offer.name, "CatBoostClassifier");
+  assert.equal("recommendations" in status, false);
+});
+
+test("operator status safely labels fallback and unavailable results", () => {
+  const fallback = recommendationEngineStatus({ source: "deterministic-fallback", fallbackReason: "ml_disabled" });
+  assert.equal(fallback.state, "fallback");
+  assert.equal(fallback.fallbackReason, "ml_disabled");
+  assert.equal(fallback.models, null);
+
+  const unavailable = recommendationEngineStatus(null);
+  assert.equal(unavailable.state, "fallback");
+  assert.equal(unavailable.fallbackReason, "ml_unavailable");
 });
 
 test("essential purchases are suppressed", () => {

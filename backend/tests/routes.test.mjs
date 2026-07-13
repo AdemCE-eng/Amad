@@ -55,7 +55,18 @@ test("P0 scenario: reset → plan → predict → wait → settle → reward", a
   assert.equal(plan.allocations.sarah.amount, 400);
   assert.equal(plan.allocations.rashid.amount, 100);
 
-  // 4. Fresh analysis — Node delegates to ML or its labeled deterministic fallback.
+  // 4. Operator status is read-only, then fresh customer analysis materializes offers.
+  const engineStatus = (await get("/api/ml/status?userId=rashid")).data;
+  assert.ok(["online", "fallback"].includes(engineStatus.state));
+  assert.ok(["ml-service", "deterministic-fallback"].includes(engineStatus.source));
+  if (engineStatus.state === "online") {
+    assert.equal(engineStatus.models.offer.name, "CatBoostClassifier");
+    assert.equal(engineStatus.models.purchase.name, "HistGradientBoostingClassifier");
+  } else {
+    assert.equal(typeof engineStatus.fallbackReason, "string");
+  }
+
+  // Fresh analysis — Node delegates to ML or its labeled deterministic fallback.
   const analysis = (await get("/api/ml/recommendations?userId=rashid")).data;
   assert.ok(["ml-service", "deterministic-fallback"].includes(analysis.source));
   const predicted = (await get("/api/offers/predicted")).data.predicted;

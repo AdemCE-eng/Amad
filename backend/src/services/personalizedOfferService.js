@@ -58,6 +58,22 @@ export function validateMlResponse(payload) {
     .sort((a, b) => b.personalizedScore - a.personalizedScore || a.merchantId.localeCompare(b.merchantId));
 }
 
+// Safe operator-facing status derived from the same service result used by
+// the application. It deliberately excludes recommendations and exceptions:
+// the Cheat Controller only needs availability, selected models, and the
+// labeled fallback reason.
+export function recommendationEngineStatus(result) {
+  const online = result?.source === "ml-service";
+  return {
+    ok: true,
+    engine: "recommendation",
+    state: online ? "online" : "fallback",
+    source: typeof result?.source === "string" ? result.source : "deterministic-fallback",
+    fallbackReason: online ? null : (result?.fallbackReason || "ml_unavailable"),
+    models: online ? (result?.models || null) : null,
+  };
+}
+
 export function createPersonalizedOfferService({
   enabled = process.env.USE_ML_SERVICE === "true",
   baseUrl = process.env.ML_SERVICE_URL || "http://127.0.0.1:8001",
