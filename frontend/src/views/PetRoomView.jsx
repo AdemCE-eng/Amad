@@ -4,10 +4,10 @@ import { useAppData } from '../context/AppDataContext';
 import { api } from '../lib/api';
 import Mascot from '../components/mascot/Mascot';
 import { useMascotEmotion } from '../components/mascot/useMascotEmotion';
-import StreakFlame from '../components/ui/StreakFlame';
 import CoinPill from '../components/ui/CoinPill';
 import SaveRewardTag from '../components/ui/SaveRewardTag';
 import EmergencyWithdrawModal from '../components/ui/EmergencyWithdrawModal';
+import PetProgressionSections from '../components/pet/PetProgressionSections';
 import { STAGE_INFO, SAVE_PRESETS } from '../lib/catalog';
 
 // The hero screen — YOUR companion, singular and named. Full pupil tracking,
@@ -28,17 +28,11 @@ export default function PetRoomView() {
     } h-full flex flex-col font-sans text-cream transition-colors duration-500`} dir="rtl">
 
       {/* Header — back arrow points right in RTL */}
-      <div className="p-4 flex items-center justify-between z-20">
+      <div className="p-4 flex items-center justify-between gap-3 z-20">
         <button onClick={() => setActiveView('home')} className="bg-white/10 backdrop-blur p-2 rounded-full text-cream hover:bg-white/20 transition-all">
           <ChevronRight size={24} />
         </button>
         <h1 className="font-black text-cream text-lg tracking-wide">غرفة {petName}</h1>
-        <div className="w-10"></div>
-      </div>
-
-      {/* streak + coins strip */}
-      <div className="flex justify-center gap-3 z-20">
-        <StreakFlame streak={game.streak} />
         <CoinPill coins={game.nxp_balance} />
       </div>
 
@@ -139,6 +133,8 @@ export default function PetRoomView() {
             <SaveRewardTag reward={game.lastSaveReward} compact />
           </div>
         </div>
+
+        <PetProgressionSections game={game} isSubmitting={isSubmitting} runAction={runAction} />
 
         {/* Emergency Shield */}
         <button

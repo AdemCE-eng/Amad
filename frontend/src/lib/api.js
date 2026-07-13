@@ -55,4 +55,8 @@ export const api = {
   decideOffer: (offerId, decision) => post('/api/offers/decide', { offerId, decision }),
   settleOffer: (offerId, memberId) => post('/api/offers/settle', { offerId, memberId }),
   sendReward: (body) => post('/api/family/reward', body),
+
+  // Fresh personalized analysis. Node delegates to FastAPI when enabled and
+  // returns an explicitly labeled deterministic fallback otherwise.
+  personalizedRecommendations: (userId = 'rashid') => get(`/api/ml/recommendations?userId=${encodeURIComponent(userId)}`),
 };

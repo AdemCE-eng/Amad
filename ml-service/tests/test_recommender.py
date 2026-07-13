@@ -1,14 +1,15 @@
 from app.features import load_data
+from app.demo_fixture import canonical_demo_transactions
 from app import recommender as recommender_module
 from app.offer_model import load_bundle as load_offer
 from app.purchase_model import load_bundle as load_purchase
 from app.recommender import recommendations
-from app.settings import DEMO_AS_OF
+from app.settings import DEMO_AS_OF, DEMO_WINDOW_DAYS
 
 
 def get_ranking():
     catalog, campaigns, transactions = load_data()
-    return recommendations(load_offer(), load_purchase(), campaigns, transactions, catalog, "rashid", DEMO_AS_OF)
+    return recommendations(load_offer(), load_purchase(), campaigns, canonical_demo_transactions(transactions), catalog, "rashid", DEMO_AS_OF, window_days=DEMO_WINDOW_DAYS)
 
 
 def test_ranking_is_deterministic():
@@ -45,7 +46,7 @@ def test_high_affinity_merchant_without_offer_is_not_recommended(monkeypatch):
 
 def test_previously_dismissed_recommendation_is_not_repeated():
     catalog, campaigns, transactions = load_data()
-    ranking = recommendations(load_offer(), load_purchase(), campaigns, transactions, catalog, "rashid", DEMO_AS_OF, decisions={"half_million"})
+    ranking = recommendations(load_offer(), load_purchase(), campaigns, canonical_demo_transactions(transactions), catalog, "rashid", DEMO_AS_OF, decisions={"half_million"}, window_days=DEMO_WINDOW_DAYS)
     dismissed = next(item for item in ranking if item["merchantId"] == "half_million")
     assert not dismissed["eligible"]
     assert dismissed["suppressionReason"] == "prior_decision"

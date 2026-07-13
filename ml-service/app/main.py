@@ -1,12 +1,13 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 
+from .demo_fixture import FIXTURE_VERSION, canonical_demo_transactions
 from .features import load_data
 from .offer_model import load_bundle as load_offer_bundle
 from .purchase_model import load_bundle as load_purchase_bundle
 from .recommender import offer_payload, purchase_patterns, recommendations
 from .schemas import OfferPredictionRequest
-from .settings import APP_ENV, DATA_LABEL, DEMO_AS_OF, OFFER_MODEL_PATH, PURCHASE_MODEL_PATH
+from .settings import APP_ENV, DATA_LABEL, DEMO_AS_OF, DEMO_USER_ID, DEMO_WINDOW_DAYS, OFFER_MODEL_PATH, PURCHASE_MODEL_PATH
 
 STATE = {}
 
@@ -32,11 +33,15 @@ app = FastAPI(title="Namo Personalized Promotion Prediction", version="1.0.0", l
 
 @app.get("/health")
 def health():
-    models = None if not STATE else {
+    models = model_metadata()
+    return {"ok": True, "service": "namo-ml", "ready": bool(STATE), "models": models, "dataLabel": DATA_LABEL}
+
+
+def model_metadata():
+    return None if not STATE else {
         "offer": {"name": STATE["offer"].get("modelName"), "version": STATE["offer"].get("modelVersion", "baseline-v2")},
         "purchase": {"name": STATE["purchase"].get("modelName"), "version": STATE["purchase"].get("modelVersion", "baseline-v2")},
     }
-    return {"ok": True, "service": "namo-ml", "ready": bool(STATE), "models": models, "dataLabel": DATA_LABEL}
 
 
 def require_state():
@@ -69,8 +74,19 @@ def recommendations_endpoint(user_id: str, includeSuppressed: bool = False):
     require_state()
     if user_id not in set(STATE["transactions"].user_id):
         raise HTTPException(status_code=404, detail="unknown_user")
-    ranked = recommendations(STATE["offer"], STATE["purchase"], STATE["campaigns"], STATE["transactions"], STATE["catalog"], user_id, DEMO_AS_OF)
-    return {"userId": user_id, "recommendations": ranked if includeSuppressed else [item for item in ranked if item["eligible"]], "ranking": ranked if includeSuppressed else None, "dataLabel": DATA_LABEL}
+    inference_transactions = canonical_demo_transactions(STATE["transactions"]) if user_id == DEMO_USER_ID else STATE["transactions"]
+    ranked = recommendations(
+        STATE["offer"], STATE["purchase"], STATE["campaigns"], inference_transactions,
+        STATE["catalog"], user_id, DEMO_AS_OF, window_days=DEMO_WINDOW_DAYS,
+    )
+    return {
+        "userId": user_id,
+        "recommendations": ranked if includeSuppressed else [item for item in ranked if item["eligible"]],
+        "ranking": ranked if includeSuppressed else None,
+        "models": model_metadata(),
+        "fixture": {"id": FIXTURE_VERSION, "userId": DEMO_USER_ID, "asOfDate": DEMO_AS_OF, "windowDays": DEMO_WINDOW_DAYS},
+        "dataLabel": DATA_LABEL,
+    }
 
 
 @app.post("/v1/train")

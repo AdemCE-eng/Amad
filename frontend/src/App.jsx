@@ -6,7 +6,6 @@ import PetRoomView from './views/PetRoomView';
 import RewardsView from './views/RewardsView';
 import NotificationsView from './views/NotificationsView';
 import FamilyGoalView from './views/FamilyGoalView';
-import OnboardingFlow from './views/OnboardingFlow';
 import MascotLab from './views/MascotLab';
 import BottomNav from './components/ui/BottomNav';
 import CelebrationOverlay from './components/ui/CelebrationOverlay';
@@ -38,11 +37,11 @@ function StatusBar() {
   );
 }
 
-// Shell only: device frame, view switching, onboarding gate, celebrations.
+// Shell only: device frame, view switching, and celebrations.
 // The operator/judge control panel is the standalone Cheat Controller served
 // by the backend at http://localhost:3000/ — no in-app PoC panel.
 function AppShell() {
-  const { loading, activeView, setActiveView, user, game, onboarded, setOnboarded, savingsAccountOpened } = useAppData();
+  const { loading, activeView, setActiveView, user, game, savingsAccountOpened, demoResetVersion } = useAppData();
 
   if (loading) {
     return (
@@ -64,10 +63,7 @@ function AppShell() {
           <StatusBar />
           {/* app viewport — views fill this, nav anchors to it */}
           <div className="relative flex-1 min-h-0">
-            {!onboarded ? (
-              <OnboardingFlow onDone={() => setOnboarded(true)} />
-            ) : (
-              <>
+            <React.Fragment key={demoResetVersion}>
                 {activeView === 'home' && <HomeView />}
                 {activeView === 'pet' && savingsAccountOpened && <PetRoomView />}
                 {activeView === 'rewards' && <RewardsView />}
@@ -75,14 +71,13 @@ function AppShell() {
                 {activeView === 'notifications' && <NotificationsView setActiveView={setActiveView} />}
                 <BottomNav activeView={activeView} setActiveView={setActiveView} petName={user?.petName} petLocked={!savingsAccountOpened} />
                 <RewardNotice />
-              </>
-            )}
+            </React.Fragment>
           </div>
         </div>
       </div>
 
       {/* Celebration layer — portal above the frame */}
-      {onboarded && <CelebrationOverlay game={game} petName={user?.petName} />}
+      <CelebrationOverlay key={demoResetVersion} game={game} petName={user?.petName} />
     </div>
   );
 }

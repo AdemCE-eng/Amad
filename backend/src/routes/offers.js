@@ -17,14 +17,20 @@ const router = Router();
 
 async function readOffers() {
   const snap = await db.ref("/offers").get();
-  return snap.val() || initialOffersState();
+  const value = snap.val() || initialOffersState();
+  return {
+    ...value,
+    predicted: value.predicted || {},
+    decisions: value.decisions || {},
+  };
 }
 
 // GET /api/offers/predicted — deterministic list (same result every run).
 router.get("/offers/predicted", async (_req, res, next) => {
   try {
     const offers = await readOffers();
-    res.json({ ok: true, predicted: offers.predicted, source: "MOCK merchant-campaigns", history: offers.history });
+    const source = Object.values(offers.predicted)[0]?.source || "not_analyzed";
+    res.json({ ok: true, predicted: offers.predicted, source, history: offers.history });
   } catch (e) {
     next(e);
   }

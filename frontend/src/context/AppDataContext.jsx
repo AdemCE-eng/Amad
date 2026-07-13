@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useBackendData } from '../lib/useBackendData';
 import { api } from '../lib/api';
+import { CANONICAL_DEMO_ROLE, clearDemoBrowserState } from '../lib/demoReset';
 
 // Demo-only role switch (no auth, no permissions) — which family member the
 // UI is "acting as". Persisted so a refresh keeps the same role.
@@ -15,21 +16,15 @@ export function AppDataProvider({ children }) {
   const backend = useBackendData();
   const { user, pet } = backend;
 
-  // Home-first: the app lands on Home by default and surfaces setup as
-  // dismissible suggestion cards (open savings / pick a companion). The full
-  // onboarding flow is still reachable on demand (a card calls setOnboarded
-  // (false)) or via ?onboard=1.
-  const [onboarded, setOnboarded] = useState(() =>
-    !new URLSearchParams(window.location.search).get('onboard')
-  );
   const [restarting, setRestarting] = useState(false);
+  const [demoResetVersion, setDemoResetVersion] = useState(0);
 
   const [activeView, setActiveView] = useState('home');
   const [activeRole, setActiveRoleState] = useState(() => {
     const stored = localStorage.getItem(ROLE_KEY);
     // Only rashid/ahmed are valid; anything else (incl. stale pre-migration
     // values) maps to the child role.
-    return stored === 'ahmed' ? 'ahmed' : 'rashid';
+    return stored === 'ahmed' ? 'ahmed' : CANONICAL_DEMO_ROLE;
   });
   const setActiveRole = (role) => {
     localStorage.setItem(ROLE_KEY, role);
@@ -105,18 +100,30 @@ export function AppDataProvider({ children }) {
     }
   };
 
-  // Full "start over" — wipes the backend to the pristine demo state (health,
-  // streak, coins, achievements) AND drops back to onboarding so the operator
-  // can re-pick the companion and set a fresh goal. Used between judges.
-  const restartOnboarding = async () => {
+  // Full presentation reset. The backend restores canonical Firebase state;
+  // the frontend returns Home and remounts every view so no analysis, loading,
+  // notice, setup-step, or cached visual state can flash from the prior run.
+  // Setup then begins only from Home's existing savings-plan card.
+  const restartDemo = async () => {
     setRestarting(true);
+    setActionError(null);
     try {
       await api.reset();
-    } catch { /* offline demo still proceeds to onboarding */ }
-    localStorage.removeItem('amad_onboarded');
-    setActiveView('home');
-    setOnboarded(false);
-    setRestarting(false);
+      clearDemoBrowserState();
+      setActiveRoleState(CANONICAL_DEMO_ROLE);
+      setActiveView('home');
+      setIsPetted(false);
+      setIsShaking(false);
+      setFlashColor(null);
+      setLastHealth(null);
+      setDemoResetVersion((version) => version + 1);
+      return true;
+    } catch {
+      setActionError('تعذر إعادة حالة العرض. تأكد من تشغيل الخادم وحاول مرة أخرى.');
+      return false;
+    } finally {
+      setRestarting(false);
+    }
   };
 
   // Two separate currencies — never merged. NXP lives in game.nxp_balance
@@ -126,7 +133,7 @@ export function AppDataProvider({ children }) {
 
   const value = {
     ...backend,
-    onboarded, setOnboarded, restartOnboarding, restarting,
+    restartDemo, restarting, demoResetVersion,
     activeView, setActiveView,
     activeRole, setActiveRole,
     nxp, akthrPoints,

@@ -7,6 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "oxlint",
+    "test:reset": "node --test tests/demoReset.test.mjs",
+    "test:ui": "node --test tests/*.test.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
