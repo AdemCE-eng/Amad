@@ -19,6 +19,7 @@ frontend only ever sees the *result* of that (via its Firebase listener) — it 
 | POST | `/api/user/goal` | `{ goalAmount }` | Changes the user's personal savings goal. Settings-only — doesn't touch health/mood/AI message. |
 | POST | `/api/reset` | — | **Panic Reset.** Wipes the DB back to the pristine demo state: health 100, shield restored, transactions cleared. Use this between judges. |
 | GET | `/api/state` | — | Read-only snapshot of `/user`, `/pet`, `/emergencyShield`, `/meta`. Useful for debugging. |
+| GET | `/api/ml/recommendations?userId=rashid` | — | Optional personalized recommendation. Uses only a pseudonymous ID and falls back to the existing deterministic offer engine when ML is disabled or unavailable. |
 
 ## Money rules (so nothing looks broken on stage)
 

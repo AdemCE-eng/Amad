@@ -1,0 +1,50 @@
+{
+  "label": "نتائج على بيانات تجريبية من السوق السعودي",
+  "dataLabel": "MOCK / SYNTHETIC DEMO DATA — SAUDI MARKET",
+  "offerModel": {
+    "precision": 0.3924,
+    "recall": 0.5741,
+    "f1": 0.4662,
+    "rocAuc": 0.8971,
+    "evaluatedThreshold": 0.46,
+    "testRows": 570,
+    "positiveRate": 0.0947,
+    "calibrationSummary": [
+      {
+        "range": "0.0-0.2",
+        "meanPrediction": 0.0448,
+        "observedRate": 0.0104,
+        "count": 385
+      },
+      {
+        "range": "0.2-0.4",
+        "meanPrediction": 0.3068,
+        "observedRate": 0.186,
+        "count": 86
+      },
+      {
+        "range": "0.4-0.6",
+        "meanPrediction": 0.4853,
+        "observedRate": 0.2742,
+        "count": 62
+      },
+      {
+        "range": "0.6-0.8",
+        "meanPrediction": 0.6682,
+        "observedRate": 0.4595,
+        "count": 37
+      }
+    ]
+  },
+  "purchaseModel": {
+    "precision": 0.1612,
+    "recall": 0.6705,
+    "f1": 0.2599,
+    "rocAuc": 0.9037,
+    "evaluatedThreshold": 0.34,
+    "testRows": 2625,
+    "positiveRate": 0.0335,
+    "precisionAt3": 0.1429,
+    "hitRateAt3": 0.9706
+  }
+}
