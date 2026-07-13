@@ -28,8 +28,16 @@ def test_high_offer_low_affinity_does_not_beat_relevant_candidate():
     assert relevant["personalizedScore"] > low_affinity["personalizedScore"]
 
 
-def test_frequent_merchant_without_offer_is_not_recommended():
-    barns = next(item for item in get_ranking() if item["merchantId"] == "barns")
-    assert barns["purchaseProbability"] > 0
-    assert not barns["eligible"]
+def test_high_affinity_merchant_without_offer_is_not_recommended():
+    flynas = next(item for item in get_ranking() if item["merchantId"] == "flynas")
+    assert flynas["purchaseProbability"] >= load_purchase()["threshold"]
+    assert flynas["offerProbability"] < load_offer()["threshold"]
+    assert not flynas["eligible"]
 
+
+def test_previously_dismissed_recommendation_is_not_repeated():
+    catalog, campaigns, transactions = load_data()
+    ranking = recommendations(load_offer(), load_purchase(), campaigns, transactions, catalog, "rashid", DEMO_AS_OF, decisions={"half_million"})
+    dismissed = next(item for item in ranking if item["merchantId"] == "half_million")
+    assert not dismissed["eligible"]
+    assert dismissed["suppressionReason"] == "prior_decision"

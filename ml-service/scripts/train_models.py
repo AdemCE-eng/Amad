@@ -13,10 +13,9 @@ def train():
     purchase_bundle, purchase_test = train_purchase_bundle(transactions, catalog)
     save_offer(offer_bundle)
     save_purchase(purchase_bundle)
-    print(f"offer test rows={len(offer_test)} cutoff={offer_bundle['cutoff']}")
-    print(f"purchase test rows={len(purchase_test)} cutoff={purchase_bundle['cutoff']}")
+    print(f"offer model={offer_bundle['modelName']} threshold={offer_bundle['threshold']} calibration={offer_bundle['calibrationMethod']} test_rows={len(offer_test)}")
+    print(f"purchase model={purchase_bundle['modelName']} threshold={purchase_bundle['threshold']} calibration={purchase_bundle['calibrationMethod']} test_rows={len(purchase_test)}")
 
 
 if __name__ == "__main__":
     train()
-

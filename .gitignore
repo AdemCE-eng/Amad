@@ -29,3 +29,24 @@ emu-err.log
 backend-out.log
 backend-err.log
 .firebase.launcher.json
+
+# Generated ML bulk data (tracked samples live in ml-service/data/samples/)
+/ml-service/data/*.csv
+/ml-service/data/*candidate*.csv
+/ml-service/data/*intermediate*.csv
+
+# Reproducible trained model binaries (JSON metrics remain trackable)
+/ml-service/artifacts/models/*.joblib
+/ml-service/artifacts/models/*.pkl
+/ml-service/artifacts/models/*.bin
+/ml-service/artifacts/checkpoints/
+/ml-service/artifacts/**/*checkpoint*
+/ml-service/training-logs/
+/ml-service/**/*.log
+
+# Browser/test caches and non-canonical screenshot resolution
+.cache/
+playwright/.cache/
+test-results/
+/visual-design/screenshots/*-1600x900.png
+/ml-results-showcase/screenshots/*-1600x900.png

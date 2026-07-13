@@ -9,5 +9,4 @@ npm --prefix visual-design install
 npm --prefix visual-design run capture
 ```
 
-The capture script reads generated ML artifacts through `ml-results-showcase/generated-results.js`, serves the repository locally, and exports every component at 1920×1080 and 1600×900.
-
+The capture script reads generated ML artifacts through `ml-results-showcase/generated-results.js`, serves the repository locally, and exports every component at 1920×1080 and 1600×900. Git keeps the canonical 1920×1080 PNG for each visual; duplicate 1600×900 exports remain available locally and are ignored.

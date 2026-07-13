@@ -1,8 +1,13 @@
 {
+  "datasetVersion": "synthetic-saudi-v2",
   "label": "MOCK / SYNTHETIC DEMO DATA — SAUDI MARKET",
-  "merchants": 15,
-  "campaigns": 191,
-  "transactions": 445,
-  "users": 5,
-  "seed": 20260923
+  "merchants": 20,
+  "campaigns": 2047,
+  "transactions": 95063,
+  "users": 220,
+  "seed": 20260923,
+  "dateRange": {
+    "start": "2022-01-03",
+    "end": "2026-09-19T23:00:00"
+  }
 }
