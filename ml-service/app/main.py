@@ -32,7 +32,11 @@ app = FastAPI(title="Namo Personalized Promotion Prediction", version="1.0.0", l
 
 @app.get("/health")
 def health():
-    return {"ok": True, "service": "namo-ml", "ready": bool(STATE), "dataLabel": DATA_LABEL}
+    models = None if not STATE else {
+        "offer": {"name": STATE["offer"].get("modelName"), "version": STATE["offer"].get("modelVersion", "baseline-v2")},
+        "purchase": {"name": STATE["purchase"].get("modelName"), "version": STATE["purchase"].get("modelVersion", "baseline-v2")},
+    }
+    return {"ok": True, "service": "namo-ml", "ready": bool(STATE), "models": models, "dataLabel": DATA_LABEL}
 
 
 def require_state():

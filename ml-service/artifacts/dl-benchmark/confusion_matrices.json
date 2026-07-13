@@ -1,0 +1,79 @@
+{
+  "label": "MOCK / SYNTHETIC DEEP-LEARNING BENCHMARK — SAUDI MARKET",
+  "engines": {
+    "offer": {
+      "currentBaseline": [
+        [
+          134,
+          294
+        ],
+        [
+          43,
+          269
+        ]
+      ],
+      "CatBoostClassifier": [
+        [
+          119,
+          309
+        ],
+        [
+          32,
+          280
+        ]
+      ],
+      "EmbeddingMLP": [
+        [
+          71,
+          357
+        ],
+        [
+          24,
+          288
+        ]
+      ]
+    },
+    "purchase": {
+      "currentBaseline": [
+        [
+          12107,
+          5692
+        ],
+        [
+          1809,
+          10092
+        ]
+      ],
+      "CatBoostClassifier": [
+        [
+          11902,
+          5897
+        ],
+        [
+          1803,
+          10098
+        ]
+      ],
+      "EmbeddingMLP": [
+        [
+          12486,
+          5313
+        ],
+        [
+          2076,
+          9825
+        ]
+      ],
+      "PurchaseGRU": [
+        [
+          12093,
+          5706
+        ],
+        [
+          1910,
+          9991
+        ]
+      ]
+    }
+  }
+}

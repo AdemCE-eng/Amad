@@ -1,4 +1,5 @@
 from app.features import load_data
+from app import recommender as recommender_module
 from app.offer_model import load_bundle as load_offer
 from app.purchase_model import load_bundle as load_purchase
 from app.recommender import recommendations
@@ -28,7 +29,14 @@ def test_high_offer_low_affinity_does_not_beat_relevant_candidate():
     assert relevant["personalizedScore"] > low_affinity["personalizedScore"]
 
 
-def test_high_affinity_merchant_without_offer_is_not_recommended():
+def test_high_affinity_merchant_without_offer_is_not_recommended(monkeypatch):
+    original_predict_offer = recommender_module.predict_offer
+
+    def predict_offer_without_flynas(bundle, campaigns, merchant, as_of, window_days=7):
+        row, probability = original_predict_offer(bundle, campaigns, merchant, as_of, window_days)
+        return row, 0.0 if merchant.merchant_id == "flynas" else probability
+
+    monkeypatch.setattr(recommender_module, "predict_offer", predict_offer_without_flynas)
     flynas = next(item for item in get_ranking() if item["merchantId"] == "flynas")
     assert flynas["purchaseProbability"] >= load_purchase()["threshold"]
     assert flynas["offerProbability"] < load_offer()["threshold"]

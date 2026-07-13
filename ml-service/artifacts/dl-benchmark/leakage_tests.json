@@ -1,0 +1,16 @@
+{
+  "label": "MOCK / SYNTHETIC DEEP-LEARNING BENCHMARK — SAUDI MARKET",
+  "checks": {
+    "offerTemporalSeparation": true,
+    "offerStableTestHash": true,
+    "purchaseTemporalSeparation": true,
+    "purchaseStableTestHash": true,
+    "offerLabelsExcluded": true,
+    "purchaseLabelsExcluded": true,
+    "timestampsAndIdsExcludedFromNumericInputs": true,
+    "unknownCategoriesUseSafeIndex": true,
+    "gruSequenceStrictCutoff": true,
+    "trainOnlyVocabulariesAndScalers": true
+  },
+  "passed": true
+}
