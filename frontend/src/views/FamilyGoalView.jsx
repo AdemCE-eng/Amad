@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ChevronRight, Sparkles, Trophy, ChevronDown, TrendingUp, Hourglass, CheckCircle2, Search } from 'lucide-react';
 import { useAppData } from '../context/AppDataContext';
 import { api } from '../lib/api';
@@ -24,16 +24,14 @@ const MEMBER_AVATARS = {
 };
 const avatarOf = (id) => MEMBER_AVATARS[id] || { init: '؟', bg: 'bg-white/10', text: 'text-cream', bar: 'bg-white/40' };
 
-// Deterministic "analysis" theater before revealing the prediction — the
-// backend result never changes; this is presentation pacing only (≤3s).
+// Deterministic presentation pacing around a real backend request.
 const ANALYSIS_STEPS = [
   'جاري تحليل نمط مشترياتك...',
   'جاري مقارنة المواسم السابقة...',
   'جاري فحص عروض التجار...',
   'تم العثور على فرصة توفير',
 ];
-const ANALYSIS_STEP_MS = 700; // 4 steps ≈ 2.8s total
-const OFFERS_REVEALED_KEY = 'namo_offers_revealed';
+const ANALYSIS_STEP_MS = 550;
 
 // نامو — Family Shared Savings Goal. All values come from the canonical
 // Phase 1 backend (/family + /contributionPlan). Nothing about the split is
@@ -46,28 +44,46 @@ export default function FamilyGoalView() {
   } = useAppData();
   const [openDetails, setOpenDetails] = useState(false);
   const [rewardMsg, setRewardMsg] = useState(null);
-  // Offer-search theater: -1 = not running, 0..3 = current step.
+  // Offer analysis: -1 = idle, 0..3 = current visual stage. Results exist only
+  // after a fresh Node request completes; Firebase is used for later decisions.
   const [analysisStep, setAnalysisStep] = useState(-1);
-  const [revealed, setRevealed] = useState(() => localStorage.getItem(OFFERS_REVEALED_KEY) === '1');
+  const [recommendationResult, setRecommendationResult] = useState(null);
+  const [analysisError, setAnalysisError] = useState(null);
   const analysisRunning = useRef(false);
+  const analysisRunId = useRef(0);
 
-  const runAnalysis = () => {
+  useEffect(() => () => {
+    analysisRunId.current += 1;
+    analysisRunning.current = false;
+  }, []);
+
+  const runAnalysis = async () => {
     if (analysisRunning.current) return; // duplicate-request guard
     analysisRunning.current = true;
-    let step = 0;
+    const runId = ++analysisRunId.current;
+    setRecommendationResult(null);
+    setAnalysisError(null);
     setAnalysisStep(0);
-    const tick = setInterval(() => {
-      step += 1;
-      if (step >= ANALYSIS_STEPS.length) {
-        clearInterval(tick);
-        localStorage.setItem(OFFERS_REVEALED_KEY, '1');
-        setRevealed(true);
-        setAnalysisStep(-1);
-        analysisRunning.current = false;
-      } else {
+    try {
+      const request = api.personalizedRecommendations('rashid');
+      for (let step = 1; step < ANALYSIS_STEPS.length; step += 1) {
+        await new Promise((resolve) => setTimeout(resolve, ANALYSIS_STEP_MS));
+        if (analysisRunId.current !== runId) return;
         setAnalysisStep(step);
       }
-    }, ANALYSIS_STEP_MS);
+      const result = await request;
+      if (analysisRunId.current !== runId) return;
+      setRecommendationResult(result);
+    } catch {
+      if (analysisRunId.current === runId) {
+        setAnalysisError('تعذر إكمال التحليل. حاول مرة أخرى.');
+      }
+    } finally {
+      if (analysisRunId.current === runId) {
+        setAnalysisStep(-1);
+        analysisRunning.current = false;
+      }
+    }
   };
 
   // Loading state — watchers haven't delivered /family yet.
@@ -92,15 +108,12 @@ export default function FamilyGoalView() {
 
   const generate = () => runAction(() => api.generatePlan());
 
-  // Predicted offers, hero (highest probability) first. Deterministic MOCK
-  // predictions — never presented as guaranteed.
-  const predictedList = Object.values(offers?.predicted || {}).sort((a, b) => b.probability - a.probability);
+  const predictedList = (recommendationResult?.recommendations || []).map((recommendation) => ({
+    ...recommendation,
+    persisted: offers?.predicted?.[recommendation.offerId] || null,
+  }));
   const rewards = family.rewards || {};
   const cashback = cashbackState(user, game);
-  // Mid-demo refresh safety: if any offer already left "pending" (decided or
-  // settled on the backend), skip the theater — state must stay refresh-safe.
-  const anyDecided = predictedList.some((o) => o.status !== 'pending');
-  const showOffers = revealed || anyDecided;
 
   // Parent reward — demo flow: أحمد rewards راشد with Akthr points.
   // eventId is fixed per demo run (reset wipes /family/rewards, so each run
@@ -254,11 +267,10 @@ export default function FamilyGoalView() {
           )}
         </div>
 
-        {/* Predicted saving opportunities — MOCK, deterministic, probabilistic
-            wording only (never "guaranteed"). Revealed through a short
-            deterministic "analysis" sequence (presentation pacing only — the
-            backend prediction is unchanged and refresh-safe). */}
-        {predictedList.length > 0 && !showOffers && (
+        {/* Personalized opportunities. Nothing is displayed before the fresh
+            Node → FastAPI request; fallback uses the same visual journey but
+            remains explicitly labeled by its source. */}
+        {!recommendationResult && (
           <div>
             <div className="flex items-center gap-2 mb-3 px-1">
               <TrendingUp size={16} className="text-coral" />
@@ -296,61 +308,75 @@ export default function FamilyGoalView() {
                 </div>
               </div>
             )}
+            {analysisError && <p className="mt-2 text-center text-xs font-bold text-red-300">{analysisError}</p>}
           </div>
         )}
 
-        {predictedList.length > 0 && showOffers && (
+        {recommendationResult && (
           <div>
             <div className="flex items-center gap-2 mb-3 px-1">
               <TrendingUp size={16} className="text-coral" />
               <h3 className="font-black text-cream text-sm">فرص توفير متوقعة</h3>
             </div>
+            <div className="mb-2 flex flex-wrap items-center gap-1.5 text-[9px] font-bold text-cream/45" dir="ltr">
+              <span data-testid="recommendation-source">{recommendationResult.source}</span>
+              {recommendationResult.fallbackReason && <span>· {recommendationResult.fallbackReason}</span>}
+              {recommendationResult.models && (
+                <span>· {recommendationResult.models.offer?.name} + {recommendationResult.models.purchase?.name}</span>
+              )}
+            </div>
+            {predictedList.length === 0 ? (
+              <div className="bg-ink-card rounded-3xl p-5 text-center text-sm font-bold text-cream/60">لا توجد فرصة مناسبة حالياً.</div>
+            ) : (
             <div className="space-y-2">
-              {predictedList.map((o) => (
-                <div key={o.id} className={`rounded-3xl p-4 ${o.status === 'settled' ? 'bg-emerald-400/10 border border-emerald-400/25' : 'bg-ink-card'}`}>
+              {predictedList.map((o) => {
+                const status = o.persisted?.status || 'pending';
+                return (
+                <div key={o.offerId || o.merchantId} data-testid="recommendation-card" className={`rounded-3xl p-4 ${status === 'settled' ? 'bg-emerald-400/10 border border-emerald-400/25' : 'bg-ink-card'}`}>
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
-                      <p className="font-black text-cream text-sm">{o.merchant} — {o.occasion}</p>
-                      <p className="text-[11px] text-cream/50 font-bold mt-0.5">{o.basis}</p>
+                      <p className="font-black text-cream text-sm">{o.merchantNameAr} — {o.occasion}</p>
+                      <p className="text-[11px] text-cream/50 font-bold mt-0.5">{o.explanation}</p>
                     </div>
                     <span className="bg-coral/15 text-coral text-[11px] font-black px-2.5 py-1 rounded-full flex-shrink-0">
-                      احتمال {o.probability}٪
+                      احتمال {Math.round(o.offerProbability * 100)}٪
                     </span>
                   </div>
                   <div className="flex gap-3 mt-3 text-[11px] font-bold text-cream/60">
                     <span>⏳ نافذة {o.windowDays} أيام</span>
-                    <span>💰 توفير محتمل {o.potentialSaving} ر.س</span>
+                    <span>💰 توفير محتمل {o.estimatedSavingSar} ر.س</span>
                   </div>
                   <div className="mt-3">
-                    {o.status === 'pending' && activeRole === 'rashid' && (
+                    {status === 'pending' && activeRole === 'rashid' && o.action === 'wait_for_offer' && (
                       <button
                         disabled={isSubmitting}
-                        onClick={() => runAction(() => api.decideOffer(o.id, 'wait'))}
+                        onClick={() => runAction(() => api.decideOffer(o.offerId, 'wait'))}
                         className="w-full bg-coral text-ink font-black text-sm py-2.5 rounded-2xl active:scale-95 transition-transform disabled:opacity-50"
                       >
                         أنتظر العرض المتوقع
                       </button>
                     )}
-                    {o.status === 'pending' && activeRole !== 'rashid' && (
+                    {status === 'pending' && activeRole !== 'rashid' && (
                       <p className="text-[11px] text-cream/60 font-bold text-center">بانتظار قرار راشد</p>
                     )}
-                    {o.status === 'waiting' && (
+                    {status === 'waiting' && (
                       <p className="flex items-center justify-center gap-1.5 text-[12px] text-amber-300 font-bold bg-amber-400/10 border border-amber-400/20 rounded-2xl py-2.5">
                         <Hourglass size={13} /> قرر راشد الانتظار — بانتظار وصول العرض
                       </p>
                     )}
-                    {o.status === 'settled' && (
+                    {status === 'settled' && (
                       <p className="flex items-center justify-center gap-1.5 text-[12px] text-emerald-300 font-black bg-emerald-400/10 rounded-2xl py-2.5">
-                        <CheckCircle2 size={14} /> وصل العرض — تحوّل {o.potentialSaving} ر.س لهدف العائلة
+                        <CheckCircle2 size={14} /> وصل العرض — تحوّل {o.estimatedSavingSar} ر.س لهدف العائلة
                       </p>
                     )}
-                    {o.status === 'ignored' && (
+                    {status === 'ignored' && (
                       <p className="text-[11px] text-cream/60 font-bold text-center">تم تجاهل العرض</p>
                     )}
                   </div>
                 </div>
-              ))}
+              );})}
             </div>
+            )}
           </div>
         )}
 

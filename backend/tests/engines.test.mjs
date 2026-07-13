@@ -18,6 +18,10 @@ import {
   decideOffer,
   settleOffer,
 } from "../src/logic/offerEngine.js";
+
+function populatedOffersState() {
+  return { ...initialOffersState(), predicted: buildPredictedOffers() };
+}
 import { applyCheer, initialState } from "../src/logic/petEngine.js";
 import { MOCK_FINANCIAL_PROFILES } from "../src/mocks/openBanking.js";
 
@@ -102,7 +106,7 @@ test("Half Million National-Day offer matches the approved demo scenario", () =>
 });
 
 test("decideOffer: wait → waiting; double-decide rejected", () => {
-  const offers = initialOffersState();
+  const offers = populatedOffersState();
   const id = Object.keys(offers.predicted).find((k) => offers.predicted[k].merchant === "هاف مليون");
   const { offers: next } = decideOffer(offers, { offerId: id, decision: "wait" });
   assert.equal(next.predicted[id].status, "waiting");
@@ -112,7 +116,7 @@ test("decideOffer: wait → waiting; double-decide rejected", () => {
 });
 
 test("settleOffer: idempotent, no Akthr in outcome", () => {
-  let offers = initialOffersState();
+  let offers = populatedOffersState();
   const id = Object.keys(offers.predicted).find((k) => offers.predicted[k].merchant === "هاف مليون");
   assert.equal(settleOffer(offers, { offerId: id }).error, "not_waiting"); // must decide first
   offers = decideOffer(offers, { offerId: id, decision: "wait" }).offers;

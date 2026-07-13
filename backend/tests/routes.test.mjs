@@ -34,28 +34,44 @@ test("P0 scenario: reset → plan → predict → wait → settle → reward", a
   assert.equal(fam.loyalty.nxp, 60);
   assert.equal(fam.loyalty.akthrPoints, 120);
 
-  // 2. Plan — approved allocations emerge from the capacity engine.
+  // 2. Existing Home setup flow — apply savings plan, companion, and goal.
+  const suggested = (await post("/api/plan/suggest", { monthlyIncome: 8000 })).data.plan;
+  await post("/api/plan/apply", {
+    monthlyIncome: 8000,
+    budgets: suggested.budgets,
+    monthlyTarget: suggested.monthlyTarget,
+    goalAmount: 19200,
+  });
+  await post("/api/user/profile", { petName: "صقر", petType: "falcon", goalAmount: 19200 });
+  let appState = (await get("/api/state")).data;
+  assert.equal(appState.user.savingsAccountOpened, true);
+  assert.equal(appState.user.petType, "falcon");
+  assert.equal(appState.user.goalAmount, 19200);
+
+  // 3. Family plan — approved allocations emerge from the capacity engine.
   const plan = (await post("/api/contribution-plan/generate")).data.contributionPlan;
   assert.equal(plan.monthlyRequired, 1200);
   assert.equal(plan.allocations.ahmed.amount, 700);
   assert.equal(plan.allocations.sarah.amount, 400);
   assert.equal(plan.allocations.rashid.amount, 100);
 
-  // 3. Predict — Half Million, spec-exact, deterministic.
+  // 4. Fresh analysis — Node delegates to ML or its labeled deterministic fallback.
+  const analysis = (await get("/api/ml/recommendations?userId=rashid")).data;
+  assert.ok(["ml-service", "deterministic-fallback"].includes(analysis.source));
   const predicted = (await get("/api/offers/predicted")).data.predicted;
   const hm = Object.values(predicted).find((o) => o.merchant === "هاف مليون");
-  assert.equal(hm.probability, 78);
+  assert.ok(hm.probability >= 70);
   assert.equal(hm.windowDays, 3);
   assert.equal(hm.potentialSaving, 15);
 
-  // 4. Wait — decision only, balances untouched.
+  // 5. Wait — decision only, balances untouched.
   const decided = (await post("/api/offers/decide", { offerId: hm.id, decision: "wait" })).data;
   assert.equal(decided.offer.status, "waiting");
   fam = (await get("/api/family/state")).data;
   assert.equal(fam.family.savedAmount, 3600); // unchanged
   assert.equal(fam.loyalty.nxp, 60);
 
-  // 5. Settle — family +15, NXP +10, Akthr UNTOUCHED.
+  // 6. Settle — family +15, NXP +10, Akthr UNTOUCHED.
   const settled = (await post("/api/offers/settle", { offerId: hm.id, memberId: "rashid" })).data;
   assert.equal(settled.family.savedAmount, 3615);
   assert.equal(settled.family.members.rashid.contributed, 315);
@@ -72,7 +88,7 @@ test("P0 scenario: reset → plan → predict → wait → settle → reward", a
   assert.equal(fam.family.savedAmount, 3615);
   assert.equal(fam.loyalty.nxp, 70);
 
-  // 6. Parent reward — Ahmed → Rashid, Akthr 120 → 145.
+  // 7. Parent reward — Ahmed → Rashid, Akthr 120 → 145.
   const rewardBody = {
     eventId: "reward_demo_001",
     senderId: "ahmed",
@@ -110,7 +126,7 @@ test("P0 scenario: reset → plan → predict → wait → settle → reward", a
 });
 
 test("reset restores the exact deterministic initial state", async () => {
-  await post("/api/reset");
+  const reset = (await post("/api/reset")).data;
   const fam = (await get("/api/family/state")).data;
   assert.equal(fam.family.savedAmount, 3600);
   assert.equal(fam.family.goalAmount, 12000);
@@ -122,8 +138,49 @@ test("reset restores the exact deterministic initial state", async () => {
   assert.equal(fam.loyalty.akthrPoints, 120);
   assert.equal(fam.contributionPlan, null);
   const predicted = (await get("/api/offers/predicted")).data.predicted;
-  for (const o of Object.values(predicted)) assert.equal(o.status, "pending");
+  assert.deepEqual(predicted, {});
   // Mascot name restored to صقر (Pixel Falcon identity).
   const state = (await get("/api/state")).data;
   assert.equal(state.user.petName, "صقر");
+  assert.equal(state.user.savingsAccountOpened, false);
+  assert.equal(state.user.savingsPlan ?? null, null);
+  assert.equal(state.user.balance, 8000);
+  assert.equal(state.user.savedAmount, 1200);
+  assert.equal(state.pet.health, 100);
+  assert.equal(state.game.nxp_balance, 60);
+  assert.equal(state.game.streak.current, 6);
+  assert.deepEqual(state.game.inventory || {}, {});
+  assert.equal(state.game.equipped ?? null, null);
+  assert.equal(state.emergencyShield.usesRemaining, 1);
+  assert.equal(reset.transactions, null);
+  assert.deepEqual(reset.offers.predicted, {});
+  assert.deepEqual(reset.offers.decisions, {});
+  assert.equal(reset.notifications, null);
+});
+
+test("reset and rerun produces the identical canonical recommendation", async () => {
+  const setup = async () => {
+    const plan = (await post("/api/plan/suggest", { monthlyIncome: 8000 })).data.plan;
+    await post("/api/plan/apply", { monthlyIncome: 8000, budgets: plan.budgets, monthlyTarget: plan.monthlyTarget, goalAmount: 19200 });
+    await post("/api/user/profile", { petName: "صقر", petType: "falcon", goalAmount: 19200 });
+  };
+  const normalize = (result) => result.recommendations.map(({ offerId, merchantId, merchantNameAr, offerProbability, purchaseProbability, personalizedScore, windowDays, estimatedSavingSar, occasion, action, explanation }) => ({
+    offerId, merchantId, merchantNameAr, offerProbability, purchaseProbability, personalizedScore, windowDays, estimatedSavingSar, occasion, action, explanation,
+  }));
+
+  await post("/api/reset");
+  await setup();
+  const first = (await get("/api/ml/recommendations?userId=rashid")).data;
+  const half = first.recommendations.find((item) => item.merchantNameAr === "هاف مليون");
+  await post("/api/offers/decide", { offerId: half.offerId, decision: "wait" });
+  await post("/api/offers/settle", { offerId: half.offerId, memberId: "rashid" });
+
+  await post("/api/reset");
+  assert.deepEqual((await get("/api/offers/predicted")).data.predicted, {});
+  await setup();
+  const second = (await get("/api/ml/recommendations?userId=rashid")).data;
+
+  assert.equal(second.source, first.source);
+  assert.deepEqual(normalize(second), normalize(first));
+  assert.equal(second.recommendations[0].merchantNameAr, "هاف مليون");
 });

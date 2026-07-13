@@ -34,12 +34,47 @@ export function initialLoyaltyState() {
   return { akthrPoints: MOCK_AKTHR_STARTING_BALANCE };
 }
 
-export function initialOffersState(now = Date.now()) {
+// Pre-analysis state used by seed and full reset. Recommendations are
+// materialized only after a fresh /api/ml/recommendations request, preventing
+// old cards from flashing before the presentation analysis starts.
+export function initialOffersState() {
   return {
-    predicted: buildPredictedOffers(now),
+    predicted: {},
     history: MOCK_CAMPAIGN_HISTORY,
     decisions: {},
   };
+}
+
+export function recommendationOfferId(merchantId) {
+  const safe = String(merchantId || 'merchant').toLowerCase().replace(/[^a-z0-9_-]/g, '_').slice(0, 64);
+  return `ml_${safe}`;
+}
+
+// Convert live-model or explicitly labeled fallback recommendations into the
+// existing Firebase decision/settlement shape. Values come from the response;
+// this adapter does not replace probabilities or invent a merchant result.
+export function offersFromRecommendations(recommendations, source, now = Date.now()) {
+  const predicted = {};
+  for (const recommendation of recommendations) {
+    const id = recommendationOfferId(recommendation.merchantId);
+    predicted[id] = {
+      id,
+      merchantId: recommendation.merchantId,
+      merchant: recommendation.merchantNameAr,
+      occasion: recommendation.occasion,
+      category: recommendation.category,
+      probability: Math.round(recommendation.offerProbability * 100),
+      purchaseProbability: recommendation.purchaseProbability,
+      windowDays: recommendation.windowDays,
+      potentialSaving: recommendation.estimatedSavingSar,
+      basis: recommendation.explanation || recommendation.reasons?.[0] || 'تحليل احتمالي على بيانات اصطناعية',
+      action: recommendation.action,
+      source,
+      expiresAt: now + recommendation.windowDays * DAY_MS,
+      status: 'pending',
+    };
+  }
+  return { predicted, history: MOCK_CAMPAIGN_HISTORY, decisions: {} };
 }
 
 // ── Deterministic prediction ─────────────────────────────

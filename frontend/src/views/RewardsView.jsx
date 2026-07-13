@@ -13,7 +13,7 @@ const MILESTONES = [3, 7, 14];
 // المكافآت — streak hero, weekly challenge, achievements grid, and the
 // accessory shop (cosmetics render instantly on the mascot). Dark ink theme.
 export default function RewardsView() {
-  const { user, game, akthrPoints, isSubmitting, runAction, restartOnboarding, restarting } = useAppData();
+  const { user, game, akthrPoints, isSubmitting, runAction, restartDemo, restarting } = useAppData();
   if (!game) return null;
   const { streak, nxp_balance, achievements, activeChallenge, inventory, equipped } = game;
   const cashback = cashbackState(user, game);
@@ -149,20 +149,19 @@ export default function RewardsView() {
           </div>
         </div>
 
-        {/* Danger zone — full restart: wipes health/streak/coins AND
-            re-runs onboarding (pick companion, name, goal). For switching
-            between demo audiences/judges. */}
+        {/* Full demo restart: canonical backend state, then Home's existing
+            setup card. No standalone onboarding route or screen. */}
         <div className="pt-2">
           <button
             disabled={restarting}
             onClick={() => {
               if (window.confirm('هذا سيعيد كل شيء من الصفر (الصحة، السلسلة، العملات) ويرجعك لاختيار المرافق والهدف من جديد. متأكد؟')) {
-                restartOnboarding();
+                restartDemo();
               }
             }}
             className="w-full py-3 rounded-3xl font-bold text-sm border border-red-400/30 text-red-400 bg-red-400/10 disabled:opacity-50 active:scale-95 transition-transform"
           >
-            {restarting ? '...جارٍ إعادة البدء' : '🔄 البدء من جديد (اختيار مرافق وهدف)'}
+            {restarting ? '...جارٍ إعادة البدء' : '🔄 إعادة العرض من البداية'}
           </button>
         </div>
       </div>
