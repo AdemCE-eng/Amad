@@ -8,6 +8,7 @@ import simulateRoutes from "./routes/simulate.js";
 import gameRoutes from "./routes/game.js";
 import familyRoutes from "./routes/family.js";
 import offersRoutes from "./routes/offers.js";
+import budgetRoutes from "./routes/budget.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 3000;
@@ -22,6 +23,7 @@ app.use("/api", simulateRoutes);
 app.use("/api", gameRoutes);
 app.use("/api", familyRoutes);
 app.use("/api", offersRoutes);
+app.use("/api", budgetRoutes);
 app.get("/health", (_req, res) => res.json({ ok: true, service: "amad-backend" }));
 
 // Serve the Cheat Controller (static) at the root.
@@ -34,8 +36,7 @@ app.use((err, _req, res, _next) => {
 });
 
 app.listen(PORT, HOST, () => {
-  
-  if (HOST === "0.0.0.0"){
+  if (HOST === "0.0.0.0") {
     console.log(`🚀 Backend listening on port: ${PORT}`);
   } else if (HOST === "127.0.0.1") {
     console.log(`🚀 Backend on http://localhost:${PORT}`);

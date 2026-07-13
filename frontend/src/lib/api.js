@@ -30,14 +30,21 @@ export const api = {
   setGoal: (goalAmount) => post('/api/user/goal', { goalAmount }),
   reset: () => post('/api/reset'),
   advanceDay: () => post('/api/demo/advance-day'),
+  advanceWeek: () => post('/api/demo/advance-week'),
+  advanceMonth: () => post('/api/demo/advance-month'),
   completeChallenge: () => post('/api/demo/complete-challenge'),
   buyItem: (itemId) => post('/api/shop/buy', { itemId }),
   equipItem: (itemId) => post('/api/pet/equip', { itemId }),
   setProfile: (profile) => post('/api/user/profile', profile),
 
+  // ── Savings plan + category budgets + savings account ──
+  suggestPlan: (monthlyIncome) => post('/api/plan/suggest', { monthlyIncome }),
+  applyPlan: (body) => post('/api/plan/apply', body),
+  openSavings: () => post('/api/savings/open'),
+
   // ── Notifications
   getNotifications: () => get('/api/user/notifications'),
-  addNotification: (notification) => post('/api/user/notifications', notification), // Mostly for testing, backend should handle notifs
+  addNotification: (notification) => post('/api/user/notifications', notification),
 
   // ── Phase 2A: family goal + explainable contribution plan ──
   familyState: () => get('/api/family/state'),

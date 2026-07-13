@@ -6,12 +6,11 @@
 // wall-clock), so a full week plays out in seconds on stage.
 
 import { clamp } from "./petEngine.js";
+import { settleBudgets, cadencesClosingOn } from "./budgetEngine.js";
 
 // ── Catalogs ─────────────────────────────────────────────
 
 // Evolution: cumulative savings as a fraction of the goal.
-// Seed is 1200/5000 = 24% → stage 0, so ONE decent save on stage triggers a
-// live evolution (deliberately demo-tuned).
 export function stageFromSavings(savedAmount, goalAmount) {
   const r = goalAmount > 0 ? savedAmount / goalAmount : 0;
   return r >= 0.8 ? 2 : r >= 0.3 ? 1 : 0;
@@ -56,7 +55,6 @@ function gameOf(state) {
 }
 
 function celebrate(game, type, id) {
-  // Timestamp keys the frontend queue; replays are impossible.
   return { ...game, lastCelebration: { type, id, at: Date.now() } };
 }
 
@@ -75,14 +73,10 @@ function unlock(game, key) {
 }
 
 // ── Per-event effects (piped after every petEngine event) ─
-
-// ctx: { event: salary|save|purchase|emergency, amount, savedPortion?,
-//        category?, overBudget?, shielded? }
 export function applyGameEffects(state, ctx) {
   let game = gameOf(state);
   const user = state.user;
 
-  // Daily accumulators drive the streak verdict at day end.
   const today = { ...game.today };
   if (ctx.event === "purchase" || ctx.event === "emergency") today.spent += ctx.amount || 0;
   if (ctx.event === "salary" || ctx.event === "save") today.saved += ctx.savedPortion ?? ctx.amount ?? 0;
@@ -90,12 +84,10 @@ export function applyGameEffects(state, ctx) {
   if (ctx.event === "purchase" && ctx.category === "coffee") today.coffees += 1;
   game = { ...game, today };
 
-  // Weekly challenge: count coffees against the limit (fail only at week end).
   if (game.activeChallenge?.status === "active" && ctx.event === "purchase" && ctx.category === "coffee") {
     game = { ...game, activeChallenge: { ...game.activeChallenge, used: game.activeChallenge.used + 1 } };
   }
 
-  // Achievements from money events.
   if ((ctx.event === "save" || ctx.event === "salary") && (ctx.savedPortion ?? ctx.amount) > 0) {
     game = unlock(game, "first_save");
   }
@@ -103,20 +95,17 @@ export function applyGameEffects(state, ctx) {
   if (user.savedAmount >= user.goalAmount) game = unlock(game, "goal_reached");
   if (ctx.event === "emergency" && ctx.shielded) game = unlock(game, "shield_wise");
 
-  // Evolution — checked last so it wins the celebration slot (frontend
-  // prioritizes by type anyway, but the latest write is what most judges see).
   const newStage = stageFromSavings(user.savedAmount, user.goalAmount);
   if (newStage > game.stage) {
     game = celebrate({ ...game, stage: newStage }, "evolution", `stage${newStage}`);
   } else if (newStage !== game.stage) {
-    game = { ...game, stage: newStage }; // shrunk goal edge case — no fanfare
+    game = { ...game, stage: newStage };
   }
 
   return { ...state, game };
 }
 
 // ── Day advance (the demo-clock heart) ───────────────────
-
 export function advanceDay(state) {
   let game = gameOf(state);
   const goodDay = !game.today.overBudget;
@@ -130,18 +119,17 @@ export function advanceDay(state) {
     streak.status = "alive";
     coins += GOOD_DAY_COINS;
     if (STREAK_MILESTONES[streak.current]) coins += STREAK_MILESTONES[streak.current];
-    // Compassion economy: a freeze shield is EARNED every full week.
     if (streak.current % 7 === 0) streak.freezesLeft = Math.min(MAX_FREEZES, streak.freezesLeft + 1);
   } else if (streak.freezesLeft > 0) {
-    streak = { ...streak, freezesLeft: streak.freezesLeft - 1, status: "frozen" }; // streak SURVIVES
+    streak = { ...streak, freezesLeft: streak.freezesLeft - 1, status: "frozen" };
     frozen = true;
   } else {
-    // Never nuked to zero from a height — fall to the milestone below.
     streak.current = streak.current >= 14 ? 7 : streak.current >= 7 ? 3 : 0;
     streak.status = "alive";
   }
 
-  game = { ...game, streak, coins, day: game.day + 1, today: { spent: 0, saved: 0, overBudget: false, coffees: 0 } };
+  const newDay = game.day + 1;
+  game = { ...game, streak, coins, day: newDay, today: { spent: 0, saved: 0, overBudget: false, coffees: 0 } };
 
   if (goodDay && STREAK_MILESTONES[streak.current]) {
     game = celebrate(game, "streak", `day${streak.current}`);
@@ -149,16 +137,28 @@ export function advanceDay(state) {
   if (streak.current >= 3) game = unlock(game, "streak_3");
   if (streak.current >= 7) game = unlock(game, "budget_week");
 
-  // Pet reacts to the new day: proud on a good day, reassuring when the
-  // shield ate the miss — mood itself stays health-derived in petEngine.
+  // Auto-rollover: sweep unspent budgets whose period closes on this new day
+  // (daily always; weekly on day%7; monthly on day%30) into savings.
+  const { user, swept } = settleBudgets(state.user, cadencesClosingOn(newDay));
+
+  // Rolled-over savings can evolve the companion — checked last so it wins the
+  // celebration slot over the streak fanfare.
+  const newStage = stageFromSavings(user.savedAmount, user.goalAmount);
+  if (newStage > game.stage) {
+    game = celebrate({ ...game, stage: newStage }, "evolution", `stage${newStage}`);
+  } else if (newStage !== game.stage) {
+    game = { ...game, stage: newStage };
+  }
+
   const pet = {
     ...state.pet,
-    animationState: goodDay ? "happy" : state.pet.animationState,
+    animationState: goodDay || swept > 0 ? "happy" : state.pet.animationState,
     updatedAt: Date.now(),
   };
 
   return {
     ...state,
+    user,
     game,
     pet,
     meta: { lastEvent: "advance-day" },
@@ -166,12 +166,25 @@ export function advanceDay(state) {
       category: frozen ? "emergency" : goodDay ? "happy" : "sad",
       event: frozen ? "streak_frozen" : goodDay ? "streak_up" : "streak_lost",
       streakDays: streak.current,
+      swept,
+      rolloverTotal: user.rolloverTotal ?? 0,
     },
   };
 }
 
-// ── Challenge / shop / profile ───────────────────────────
+// Fast-forward N demo days in one shot (week = 7, month = 30). Applies per-day
+// streak + settlement purely, then reports the TOTAL swept across the span.
+export function advanceDays(state, n) {
+  let s = state;
+  let totalSwept = 0;
+  for (let i = 0; i < n; i++) {
+    s = advanceDay(s);
+    totalSwept += s._aiContext?.swept || 0;
+  }
+  return { ...s, _aiContext: { ...s._aiContext, swept: totalSwept, span: n } };
+}
 
+// ── Challenge / shop / profile ───────────────────────────
 export function completeChallenge(state) {
   let game = gameOf(state);
   const ch = game.activeChallenge;
@@ -230,7 +243,6 @@ export function setProfile(state, { petName, petType, goalAmount }) {
   if (petName) user.petName = String(petName).slice(0, 30);
   if (petType) user.petType = String(petType);
   if (Number.isFinite(goalAmount) && goalAmount > 0) user.goalAmount = Math.round(goalAmount);
-  // Re-derive the stage against the (possibly new) goal.
   const game = { ...gameOf(state), stage: stageFromSavings(user.savedAmount, user.goalAmount) };
   return { ...state, user, game };
 }
