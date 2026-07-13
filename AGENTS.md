@@ -1,0 +1,21 @@
+# Repository guardrails
+
+- Product name: نامو
+- Mascot name: صقر
+- Team identity: Pixel Falcon
+- Demo child identity: راشد / `rashid`
+- Never include a real personal name.
+- Arabic interfaces must remain RTL.
+- NXP, Akthr, and cashback are separate reward types.
+- Mock data must always be labeled `MOCK`.
+- Synthetic data must always be labeled `SYNTHETIC`.
+- Never claim a predicted promotion is guaranteed.
+- An LLM must not calculate probabilities.
+- ML models calculate predictions.
+- Text generation may only explain predictions.
+- Existing stable routes must not be broken.
+- Existing tests must continue passing.
+- No secrets or personal banking data may be committed.
+- All merchant examples must belong to the Saudi market.
+- Prefer Saudi-founded companies and brands.
+- Do not claim synthetic merchant campaigns are factual.

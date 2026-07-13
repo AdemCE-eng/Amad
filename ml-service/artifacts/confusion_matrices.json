@@ -1,0 +1,35 @@
+{
+  "label": "نتائج على بيانات تجريبية من السوق السعودي",
+  "offerModel": {
+    "labels": [
+      "no campaign",
+      "campaign"
+    ],
+    "matrix": [
+      [
+        468,
+        48
+      ],
+      [
+        23,
+        31
+      ]
+    ]
+  },
+  "purchaseModel": {
+    "labels": [
+      "no purchase",
+      "purchase"
+    ],
+    "matrix": [
+      [
+        2230,
+        307
+      ],
+      [
+        29,
+        59
+      ]
+    ]
+  }
+}
