@@ -50,14 +50,14 @@ def recommendations(offer_bundle, purchase_bundle, campaigns, transactions, cata
         budget_relevance = min(1.0, float(purchase_row["merchant_spending_share"]) * 8 + float(purchase_row["category_spending_share"]) * 1.5)
         normalized_saving = min(1.0, saving / 60)
         score = float(offer["offerProbability"]) * purchase_probability * budget_relevance * normalized_saving
-        eligible = not bool(merchant.is_essential) and merchant.merchant_id not in decisions and offer["offerProbability"] >= OFFER_THRESHOLD and purchase_probability >= 0.25 and saving >= MIN_SAVING_SAR and score >= RECOMMENDATION_THRESHOLD
+        eligible = not bool(merchant.is_essential) and merchant.merchant_id not in decisions and offer["offerProbability"] >= float(offer_bundle["threshold"]) and purchase_probability >= float(purchase_bundle["threshold"]) and saving >= MIN_SAVING_SAR and score >= RECOMMENDATION_THRESHOLD
         ranked.append({
             "userId": user_id, "merchantId": merchant.merchant_id, "merchant": merchant.name_en,
             "merchantNameAr": merchant.name_ar, "category": merchant.category,
             "offerProbability": offer["offerProbability"], "purchaseProbability": round(purchase_probability, 4),
             "personalizedScore": round(score, 4), "windowDays": 7, "estimatedSavingSar": saving,
             "occasion": offer["occasion"], "eligible": eligible,
-            "suppressionReason": "essential_purchase" if bool(merchant.is_essential) else (None if eligible else "threshold_not_met"),
+            "suppressionReason": "essential_purchase" if bool(merchant.is_essential) else ("prior_decision" if merchant.merchant_id in decisions else (None if eligible else "threshold_not_met")),
             "reasons": [*(public_pattern(purchase_row, merchant, purchase_probability)["reasons"][:1]), *(offer["reasons"][:1]), f"تأجيل عملية غير أساسية حتى {offer['windowDays']} أيام قد يوفر نحو {saving:g} ر.س"],
             "disclaimer": DISCLAIMER_AR, "dataLabel": DATA_LABEL,
         })

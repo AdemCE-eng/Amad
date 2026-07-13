@@ -51,7 +51,7 @@ export function validateMlResponse(payload, minimumScore = 0.08) {
 export function createPersonalizedOfferService({
   enabled = process.env.USE_ML_SERVICE === "true",
   baseUrl = process.env.ML_SERVICE_URL || "http://127.0.0.1:8001",
-  timeoutMs = Number(process.env.ML_SERVICE_TIMEOUT_MS || 1500),
+  timeoutMs = Number(process.env.ML_SERVICE_TIMEOUT_MS || 3000),
   minimumScore = Number(process.env.ML_RECOMMENDATION_MIN_SCORE || 0.04),
   fetchImpl = globalThis.fetch,
   fallback = deterministicFallback,
