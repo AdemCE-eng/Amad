@@ -1,0 +1,680 @@
+{
+  "label": "نتائج على بيانات تجريبية من السوق السعودي",
+  "dataLabel": "MOCK / SYNTHETIC DEMO DATA — SAUDI MARKET",
+  "userId": "rashid",
+  "recommendations": [
+    {
+      "userId": "rashid",
+      "merchantId": "half_million",
+      "merchant": "Half Million",
+      "merchantNameAr": "هاف مليون",
+      "category": "coffee",
+      "offerProbability": 0.5352,
+      "purchaseProbability": 0.827,
+      "personalizedScore": 0.1095,
+      "windowDays": 7,
+      "estimatedSavingSar": 14.85,
+      "occasion": "اليوم الوطني السعودي",
+      "eligible": true,
+      "suppressionReason": null,
+      "reasons": [
+        "تكرر الشراء 3 مرة خلال آخر 30 يوماً",
+        "ظهرت 11 حملات تجريبية في الموسم نفسه سابقاً",
+        "تأجيل عملية غير أساسية حتى 7 أيام قد يوفر نحو 14.85 ر.س"
+      ],
+      "disclaimer": "توقع احتمالي مبني على بيانات تجريبية وأنماط سابقة، وليس عرضاً مضموناً",
+      "dataLabel": "MOCK / SYNTHETIC DEMO DATA — SAUDI MARKET"
+    },
+    {
+      "userId": "rashid",
+      "merchantId": "maestro",
+      "merchant": "Maestro Pizza",
+      "merchantNameAr": "مايسترو بيتزا",
+      "category": "restaurant",
+      "offerProbability": 0.7069,
+      "purchaseProbability": 0.9101,
+      "personalizedScore": 0.07,
+      "windowDays": 7,
+      "estimatedSavingSar": 33.59,
+      "occasion": "اليوم الوطني السعودي",
+      "eligible": true,
+      "suppressionReason": null,
+      "reasons": [
+        "فواصل الشراء السابقة منتظمة نسبياً",
+        "ظهرت 16 حملات تجريبية في الموسم نفسه سابقاً",
+        "تأجيل عملية غير أساسية حتى 7 أيام قد يوفر نحو 33.59 ر.س"
+      ],
+      "disclaimer": "توقع احتمالي مبني على بيانات تجريبية وأنماط سابقة، وليس عرضاً مضموناً",
+      "dataLabel": "MOCK / SYNTHETIC DEMO DATA — SAUDI MARKET"
+    },
+    {
+      "userId": "rashid",
+      "merchantId": "albaik",
+      "merchant": "AlBaik",
+      "merchantNameAr": "البيك",
+      "category": "restaurant",
+      "offerProbability": 0.7222,
+      "purchaseProbability": 0.5,
+      "personalizedScore": 0.0646,
+      "windowDays": 7,
+      "estimatedSavingSar": 11.17,
+      "occasion": "اليوم الوطني السعودي",
+      "eligible": true,
+      "suppressionReason": null,
+      "reasons": [
+        "تكرر الشراء 3 مرة خلال آخر 30 يوماً",
+        "ظهرت 5 حملات تجريبية في الموسم نفسه سابقاً",
+        "تأجيل عملية غير أساسية حتى 7 أيام قد يوفر نحو 11.17 ر.س"
+      ],
+      "disclaimer": "توقع احتمالي مبني على بيانات تجريبية وأنماط سابقة، وليس عرضاً مضموناً",
+      "dataLabel": "MOCK / SYNTHETIC DEMO DATA — SAUDI MARKET"
+    },
+    {
+      "userId": "rashid",
+      "merchantId": "dose",
+      "merchant": "Dose",
+      "merchantNameAr": "دوز",
+      "category": "coffee",
+      "offerProbability": 0.7069,
+      "purchaseProbability": 0.9101,
+      "personalizedScore": 0.0594,
+      "windowDays": 7,
+      "estimatedSavingSar": 15.18,
+      "occasion": "اليوم الوطني السعودي",
+      "eligible": true,
+      "suppressionReason": null,
+      "reasons": [
+        "فواصل الشراء السابقة منتظمة نسبياً",
+        "ظهرت 13 حملات تجريبية في الموسم نفسه سابقاً",
+        "تأجيل عملية غير أساسية حتى 7 أيام قد يوفر نحو 15.18 ر.س"
+      ],
+      "disclaimer": "توقع احتمالي مبني على بيانات تجريبية وأنماط سابقة، وليس عرضاً مضموناً",
+      "dataLabel": "MOCK / SYNTHETIC DEMO DATA — SAUDI MARKET"
+    },
+    {
+      "userId": "rashid",
+      "merchantId": "barns",
+      "merchant": "Barn's",
+      "merchantNameAr": "بارنز",
+      "category": "coffee",
+      "offerProbability": 0.4159,
+      "purchaseProbability": 0.5588,
+      "personalizedScore": 0.0459,
+      "windowDays": 7,
+      "estimatedSavingSar": 11.84,
+      "occasion": "اليوم الوطني السعودي",
+      "eligible": true,
+      "suppressionReason": null,
+      "reasons": [
+        "تكرر الشراء 3 مرة خلال آخر 30 يوماً",
+        "ظهرت 11 حملات تجريبية في الموسم نفسه سابقاً",
+        "تأجيل عملية غير أساسية حتى 7 أيام قد يوفر نحو 11.84 ر.س"
+      ],
+      "disclaimer": "توقع احتمالي مبني على بيانات تجريبية وأنماط سابقة، وليس عرضاً مضموناً",
+      "dataLabel": "MOCK / SYNTHETIC DEMO DATA — SAUDI MARKET"
+    }
+  ],
+  "ranking": [
+    {
+      "userId": "rashid",
+      "merchantId": "flynas",
+      "merchant": "flynas",
+      "merchantNameAr": "طيران ناس",
+      "category": "travel",
+      "offerProbability": 0.2952,
+      "purchaseProbability": 0.6082,
+      "personalizedScore": 0.1123,
+      "windowDays": 7,
+      "estimatedSavingSar": 71.18,
+      "occasion": "اليوم الوطني السعودي",
+      "eligible": false,
+      "suppressionReason": "threshold_not_met",
+      "reasons": [
+        "فواصل الشراء السابقة منتظمة نسبياً",
+        "ظهرت 12 حملات تجريبية في الموسم نفسه سابقاً",
+        "تأجيل عملية غير أساسية حتى 7 أيام قد يوفر نحو 71.18 ر.س"
+      ],
+      "disclaimer": "توقع احتمالي مبني على بيانات تجريبية وأنماط سابقة، وليس عرضاً مضموناً",
+      "dataLabel": "MOCK / SYNTHETIC DEMO DATA — SAUDI MARKET"
+    },
+    {
+      "userId": "rashid",
+      "merchantId": "half_million",
+      "merchant": "Half Million",
+      "merchantNameAr": "هاف مليون",
+      "category": "coffee",
+      "offerProbability": 0.5352,
+      "purchaseProbability": 0.827,
+      "personalizedScore": 0.1095,
+      "windowDays": 7,
+      "estimatedSavingSar": 14.85,
+      "occasion": "اليوم الوطني السعودي",
+      "eligible": true,
+      "suppressionReason": null,
+      "reasons": [
+        "تكرر الشراء 3 مرة خلال آخر 30 يوماً",
+        "ظهرت 11 حملات تجريبية في الموسم نفسه سابقاً",
+        "تأجيل عملية غير أساسية حتى 7 أيام قد يوفر نحو 14.85 ر.س"
+      ],
+      "disclaimer": "توقع احتمالي مبني على بيانات تجريبية وأنماط سابقة، وليس عرضاً مضموناً",
+      "dataLabel": "MOCK / SYNTHETIC DEMO DATA — SAUDI MARKET"
+    },
+    {
+      "userId": "rashid",
+      "merchantId": "danube",
+      "merchant": "Danube",
+      "merchantNameAr": "الدانوب",
+      "category": "grocery",
+      "offerProbability": 0.5352,
+      "purchaseProbability": 0.9583,
+      "personalizedScore": 0.1025,
+      "windowDays": 7,
+      "estimatedSavingSar": 18.56,
+      "occasion": "اليوم الوطني السعودي",
+      "eligible": false,
+      "suppressionReason": "essential_purchase",
+      "reasons": [
+        "فواصل الشراء السابقة منتظمة نسبياً",
+        "ظهرت 6 حملات تجريبية في الموسم نفسه سابقاً",
+        "تأجيل عملية غير أساسية حتى 7 أيام قد يوفر نحو 18.56 ر.س"
+      ],
+      "disclaimer": "توقع احتمالي مبني على بيانات تجريبية وأنماط سابقة، وليس عرضاً مضموناً",
+      "dataLabel": "MOCK / SYNTHETIC DEMO DATA — SAUDI MARKET"
+    },
+    {
+      "userId": "rashid",
+      "merchantId": "maestro",
+      "merchant": "Maestro Pizza",
+      "merchantNameAr": "مايسترو بيتزا",
+      "category": "restaurant",
+      "offerProbability": 0.7069,
+      "purchaseProbability": 0.9101,
+      "personalizedScore": 0.07,
+      "windowDays": 7,
+      "estimatedSavingSar": 33.59,
+      "occasion": "اليوم الوطني السعودي",
+      "eligible": true,
+      "suppressionReason": null,
+      "reasons": [
+        "فواصل الشراء السابقة منتظمة نسبياً",
+        "ظهرت 16 حملات تجريبية في الموسم نفسه سابقاً",
+        "تأجيل عملية غير أساسية حتى 7 أيام قد يوفر نحو 33.59 ر.س"
+      ],
+      "disclaimer": "توقع احتمالي مبني على بيانات تجريبية وأنماط سابقة، وليس عرضاً مضموناً",
+      "dataLabel": "MOCK / SYNTHETIC DEMO DATA — SAUDI MARKET"
+    },
+    {
+      "userId": "rashid",
+      "merchantId": "albaik",
+      "merchant": "AlBaik",
+      "merchantNameAr": "البيك",
+      "category": "restaurant",
+      "offerProbability": 0.7222,
+      "purchaseProbability": 0.5,
+      "personalizedScore": 0.0646,
+      "windowDays": 7,
+      "estimatedSavingSar": 11.17,
+      "occasion": "اليوم الوطني السعودي",
+      "eligible": true,
+      "suppressionReason": null,
+      "reasons": [
+        "تكرر الشراء 3 مرة خلال آخر 30 يوماً",
+        "ظهرت 5 حملات تجريبية في الموسم نفسه سابقاً",
+        "تأجيل عملية غير أساسية حتى 7 أيام قد يوفر نحو 11.17 ر.س"
+      ],
+      "disclaimer": "توقع احتمالي مبني على بيانات تجريبية وأنماط سابقة، وليس عرضاً مضموناً",
+      "dataLabel": "MOCK / SYNTHETIC DEMO DATA — SAUDI MARKET"
+    },
+    {
+      "userId": "rashid",
+      "merchantId": "dose",
+      "merchant": "Dose",
+      "merchantNameAr": "دوز",
+      "category": "coffee",
+      "offerProbability": 0.7069,
+      "purchaseProbability": 0.9101,
+      "personalizedScore": 0.0594,
+      "windowDays": 7,
+      "estimatedSavingSar": 15.18,
+      "occasion": "اليوم الوطني السعودي",
+      "eligible": true,
+      "suppressionReason": null,
+      "reasons": [
+        "فواصل الشراء السابقة منتظمة نسبياً",
+        "ظهرت 13 حملات تجريبية في الموسم نفسه سابقاً",
+        "تأجيل عملية غير أساسية حتى 7 أيام قد يوفر نحو 15.18 ر.س"
+      ],
+      "disclaimer": "توقع احتمالي مبني على بيانات تجريبية وأنماط سابقة، وليس عرضاً مضموناً",
+      "dataLabel": "MOCK / SYNTHETIC DEMO DATA — SAUDI MARKET"
+    },
+    {
+      "userId": "rashid",
+      "merchantId": "barns",
+      "merchant": "Barn's",
+      "merchantNameAr": "بارنز",
+      "category": "coffee",
+      "offerProbability": 0.4159,
+      "purchaseProbability": 0.5588,
+      "personalizedScore": 0.0459,
+      "windowDays": 7,
+      "estimatedSavingSar": 11.84,
+      "occasion": "اليوم الوطني السعودي",
+      "eligible": true,
+      "suppressionReason": null,
+      "reasons": [
+        "تكرر الشراء 3 مرة خلال آخر 30 يوماً",
+        "ظهرت 11 حملات تجريبية في الموسم نفسه سابقاً",
+        "تأجيل عملية غير أساسية حتى 7 أيام قد يوفر نحو 11.84 ر.س"
+      ],
+      "disclaimer": "توقع احتمالي مبني على بيانات تجريبية وأنماط سابقة، وليس عرضاً مضموناً",
+      "dataLabel": "MOCK / SYNTHETIC DEMO DATA — SAUDI MARKET"
+    },
+    {
+      "userId": "rashid",
+      "merchantId": "camel_step",
+      "merchant": "Camel Step",
+      "merchantNameAr": "خطوة جمل",
+      "category": "coffee",
+      "offerProbability": 0.4159,
+      "purchaseProbability": 0.9101,
+      "personalizedScore": 0.0396,
+      "windowDays": 7,
+      "estimatedSavingSar": 16.74,
+      "occasion": "اليوم الوطني السعودي",
+      "eligible": false,
+      "suppressionReason": "threshold_not_met",
+      "reasons": [
+        "فواصل الشراء السابقة منتظمة نسبياً",
+        "ظهرت 11 حملات تجريبية في الموسم نفسه سابقاً",
+        "تأجيل عملية غير أساسية حتى 7 أيام قد يوفر نحو 16.74 ر.س"
+      ],
+      "disclaimer": "توقع احتمالي مبني على بيانات تجريبية وأنماط سابقة، وليس عرضاً مضموناً",
+      "dataLabel": "MOCK / SYNTHETIC DEMO DATA — SAUDI MARKET"
+    },
+    {
+      "userId": "rashid",
+      "merchantId": "panda",
+      "merchant": "Panda",
+      "merchantNameAr": "بنده",
+      "category": "grocery",
+      "offerProbability": 0.3154,
+      "purchaseProbability": 0.5837,
+      "personalizedScore": 0.0369,
+      "windowDays": 7,
+      "estimatedSavingSar": 12.02,
+      "occasion": "اليوم الوطني السعودي",
+      "eligible": false,
+      "suppressionReason": "essential_purchase",
+      "reasons": [
+        "تكرر الشراء 1 مرة خلال آخر 30 يوماً",
+        "ظهرت 5 حملات تجريبية في الموسم نفسه سابقاً",
+        "تأجيل عملية غير أساسية حتى 7 أيام قد يوفر نحو 12.02 ر.س"
+      ],
+      "disclaimer": "توقع احتمالي مبني على بيانات تجريبية وأنماط سابقة، وليس عرضاً مضموناً",
+      "dataLabel": "MOCK / SYNTHETIC DEMO DATA — SAUDI MARKET"
+    },
+    {
+      "userId": "rashid",
+      "merchantId": "al_romansiah",
+      "merchant": "Al Romansiah",
+      "merchantNameAr": "الرومانسية",
+      "category": "restaurant",
+      "offerProbability": 0.3154,
+      "purchaseProbability": 0.9101,
+      "personalizedScore": 0.0293,
+      "windowDays": 7,
+      "estimatedSavingSar": 23.87,
+      "occasion": "اليوم الوطني السعودي",
+      "eligible": false,
+      "suppressionReason": "threshold_not_met",
+      "reasons": [
+        "ظهرت 9 حملات تجريبية في الموسم نفسه سابقاً",
+        "تأجيل عملية غير أساسية حتى 7 أيام قد يوفر نحو 23.87 ر.س"
+      ],
+      "disclaimer": "توقع احتمالي مبني على بيانات تجريبية وأنماط سابقة، وليس عرضاً مضموناً",
+      "dataLabel": "MOCK / SYNTHETIC DEMO DATA — SAUDI MARKET"
+    },
+    {
+      "userId": "rashid",
+      "merchantId": "kudu",
+      "merchant": "Kudu",
+      "merchantNameAr": "كودو",
+      "category": "restaurant",
+      "offerProbability": 0.5217,
+      "purchaseProbability": 0.9101,
+      "personalizedScore": 0.0256,
+      "windowDays": 7,
+      "estimatedSavingSar": 14.26,
+      "occasion": "اليوم الوطني السعودي",
+      "eligible": false,
+      "suppressionReason": "threshold_not_met",
+      "reasons": [
+        "فواصل الشراء السابقة منتظمة نسبياً",
+        "ظهرت 9 حملات تجريبية في الموسم نفسه سابقاً",
+        "تأجيل عملية غير أساسية حتى 7 أيام قد يوفر نحو 14.26 ر.س"
+      ],
+      "disclaimer": "توقع احتمالي مبني على بيانات تجريبية وأنماط سابقة، وليس عرضاً مضموناً",
+      "dataLabel": "MOCK / SYNTHETIC DEMO DATA — SAUDI MARKET"
+    },
+    {
+      "userId": "rashid",
+      "merchantId": "al_dawaa",
+      "merchant": "Al-Dawaa",
+      "merchantNameAr": "الدواء",
+      "category": "pharmacy",
+      "offerProbability": 0.4159,
+      "purchaseProbability": 0.2009,
+      "personalizedScore": 0.0116,
+      "windowDays": 7,
+      "estimatedSavingSar": 8.71,
+      "occasion": "اليوم الوطني السعودي",
+      "eligible": false,
+      "suppressionReason": "essential_purchase",
+      "reasons": [
+        "تكرر الشراء 1 مرة خلال آخر 30 يوماً",
+        "ظهرت 9 حملات تجريبية في الموسم نفسه سابقاً",
+        "تأجيل عملية غير أساسية حتى 7 أيام قد يوفر نحو 8.71 ر.س"
+      ],
+      "disclaimer": "توقع احتمالي مبني على بيانات تجريبية وأنماط سابقة، وليس عرضاً مضموناً",
+      "dataLabel": "MOCK / SYNTHETIC DEMO DATA — SAUDI MARKET"
+    },
+    {
+      "userId": "rashid",
+      "merchantId": "nahdi",
+      "merchant": "Nahdi",
+      "merchantNameAr": "النهدي",
+      "category": "pharmacy",
+      "offerProbability": 0.5352,
+      "purchaseProbability": 0.6538,
+      "personalizedScore": 0.0086,
+      "windowDays": 7,
+      "estimatedSavingSar": 9.76,
+      "occasion": "اليوم الوطني السعودي",
+      "eligible": false,
+      "suppressionReason": "essential_purchase",
+      "reasons": [
+        "فواصل الشراء السابقة منتظمة نسبياً",
+        "ظهرت 7 حملات تجريبية في الموسم نفسه سابقاً",
+        "تأجيل عملية غير أساسية حتى 7 أيام قد يوفر نحو 9.76 ر.س"
+      ],
+      "disclaimer": "توقع احتمالي مبني على بيانات تجريبية وأنماط سابقة، وليس عرضاً مضموناً",
+      "dataLabel": "MOCK / SYNTHETIC DEMO DATA — SAUDI MARKET"
+    },
+    {
+      "userId": "rashid",
+      "merchantId": "herfy",
+      "merchant": "Herfy",
+      "merchantNameAr": "هرفي",
+      "category": "restaurant",
+      "offerProbability": 0.7222,
+      "purchaseProbability": 0.1222,
+      "personalizedScore": 0.005,
+      "windowDays": 7,
+      "estimatedSavingSar": 15.91,
+      "occasion": "اليوم الوطني السعودي",
+      "eligible": false,
+      "suppressionReason": "threshold_not_met",
+      "reasons": [
+        "فواصل الشراء السابقة منتظمة نسبياً",
+        "ظهرت 14 حملات تجريبية في الموسم نفسه سابقاً",
+        "تأجيل عملية غير أساسية حتى 7 أيام قد يوفر نحو 15.91 ر.س"
+      ],
+      "disclaimer": "توقع احتمالي مبني على بيانات تجريبية وأنماط سابقة، وليس عرضاً مضموناً",
+      "dataLabel": "MOCK / SYNTHETIC DEMO DATA — SAUDI MARKET"
+    },
+    {
+      "userId": "rashid",
+      "merchantId": "shawarmer",
+      "merchant": "Shawarmer",
+      "merchantNameAr": "شاورمر",
+      "category": "restaurant",
+      "offerProbability": 0.5352,
+      "purchaseProbability": 0.0814,
+      "personalizedScore": 0.0023,
+      "windowDays": 7,
+      "estimatedSavingSar": 15.02,
+      "occasion": "اليوم الوطني السعودي",
+      "eligible": false,
+      "suppressionReason": "threshold_not_met",
+      "reasons": [
+        "تكرر الشراء 1 مرة خلال آخر 30 يوماً",
+        "ظهرت 11 حملات تجريبية في الموسم نفسه سابقاً",
+        "تأجيل عملية غير أساسية حتى 7 أيام قد يوفر نحو 15.02 ر.س"
+      ],
+      "disclaimer": "توقع احتمالي مبني على بيانات تجريبية وأنماط سابقة، وليس عرضاً مضموناً",
+      "dataLabel": "MOCK / SYNTHETIC DEMO DATA — SAUDI MARKET"
+    },
+    {
+      "userId": "rashid",
+      "merchantId": "saudia",
+      "merchant": "SAUDIA",
+      "merchantNameAr": "الخطوط السعودية",
+      "category": "travel",
+      "offerProbability": 0.4159,
+      "purchaseProbability": 0.0085,
+      "personalizedScore": 0.0018,
+      "windowDays": 7,
+      "estimatedSavingSar": 77.88,
+      "occasion": "اليوم الوطني السعودي",
+      "eligible": false,
+      "suppressionReason": "threshold_not_met",
+      "reasons": [
+        "تكرر الشراء 1 مرة خلال آخر 30 يوماً",
+        "ظهرت 7 حملات تجريبية في الموسم نفسه سابقاً",
+        "تأجيل عملية غير أساسية حتى 7 أيام قد يوفر نحو 77.88 ر.س"
+      ],
+      "disclaimer": "توقع احتمالي مبني على بيانات تجريبية وأنماط سابقة، وليس عرضاً مضموناً",
+      "dataLabel": "MOCK / SYNTHETIC DEMO DATA — SAUDI MARKET"
+    },
+    {
+      "userId": "rashid",
+      "merchantId": "hungerstation",
+      "merchant": "HungerStation",
+      "merchantNameAr": "هنقرستيشن",
+      "category": "delivery",
+      "offerProbability": 0.4159,
+      "purchaseProbability": 0.9101,
+      "personalizedScore": 0.0008,
+      "windowDays": 7,
+      "estimatedSavingSar": 7.38,
+      "occasion": "اليوم الوطني السعودي",
+      "eligible": false,
+      "suppressionReason": "threshold_not_met",
+      "reasons": [
+        "فواصل الشراء السابقة منتظمة نسبياً",
+        "ظهرت 12 حملات تجريبية في الموسم نفسه سابقاً",
+        "تأجيل عملية غير أساسية حتى 7 أيام قد يوفر نحو 7.38 ر.س"
+      ],
+      "disclaimer": "توقع احتمالي مبني على بيانات تجريبية وأنماط سابقة، وليس عرضاً مضموناً",
+      "dataLabel": "MOCK / SYNTHETIC DEMO DATA — SAUDI MARKET"
+    },
+    {
+      "userId": "rashid",
+      "merchantId": "extra",
+      "merchant": "eXtra",
+      "merchantNameAr": "إكسترا",
+      "category": "retail",
+      "offerProbability": 0.7222,
+      "purchaseProbability": 0.6538,
+      "personalizedScore": 0.0,
+      "windowDays": 7,
+      "estimatedSavingSar": 86.54,
+      "occasion": "اليوم الوطني السعودي",
+      "eligible": false,
+      "suppressionReason": "threshold_not_met",
+      "reasons": [
+        "فواصل الشراء السابقة منتظمة نسبياً",
+        "ظهرت 15 حملات تجريبية في الموسم نفسه سابقاً",
+        "تأجيل عملية غير أساسية حتى 7 أيام قد يوفر نحو 86.54 ر.س"
+      ],
+      "disclaimer": "توقع احتمالي مبني على بيانات تجريبية وأنماط سابقة، وليس عرضاً مضموناً",
+      "dataLabel": "MOCK / SYNTHETIC DEMO DATA — SAUDI MARKET"
+    },
+    {
+      "userId": "rashid",
+      "merchantId": "jarir",
+      "merchant": "Jarir",
+      "merchantNameAr": "جرير",
+      "category": "retail",
+      "offerProbability": 0.7222,
+      "purchaseProbability": 0.6538,
+      "personalizedScore": 0.0,
+      "windowDays": 7,
+      "estimatedSavingSar": 35.73,
+      "occasion": "اليوم الوطني السعودي",
+      "eligible": false,
+      "suppressionReason": "threshold_not_met",
+      "reasons": [
+        "فواصل الشراء السابقة منتظمة نسبياً",
+        "ظهرت 9 حملات تجريبية في الموسم نفسه سابقاً",
+        "تأجيل عملية غير أساسية حتى 7 أيام قد يوفر نحو 35.73 ر.س"
+      ],
+      "disclaimer": "توقع احتمالي مبني على بيانات تجريبية وأنماط سابقة، وليس عرضاً مضموناً",
+      "dataLabel": "MOCK / SYNTHETIC DEMO DATA — SAUDI MARKET"
+    },
+    {
+      "userId": "rashid",
+      "merchantId": "noon_saudi",
+      "merchant": "Noon Saudi",
+      "merchantNameAr": "نون السعودية",
+      "category": "retail",
+      "offerProbability": 1.0,
+      "purchaseProbability": 0.6538,
+      "personalizedScore": 0.0,
+      "windowDays": 7,
+      "estimatedSavingSar": 39.6,
+      "occasion": "اليوم الوطني السعودي",
+      "eligible": false,
+      "suppressionReason": "threshold_not_met",
+      "reasons": [
+        "فواصل الشراء السابقة منتظمة نسبياً",
+        "ظهرت 17 حملات تجريبية في الموسم نفسه سابقاً",
+        "تأجيل عملية غير أساسية حتى 7 أيام قد يوفر نحو 39.6 ر.س"
+      ],
+      "disclaimer": "توقع احتمالي مبني على بيانات تجريبية وأنماط سابقة، وليس عرضاً مضموناً",
+      "dataLabel": "MOCK / SYNTHETIC DEMO DATA — SAUDI MARKET"
+    }
+  ],
+  "purchasePatterns": [
+    {
+      "merchantId": "danube",
+      "merchantNameAr": "الدانوب",
+      "merchantNameEn": "Danube",
+      "category": "grocery",
+      "purchaseProbability7d": 0.9583,
+      "frequency30d": 0,
+      "usualDay": "الجمعة",
+      "usualTimePeriod": "evening",
+      "averageSpendSar": 175.0,
+      "isEssential": true,
+      "reasons": [
+        "فواصل الشراء السابقة منتظمة نسبياً"
+      ]
+    },
+    {
+      "merchantId": "al_romansiah",
+      "merchantNameAr": "الرومانسية",
+      "merchantNameEn": "Al Romansiah",
+      "category": "restaurant",
+      "purchaseProbability7d": 0.9101,
+      "frequency30d": 0,
+      "usualDay": "الثلاثاء",
+      "usualTimePeriod": "evening",
+      "averageSpendSar": 81.13,
+      "isEssential": false,
+      "reasons": []
+    },
+    {
+      "merchantId": "camel_step",
+      "merchantNameAr": "خطوة جمل",
+      "merchantNameEn": "Camel Step",
+      "category": "coffee",
+      "purchaseProbability7d": 0.9101,
+      "frequency30d": 0,
+      "usualDay": "الاثنين",
+      "usualTimePeriod": "afternoon",
+      "averageSpendSar": 31.77,
+      "isEssential": false,
+      "reasons": [
+        "فواصل الشراء السابقة منتظمة نسبياً"
+      ]
+    },
+    {
+      "merchantId": "dose",
+      "merchantNameAr": "دوز",
+      "merchantNameEn": "Dose",
+      "category": "coffee",
+      "purchaseProbability7d": 0.9101,
+      "frequency30d": 0,
+      "usualDay": "الجمعة",
+      "usualTimePeriod": "evening",
+      "averageSpendSar": 26.0,
+      "isEssential": false,
+      "reasons": [
+        "فواصل الشراء السابقة منتظمة نسبياً"
+      ]
+    },
+    {
+      "merchantId": "hungerstation",
+      "merchantNameAr": "هنقرستيشن",
+      "merchantNameEn": "HungerStation",
+      "category": "delivery",
+      "purchaseProbability7d": 0.9101,
+      "frequency30d": 0,
+      "usualDay": "الأربعاء",
+      "usualTimePeriod": "evening",
+      "averageSpendSar": 49.63,
+      "isEssential": false,
+      "reasons": [
+        "فواصل الشراء السابقة منتظمة نسبياً"
+      ]
+    },
+    {
+      "merchantId": "kudu",
+      "merchantNameAr": "كودو",
+      "merchantNameEn": "Kudu",
+      "category": "restaurant",
+      "purchaseProbability7d": 0.9101,
+      "frequency30d": 0,
+      "usualDay": "الأربعاء",
+      "usualTimePeriod": "afternoon",
+      "averageSpendSar": 48.49,
+      "isEssential": false,
+      "reasons": [
+        "فواصل الشراء السابقة منتظمة نسبياً"
+      ]
+    },
+    {
+      "merchantId": "maestro",
+      "merchantNameAr": "مايسترو بيتزا",
+      "merchantNameEn": "Maestro Pizza",
+      "category": "restaurant",
+      "purchaseProbability7d": 0.9101,
+      "frequency30d": 0,
+      "usualDay": "الجمعة",
+      "usualTimePeriod": "evening",
+      "averageSpendSar": 41.39,
+      "isEssential": false,
+      "reasons": [
+        "فواصل الشراء السابقة منتظمة نسبياً"
+      ]
+    },
+    {
+      "merchantId": "half_million",
+      "merchantNameAr": "هاف مليون",
+      "merchantNameEn": "Half Million",
+      "category": "coffee",
+      "purchaseProbability7d": 0.827,
+      "frequency30d": 3,
+      "usualDay": "السبت",
+      "usualTimePeriod": "evening",
+      "averageSpendSar": 21.41,
+      "isEssential": false,
+      "reasons": [
+        "تكرر الشراء 3 مرة خلال آخر 30 يوماً",
+        "يوجد شراء حديث من هذا التاجر ضمن البيانات التجريبية",
+        "فواصل الشراء السابقة منتظمة نسبياً"
+      ]
+    }
+  ]
+}
