@@ -1,0 +1,591 @@
+<!doctype html>
+<!-- Screenshot/export: use a 1920x1080 browser viewport at 100% zoom and capture the visible viewport. -->
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>معمارية الحل التقني</title>
+  <style>
+    :root {
+      --navy: #102a43;
+      --navy-2: #183b5b;
+      --blue: #2473d4;
+      --blue-soft: #eef6ff;
+      --blue-line: #c9def3;
+      --coral: #ef715f;
+      --coral-soft: #fff1ee;
+      --green: #158064;
+      --green-soft: #eaf8f3;
+      --ink-muted: #60778d;
+      --line: #d9e5ee;
+      --white: #ffffff;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      width: 100%;
+      min-height: 100%;
+      background: #dbe5ed;
+      color: var(--navy);
+      font-family: Tahoma, "Segoe UI", Arial, sans-serif;
+    }
+
+    body {
+      display: grid;
+      place-items: center;
+    }
+
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      padding: 34px 82px 30px;
+      overflow: hidden;
+      position: relative;
+      background:
+        radial-gradient(circle at 92% 6%, rgba(36, 115, 212, .08), transparent 23%),
+        radial-gradient(circle at 5% 92%, rgba(239, 113, 95, .06), transparent 24%),
+        #fff;
+    }
+
+    .slide::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 9px;
+      height: 100%;
+      background: linear-gradient(var(--blue), var(--coral));
+    }
+
+    .header {
+      height: 116px;
+      display: grid;
+      place-items: center;
+      position: relative;
+      z-index: 2;
+    }
+
+    .title-wrap { text-align: center; }
+
+    h1 {
+      margin: 0;
+      font-size: 64px;
+      line-height: 1.08;
+      letter-spacing: -1.4px;
+    }
+
+    .diagram {
+      height: 690px;
+      display: grid;
+      grid-template-columns: 340px 62px 440px 62px 400px 62px 330px;
+      grid-template-areas: "outputs arrow3 recommender arrow2 engines arrow1 sources";
+      align-items: stretch;
+      direction: ltr;
+      position: relative;
+      z-index: 2;
+    }
+
+    .panel {
+      direction: rtl;
+      border: 1px solid var(--line);
+      border-radius: 25px;
+      background: rgba(255, 255, 255, .96);
+      box-shadow: 0 14px 34px rgba(16, 42, 67, .075);
+      overflow: hidden;
+    }
+
+    .panel-head {
+      padding: 22px 24px 17px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(135deg, #f9fcff, var(--blue-soft));
+    }
+
+    .step {
+      display: inline-grid;
+      place-items: center;
+      width: 31px;
+      height: 31px;
+      margin-left: 9px;
+      border-radius: 10px;
+      background: var(--navy);
+      color: white;
+      font-size: 15px;
+      font-weight: 900;
+    }
+
+    .panel h2 {
+      display: inline;
+      margin: 0;
+      font-size: 27px;
+      line-height: 1.3;
+    }
+
+    .panel-note {
+      margin: 10px 0 0;
+      color: var(--ink-muted);
+      font-size: 16px;
+      line-height: 1.55;
+    }
+
+    .sources { grid-area: sources; }
+    .sources .content { padding: 17px 19px; display: grid; gap: 11px; }
+
+    .source-item {
+      min-height: 71px;
+      display: grid;
+      grid-template-columns: 43px 1fr;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 16px;
+      background: #f8fbfe;
+      border: 1px solid #e5edf4;
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 1.45;
+    }
+
+    .source-icon {
+      width: 40px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+      background: var(--blue-soft);
+      color: var(--blue);
+    }
+
+    .source-icon svg {
+      width: 22px;
+      height: 22px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .engines {
+      grid-area: engines;
+      display: grid;
+      grid-template-rows: 42px 1fr 1fr;
+      gap: 11px;
+      padding: 10px;
+      border: 1px dashed #bfd5e8;
+      border-radius: 25px;
+      background: rgba(238, 246, 255, .48);
+    }
+
+    .agents-heading {
+      direction: rtl;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--navy);
+    }
+
+    .agents-heading h2 {
+      margin: 0;
+      font-size: 20px;
+      line-height: 1.2;
+    }
+
+    .engine {
+      direction: rtl;
+      border: 1px solid var(--blue-line);
+      border-radius: 24px;
+      background: #fff;
+      box-shadow: 0 12px 30px rgba(36, 115, 212, .07);
+      padding: 16px 19px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .engine::before {
+      content: "";
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 5px;
+      background: var(--blue);
+    }
+
+    .engine.purchase::before { background: var(--coral); }
+
+    .engine-top {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+    }
+
+    .engine h3 { margin: 0; font-size: 23px; line-height: 1.28; }
+
+    .model {
+      direction: rtl;
+      align-self: flex-start;
+      padding: 7px 10px;
+      border-radius: 10px;
+      background: var(--navy);
+      color: white;
+      font: 800 13px/1.2 Tahoma, "Segoe UI", Arial, sans-serif;
+      white-space: nowrap;
+    }
+
+    .model b { direction: ltr; unicode-bidi: isolate; font-family: "Segoe UI", Arial, sans-serif; }
+    .model.long { font-size: 12px; letter-spacing: -.15px; }
+
+    .engine-note {
+      margin: 8px 0 10px;
+      color: var(--ink-muted);
+      font-size: 15px;
+      line-height: 1.45;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .chip {
+      padding: 7px 10px;
+      border-radius: 10px;
+      background: var(--blue-soft);
+      color: var(--navy-2);
+      font-size: 14px;
+      font-weight: 700;
+      border: 1px solid #dbeafa;
+    }
+
+    .purchase .chip { background: var(--coral-soft); border-color: #f8d8d1; }
+
+    .recommender {
+      grid-area: recommender;
+      border-color: #a9c9e8;
+      box-shadow: 0 18px 44px rgba(16, 42, 67, .11);
+    }
+
+    .recommender .panel-head {
+      color: white;
+      background: linear-gradient(135deg, var(--navy), #1e527d);
+      border: 0;
+    }
+
+    .recommender .step { background: var(--navy); }
+    .recommender .panel-note { color: #d7e7f3; }
+
+    .signals {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 9px;
+      padding: 16px 19px 8px;
+    }
+
+    .signal {
+      padding: 10px 11px;
+      border-radius: 13px;
+      text-align: center;
+      border: 1px solid var(--blue-line);
+      color: var(--blue);
+      background: var(--blue-soft);
+      direction: rtl;
+      font-size: 15px;
+      line-height: 1.25;
+      font-weight: 850;
+    }
+
+    .signal:nth-child(2) {
+      color: #b24d40;
+      border-color: #f4cec7;
+      background: var(--coral-soft);
+    }
+
+    .formula {
+      margin: 7px 19px 13px;
+      padding: 12px;
+      border-radius: 14px;
+      background: #f8fafc;
+      border: 1px dashed #afc6d9;
+      color: var(--ink-muted);
+      text-align: center;
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .factors {
+      padding: 0 19px 18px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 9px;
+    }
+
+    .factor {
+      min-height: 56px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border: 1px solid #e1e9f0;
+      border-radius: 14px;
+      background: #fff;
+      color: var(--navy-2);
+      font-size: 14px;
+      font-weight: 750;
+      direction: rtl;
+      text-align: right;
+    }
+
+    .factor b {
+      width: 23px;
+      height: 23px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      border-radius: 50%;
+      background: var(--green-soft);
+      color: var(--green);
+      font-size: 13px;
+    }
+
+    .factor span { min-width: 0; }
+    .factor strong { display: block; font-size: 14px; line-height: 1.25; }
+
+    .outputs { grid-area: outputs; }
+    .outputs .content { padding: 18px; display: grid; gap: 15px; }
+
+    .output-card {
+      min-height: 128px;
+      padding: 17px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: #fff;
+      display: grid;
+      grid-template-columns: 48px 1fr;
+      align-items: center;
+      gap: 13px;
+    }
+
+    .output-card.wait { border-color: #f1c7bf; background: #fff9f7; }
+    .output-card.buy { border-color: #bfe4d5; background: #f6fcf9; }
+    .output-card.skip { background: #f8fafc; }
+
+    .output-symbol {
+      width: 46px;
+      height: 46px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--coral-soft);
+      color: var(--coral);
+      font-size: 23px;
+      font-weight: 900;
+    }
+
+    .buy .output-symbol { background: var(--green-soft); color: var(--green); }
+    .skip .output-symbol { background: var(--blue-soft); color: var(--blue); }
+    .output-card strong { display: block; font-size: 20px; line-height: 1.45; }
+    .output-card small { display: block; margin-top: 5px; color: var(--ink-muted); font-size: 14px; }
+
+    .flow-arrow {
+      direction: ltr;
+      display: grid;
+      place-items: center;
+      position: relative;
+      color: var(--navy);
+    }
+
+    .arrow1 { grid-area: arrow1; }
+    .arrow2 { grid-area: arrow2; }
+    .arrow3 { grid-area: arrow3; }
+
+    .arrow-line {
+      width: 44px;
+      height: 7px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--navy), var(--blue));
+      position: relative;
+      box-shadow: 0 5px 12px rgba(36, 115, 212, .16);
+    }
+
+    .arrow-line::before {
+      content: "";
+      position: absolute;
+      left: -11px;
+      top: 50%;
+      width: 21px;
+      height: 25px;
+      background: var(--navy);
+      clip-path: polygon(0 50%, 100% 0, 100% 100%);
+      transform: translateY(-50%);
+    }
+
+    .arrow-dot { display: none; }
+
+    .governance {
+      min-height: 126px;
+      margin-top: 18px;
+      padding: 17px 21px;
+      display: grid;
+      grid-template-columns: 230px 1fr;
+      align-items: center;
+      gap: 20px;
+      border: 1px solid #d7e2eb;
+      border-radius: 22px;
+      background: linear-gradient(90deg, #f7fafc, #fbfdff);
+      position: relative;
+      z-index: 2;
+    }
+
+    .governance-title {
+      padding-left: 18px;
+      border-left: 1px solid var(--line);
+    }
+
+    .governance-title strong { display: block; font-size: 23px; }
+
+    .guardrails {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .guardrail {
+      min-height: 76px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 13px;
+      border-radius: 15px;
+      background: white;
+      border: 1px solid #e1e9ef;
+      color: var(--navy-2);
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1.45;
+    }
+
+    .guardrail b {
+      width: 25px;
+      height: 25px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      border-radius: 8px;
+      background: var(--green-soft);
+      color: var(--green);
+      font-size: 14px;
+    }
+
+    @media (max-width: 1919px), (max-height: 1079px) {
+      body { overflow: auto; align-items: start; justify-items: start; }
+    }
+
+    @media (width: 1600px) and (height: 900px) {
+      html, body { width: 1600px; height: 900px; overflow: hidden; }
+      .slide { zoom: .8333333333; }
+    }
+
+    @media print {
+      html, body { width: 1920px; height: 1080px; background: white; }
+      .slide { box-shadow: none; }
+    }
+  </style>
+</head>
+<body>
+  <main class="slide" aria-label="شريحة معمارية الحل التقني">
+    <header class="header">
+      <div class="title-wrap">
+        <h1>معمارية الحل التقني</h1>
+      </div>
+    </header>
+
+    <section class="diagram" aria-label="تدفق المعمارية من مصادر البيانات إلى المخرجات">
+      <article class="panel sources">
+        <div class="panel-head">
+          <span class="step">1</span><h2>مصادر البيانات</h2>
+          <p class="panel-note">إشارات تاريخية وسلوكية منظّمة</p>
+        </div>
+        <div class="content">
+          <div class="source-item"><span class="source-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h16v13H4z"/><path d="M8 4h8l2 3H6zM9 11h6M9 15h4"/></svg></span><span>بيانات الحملات التاريخية للتجار</span></div>
+          <div class="source-item"><span class="source-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18M8 14h2M14 14h2M8 18h2"/></svg></span><span>المناسبات السعودية والمواسم</span></div>
+          <div class="source-item"><span class="source-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 5h2l2.2 10h10.9l2-7H6"/><circle cx="9" cy="19" r="1.5"/><circle cx="17" cy="19" r="1.5"/><path d="m10 11 2-2 2 2 3-3"/></svg></span><span>أنماط شراء المستخدم</span></div>
+          <div class="source-item"><span class="source-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M3 10h18M7 16h3M15 14v3M18 12v5"/></svg></span><span>بيانات الإنفاق والسلوك المالي</span></div>
+          <div class="source-item"><span class="source-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 4 6v5c0 5 3.4 8.6 8 10 4.6-1.4 8-5 8-10V6z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg></span><span>قواعد استبعاد المصروفات الأساسية</span></div>
+        </div>
+      </article>
+
+      <div class="flow-arrow arrow1" aria-hidden="true"><span class="arrow-dot"></span><span class="arrow-line"></span></div>
+
+      <section class="engines" aria-label="وكلاء التحليل المتخصصون">
+        <div class="agents-heading"><span class="step">2</span><h2>وكلاء التحليل المتخصصون</h2></div>
+        <article class="engine offer">
+          <div class="engine-top"><h3>وكيل استكشاف فرص العروض</h3><span class="model">نموذج التنبؤ: <b>CatBoost</b></span></div>
+          <p class="engine-note">يرصد احتمالية ظهور فرصة عرض قريبة لدى التاجر</p>
+          <div class="chips">
+            <span class="chip">التاريخ الموسمي</span><span class="chip">المناسبات السعودية</span>
+            <span class="chip">الحملات السابقة</span><span class="chip">نمط التكرار</span>
+          </div>
+        </article>
+        <article class="engine purchase">
+          <div class="engine-top"><h3>وكيل فهم السلوك الشرائي</h3><span class="model long">نموذج التنبؤ: <b>HistGradientBoosting</b></span></div>
+          <p class="engine-note">يحلل احتمالية اهتمام المستخدم بالتاجر</p>
+          <div class="chips">
+            <span class="chip">تكرار الشراء</span><span class="chip">آخر عملية شراء</span>
+            <span class="chip">تفضيلات المستخدم</span><span class="chip">فئات الإنفاق</span>
+            <span class="chip">العادات الشرائية</span>
+          </div>
+        </article>
+      </section>
+
+      <div class="flow-arrow arrow2" aria-hidden="true"><span class="arrow-dot"></span><span class="arrow-line"></span></div>
+
+      <article class="panel recommender">
+        <div class="panel-head">
+          <span class="step">3</span><h2>منسّق التوصية الذكي</h2>
+          <p class="panel-note">يجمع مخرجات الوكيلين ويطبّق قواعد الملاءمة والأمان</p>
+        </div>
+        <div class="signals">
+          <div class="signal">احتمالية العرض</div>
+          <div class="signal">احتمالية الشراء</div>
+        </div>
+        <div class="formula">مخرجات منظّمة من الوكيلين ← تنسيق آمن وملائم</div>
+        <div class="factors">
+          <div class="factor"><b>✓</b><span><strong>التوفير المتوقع</strong></span></div>
+          <div class="factor"><b>✓</b><span><strong>ملاءمة الميزانية</strong></span></div>
+          <div class="factor"><b>✓</b><span><strong>تصفية القرارات السابقة</strong></span></div>
+          <div class="factor"><b>✓</b><span><strong>استبعاد المصروفات الأساسية</strong></span></div>
+        </div>
+      </article>
+
+      <div class="flow-arrow arrow3" aria-hidden="true"><span class="arrow-dot"></span><span class="arrow-line"></span></div>
+
+      <article class="panel outputs">
+        <div class="panel-head">
+          <span class="step">4</span><h2>المخرجات</h2>
+          <p class="panel-note">قرار واضح مع تفسير مختصر</p>
+        </div>
+        <div class="content">
+          <div class="output-card wait"><span class="output-symbol">◷</span><div><strong>انتظر العرض المتوقع</strong><small>توجد فرصة توفير محتملة قريبًا</small></div></div>
+          <div class="output-card buy"><span class="output-symbol">✓</span><div><strong>اشترِ الآن</strong><small>لا توجد أفضلية كافية للانتظار</small></div></div>
+          <div class="output-card skip"><span class="output-symbol">—</span><div><strong>غير مناسب حاليًا</strong><small>الملاءمة أو قيمة التوفير غير كافية</small></div></div>
+        </div>
+      </article>
+    </section>
+
+    <section class="governance" aria-label="الحوكمة والموثوقية">
+      <div class="governance-title"><strong>الحوكمة والموثوقية</strong></div>
+      <div class="guardrails">
+        <div class="guardrail"><b>✓</b><span>توصيات احتمالية وليست ضمانًا لوجود العرض</span></div>
+        <div class="guardrail"><b>✓</b><span>لا نوصي بتأجيل المصروفات الأساسية</span></div>
+        <div class="guardrail"><b>✓</b><span>مسار بديل عند تعطل خدمة الذكاء الاصطناعي</span></div>
+        <div class="guardrail"><b>✓</b><span>استخدام سمات سلوكية مشتقة ومعرّفات مستعارة</span></div>
+      </div>
+    </section>
+
+  </main>
+</body>
+</html>
