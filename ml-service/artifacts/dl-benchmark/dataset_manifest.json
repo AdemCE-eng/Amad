@@ -1,0 +1,83 @@
+{
+  "label": "MOCK / SYNTHETIC DEEP-LEARNING BENCHMARK — SAUDI MARKET",
+  "dataLabel": "MOCK / SYNTHETIC DEMO DATA — SAUDI MARKET",
+  "datasetVersion": "synthetic-saudi-v2",
+  "randomSeed": 20260923,
+  "counts": {
+    "merchants": 20,
+    "fictionalUsers": 220,
+    "campaigns": 2047,
+    "transactions": 95063
+  },
+  "inputCsv": {
+    "merchant_catalog.csv": {
+      "sha256": "f7a6c87ac5a7506cdadac1b721433540644a05b81a1211d278db91928a96b738",
+      "bytes": 2562
+    },
+    "merchant_campaigns.csv": {
+      "sha256": "312cc8ca7234c8a144f9156de6689804b925863e3d4d9a298f819e69d484975f",
+      "bytes": 241275
+    },
+    "user_transactions.csv": {
+      "sha256": "e78e31a9ffb253896c57faa4cd787c99635ab2615bb8d840a5304770657f61cc",
+      "bytes": 12729885
+    }
+  },
+  "candidateHashAlgorithm": "SHA-256 of pandas hash_pandas_object uint64 bytes in stable row order",
+  "engines": {
+    "offer": {
+      "candidateRows": 4920,
+      "positiveRate": 0.416057,
+      "sha256": "3361d1319d054669718c70b6008d43f79497989e6b34efadf21f4400307a1064",
+      "split": {
+        "train": {
+          "start": "2022-01-03",
+          "end": "2025-04-14",
+          "rows": 3440,
+          "positiveRate": 0.4192
+        },
+        "validation": {
+          "start": "2025-04-21",
+          "end": "2025-12-29",
+          "rows": 740,
+          "positiveRate": 0.3959
+        },
+        "test": {
+          "start": "2026-01-05",
+          "end": "2026-09-14",
+          "rows": 740,
+          "positiveRate": 0.4216
+        }
+      },
+      "testSha256": "cbbcacf6424ec88dce036116b1fc66082eddad202bc544bb1396179934fdd4be"
+    },
+    "purchase": {
+      "candidateRows": 191830,
+      "positiveRate": 0.402742,
+      "sha256": "b90475337e38f11b5e09dead5ead1796675123ce5c5eb11488290e7bc7f74d9c",
+      "split": {
+        "train": {
+          "start": "2023-05-02",
+          "end": "2025-09-02",
+          "rows": 133530,
+          "positiveRate": 0.4032
+        },
+        "validation": {
+          "start": "2025-09-09",
+          "end": "2026-03-03",
+          "rows": 28600,
+          "positiveRate": 0.4026
+        },
+        "test": {
+          "start": "2026-03-10",
+          "end": "2026-09-08",
+          "rows": 29700,
+          "positiveRate": 0.4007
+        }
+      },
+      "testSha256": "3569b55d17d4db5eb07e3ec82fae523dc63de4521253abf898c056c81365c30f"
+    }
+  },
+  "frozenAcrossFamilies": true,
+  "containsRealPersonalData": false
+}

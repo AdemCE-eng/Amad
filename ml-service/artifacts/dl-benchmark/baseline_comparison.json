@@ -1,0 +1,356 @@
+{
+  "label": "MOCK / SYNTHETIC DEEP-LEARNING BENCHMARK — SAUDI MARKET",
+  "resultsLabelAr": "نتائج على بيانات تجريبية من السوق السعودي",
+  "nonProductionNoticeAr": "هذه النتائج لا تمثل أداءً إنتاجياً على بيانات عملاء حقيقية",
+  "finalists": {
+    "offer": {
+      "currentBaseline": {
+        "accuracy": 0.5446,
+        "balancedAccuracy": 0.5876,
+        "precision": 0.4778,
+        "recall": 0.8622,
+        "f1": 0.6149,
+        "rocAuc": 0.6643,
+        "brierScore": 0.224972,
+        "evaluatedThreshold": 0.3,
+        "positiveRate": 0.4216,
+        "predictedPositiveRate": 0.7608,
+        "testRows": 740,
+        "confusionMatrix": [
+          [
+            134,
+            294
+          ],
+          [
+            43,
+            269
+          ]
+        ],
+        "modelName": "RandomForestClassifier",
+        "trainingDurationSeconds": 0.73,
+        "datasetVersion": "synthetic-saudi-v2",
+        "randomSeed": 20260923,
+        "calibrationMethod": "isotonic",
+        "temporalSplit": {
+          "train": {
+            "start": "2022-01-03",
+            "end": "2025-04-14",
+            "rows": 3440,
+            "positiveRate": 0.4192
+          },
+          "validation": {
+            "start": "2025-04-21",
+            "end": "2025-12-29",
+            "rows": 740,
+            "positiveRate": 0.3959
+          },
+          "test": {
+            "start": "2026-01-05",
+            "end": "2026-09-14",
+            "rows": 740,
+            "positiveRate": 0.4216
+          }
+        },
+        "reliabilityBins": [
+          {
+            "lower": 0.0,
+            "upper": 0.1,
+            "meanPrediction": 0.0,
+            "observedRate": 0.5,
+            "count": 2
+          },
+          {
+            "lower": 0.1,
+            "upper": 0.2,
+            "meanPrediction": 0.1835,
+            "observedRate": 0.2024,
+            "count": 84
+          },
+          {
+            "lower": 0.2,
+            "upper": 0.3,
+            "meanPrediction": 0.2607,
+            "observedRate": 0.2747,
+            "count": 91
+          },
+          {
+            "lower": 0.3,
+            "upper": 0.4,
+            "meanPrediction": 0.3161,
+            "observedRate": 0.3469,
+            "count": 147
+          },
+          {
+            "lower": 0.4,
+            "upper": 0.5,
+            "meanPrediction": 0.4161,
+            "observedRate": 0.4359,
+            "count": 234
+          },
+          {
+            "lower": 0.5,
+            "upper": 0.6,
+            "meanPrediction": 0.5456,
+            "observedRate": 0.6078,
+            "count": 102
+          },
+          {
+            "lower": 0.7,
+            "upper": 0.8,
+            "meanPrediction": 0.7112,
+            "observedRate": 0.6835,
+            "count": 79
+          },
+          {
+            "lower": 0.8,
+            "upper": 0.9,
+            "meanPrediction": 0.8384,
+            "observedRate": 0.0,
+            "count": 1
+          }
+        ]
+      },
+      "CatBoostClassifier": {
+        "accuracy": 0.5392,
+        "balancedAccuracy": 0.5877,
+        "precision": 0.4754,
+        "recall": 0.8974,
+        "f1": 0.6215,
+        "rocAuc": 0.6711,
+        "brierScore": 0.222888,
+        "threshold": 0.28,
+        "testRows": 740,
+        "confusionMatrix": [
+          [
+            119,
+            309
+          ],
+          [
+            32,
+            280
+          ]
+        ]
+      },
+      "EmbeddingMLP": {
+        "accuracy": 0.4851,
+        "balancedAccuracy": 0.5445,
+        "precision": 0.4465,
+        "recall": 0.9231,
+        "f1": 0.6019,
+        "rocAuc": 0.6143,
+        "brierScore": 0.234572,
+        "threshold": 0.28,
+        "testRows": 740,
+        "confusionMatrix": [
+          [
+            71,
+            357
+          ],
+          [
+            24,
+            288
+          ]
+        ]
+      }
+    },
+    "purchase": {
+      "currentBaseline": {
+        "accuracy": 0.7474,
+        "balancedAccuracy": 0.7641,
+        "precision": 0.6394,
+        "recall": 0.848,
+        "f1": 0.7291,
+        "rocAuc": 0.8418,
+        "brierScore": 0.158431,
+        "evaluatedThreshold": 0.34,
+        "positiveRate": 0.4007,
+        "predictedPositiveRate": 0.5314,
+        "testRows": 29700,
+        "confusionMatrix": [
+          [
+            12107,
+            5692
+          ],
+          [
+            1809,
+            10092
+          ]
+        ],
+        "modelName": "HistGradientBoostingClassifier",
+        "trainingDurationSeconds": 1.961,
+        "datasetVersion": "synthetic-saudi-v2",
+        "randomSeed": 20260923,
+        "calibrationMethod": "isotonic",
+        "temporalSplit": {
+          "train": {
+            "start": "2023-05-02",
+            "end": "2025-09-02",
+            "rows": 133530,
+            "positiveRate": 0.4032
+          },
+          "validation": {
+            "start": "2025-09-09",
+            "end": "2026-03-03",
+            "rows": 28600,
+            "positiveRate": 0.4026
+          },
+          "test": {
+            "start": "2026-03-10",
+            "end": "2026-09-08",
+            "rows": 29700,
+            "positiveRate": 0.4007
+          }
+        },
+        "reliabilityBins": [
+          {
+            "lower": 0.0,
+            "upper": 0.1,
+            "meanPrediction": 0.0393,
+            "observedRate": 0.0388,
+            "count": 6281
+          },
+          {
+            "lower": 0.1,
+            "upper": 0.2,
+            "meanPrediction": 0.1425,
+            "observedRate": 0.1369,
+            "count": 3250
+          },
+          {
+            "lower": 0.2,
+            "upper": 0.3,
+            "meanPrediction": 0.2455,
+            "observedRate": 0.2459,
+            "count": 3867
+          },
+          {
+            "lower": 0.3,
+            "upper": 0.4,
+            "meanPrediction": 0.363,
+            "observedRate": 0.3631,
+            "count": 1096
+          },
+          {
+            "lower": 0.4,
+            "upper": 0.5,
+            "meanPrediction": 0.4339,
+            "observedRate": 0.433,
+            "count": 2871
+          },
+          {
+            "lower": 0.5,
+            "upper": 0.6,
+            "meanPrediction": 0.5361,
+            "observedRate": 0.5281,
+            "count": 2513
+          },
+          {
+            "lower": 0.6,
+            "upper": 0.7,
+            "meanPrediction": 0.6289,
+            "observedRate": 0.6274,
+            "count": 2587
+          },
+          {
+            "lower": 0.7,
+            "upper": 0.8,
+            "meanPrediction": 0.7513,
+            "observedRate": 0.7493,
+            "count": 4603
+          },
+          {
+            "lower": 0.8,
+            "upper": 0.9,
+            "meanPrediction": 0.8347,
+            "observedRate": 0.8159,
+            "count": 1972
+          },
+          {
+            "lower": 0.9,
+            "upper": 1.0,
+            "meanPrediction": 0.9422,
+            "observedRate": 0.9273,
+            "count": 660
+          }
+        ],
+        "precisionAt3": 0.5597,
+        "hitRateAt3": 0.9804
+      },
+      "CatBoostClassifier": {
+        "accuracy": 0.7407,
+        "balancedAccuracy": 0.7586,
+        "precision": 0.6313,
+        "recall": 0.8485,
+        "f1": 0.724,
+        "rocAuc": 0.8391,
+        "brierScore": 0.1599,
+        "threshold": 0.34,
+        "testRows": 29700,
+        "confusionMatrix": [
+          [
+            11902,
+            5897
+          ],
+          [
+            1803,
+            10098
+          ]
+        ]
+      },
+      "EmbeddingMLP": {
+        "accuracy": 0.7512,
+        "balancedAccuracy": 0.7635,
+        "precision": 0.649,
+        "recall": 0.8256,
+        "f1": 0.7267,
+        "rocAuc": 0.8397,
+        "brierScore": 0.159521,
+        "threshold": 0.38,
+        "testRows": 29700,
+        "confusionMatrix": [
+          [
+            12486,
+            5313
+          ],
+          [
+            2076,
+            9825
+          ]
+        ]
+      },
+      "PurchaseGRU": {
+        "accuracy": 0.7436,
+        "balancedAccuracy": 0.7595,
+        "precision": 0.6365,
+        "recall": 0.8395,
+        "f1": 0.724,
+        "rocAuc": 0.8374,
+        "brierScore": 0.160711,
+        "threshold": 0.36,
+        "testRows": 29700,
+        "confusionMatrix": [
+          [
+            12093,
+            5706
+          ],
+          [
+            1910,
+            9991
+          ]
+        ]
+      }
+    }
+  },
+  "validationSelectedStrongestTabular": {
+    "offer": "CatBoostClassifier",
+    "purchase": "currentBaseline"
+  },
+  "validationSelectedNeural": {
+    "offer": "EmbeddingMLP",
+    "purchase": "EmbeddingMLP"
+  },
+  "selectedModels": {
+    "offer": "CatBoostClassifier",
+    "purchase": "currentBaseline"
+  }
+}

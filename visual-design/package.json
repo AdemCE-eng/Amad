@@ -1,0 +1,1 @@
+{"name":"namo-visual-design","private":true,"type":"module","scripts":{"capture":"node scripts/capture-screenshots.mjs"},"devDependencies":{"playwright":"^1.52.0"}}

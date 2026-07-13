@@ -1,0 +1,130 @@
+{
+  "label": "نتائج على بيانات تجريبية من السوق السعودي",
+  "cycles": [
+    {
+      "cycle": 1,
+      "status": "rejected_below_targets",
+      "dataset": {
+        "datasetVersion": "synthetic-saudi-v2",
+        "label": "MOCK / SYNTHETIC DEMO DATA — SAUDI MARKET",
+        "merchants": 20,
+        "campaigns": 2047,
+        "transactions": 95063,
+        "users": 220,
+        "seed": 20260923,
+        "dateRange": {
+          "start": "2022-01-03",
+          "end": "2026-09-19T23:00:00"
+        }
+      },
+      "featureChanges": [
+        "expanded probabilistic dataset",
+        "historical campaign recency and trend",
+        "merchant/category occasion interactions",
+        "purchase interval statistics",
+        "loyalty and affinity",
+        "weekend/salary/seasonal behavior"
+      ],
+      "modelCandidates": [
+        "LogisticRegression",
+        "RandomForestClassifier",
+        "ExtraTreesClassifier",
+        "HistGradientBoostingClassifier",
+        "GradientBoostingClassifier"
+      ],
+      "validationResultsSource": "cycle1_model_comparison.json and cycle1_threshold_analysis.json",
+      "finalTestResults": {
+        "offer": {
+          "balancedAccuracy": 0.5844,
+          "precision": 0.4725,
+          "recall": 0.9071,
+          "f1": 0.6213,
+          "rocAuc": 0.657,
+          "brierScore": 0.22605
+        },
+        "purchase": {
+          "balancedAccuracy": 0.7623,
+          "precision": 0.65,
+          "recall": 0.8198,
+          "f1": 0.7251,
+          "rocAuc": 0.8388,
+          "brierScore": 0.159962
+        }
+      },
+      "decisionReason": "Rejected because untouched-test F1 and balanced accuracy remained below target; the dataset and test partition were then frozen."
+    },
+    {
+      "cycle": 2,
+      "status": "accepted_best_honest",
+      "dataset": {
+        "datasetVersion": "synthetic-saudi-v2",
+        "label": "MOCK / SYNTHETIC DEMO DATA — SAUDI MARKET",
+        "merchants": 20,
+        "campaigns": 2047,
+        "transactions": 95063,
+        "users": 220,
+        "seed": 20260923,
+        "dateRange": {
+          "start": "2022-01-03",
+          "end": "2026-09-19T23:00:00"
+        }
+      },
+      "featureChanges": [
+        "merchant seasonal-focus match",
+        "historical occasion share",
+        "campaign due ratio",
+        "purchase due ratio",
+        "overdue days",
+        "expected purchase proximity",
+        "frequency trend",
+        "weekday preference strength"
+      ],
+      "modelCandidates": [
+        "LogisticRegression",
+        "RandomForestClassifier",
+        "ExtraTreesClassifier",
+        "HistGradientBoostingClassifier",
+        "GradientBoostingClassifier"
+      ],
+      "validationResults": {
+        "offer": {
+          "threshold": 0.3,
+          "precision": 0.4562,
+          "recall": 0.8532,
+          "f1": 0.5945,
+          "balancedAccuracy": 0.5933,
+          "predictedPositiveRate": 0.7405,
+          "constraintsSatisfied": false
+        },
+        "purchase": {
+          "threshold": 0.34,
+          "precision": 0.6421,
+          "recall": 0.8474,
+          "f1": 0.7306,
+          "balancedAccuracy": 0.7646,
+          "predictedPositiveRate": 0.5313,
+          "constraintsSatisfied": false
+        }
+      },
+      "finalTestResults": {
+        "offer": {
+          "balancedAccuracy": 0.5876,
+          "precision": 0.4778,
+          "recall": 0.8622,
+          "f1": 0.6149,
+          "rocAuc": 0.6643,
+          "brierScore": 0.224972
+        },
+        "purchase": {
+          "balancedAccuracy": 0.7641,
+          "precision": 0.6394,
+          "recall": 0.848,
+          "f1": 0.7291,
+          "rocAuc": 0.8418,
+          "brierScore": 0.158431
+        }
+      },
+      "decisionReason": "Accepted as the best honest validation-selected configuration. A third cycle was not run because validation gains were marginal and changing the generator or test partition after observing results would risk test-driven optimization."
+    }
+  ]
+}

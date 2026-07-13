@@ -1,0 +1,4 @@
+# Optional, CPU-compatible dependencies for the controlled benchmark only.
+# The normal FastAPI runtime and deterministic Node fallback do not import them.
+torch==2.13.0
+catboost==1.2.10

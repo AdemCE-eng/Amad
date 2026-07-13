@@ -9,6 +9,7 @@ import gameRoutes from "./routes/game.js";
 import familyRoutes from "./routes/family.js";
 import offersRoutes from "./routes/offers.js";
 import budgetRoutes from "./routes/budget.js";
+import mlRoutes from "./routes/ml.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 3000;
@@ -24,6 +25,7 @@ app.use("/api", gameRoutes);
 app.use("/api", familyRoutes);
 app.use("/api", offersRoutes);
 app.use("/api", budgetRoutes);
+app.use("/api", mlRoutes);
 app.get("/health", (_req, res) => res.json({ ok: true, service: "amad-backend" }));
 
 // Serve the Cheat Controller (static) at the root.

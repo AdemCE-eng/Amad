@@ -1,0 +1,519 @@
+{
+  "label": "MOCK / SYNTHETIC DEEP-LEARNING BENCHMARK — SAUDI MARKET",
+  "selectionMetric": "validation Brier score",
+  "engines": {
+    "offer": {
+      "currentBaseline": {
+        "selected": "isotonic",
+        "rows": [
+          {
+            "method": "uncalibrated",
+            "validationBrierScore": 0.222213,
+            "reliabilityBins": [
+              {
+                "lower": 0.0,
+                "upper": 0.1,
+                "meanPrediction": 0.0814,
+                "observedRate": 0.2,
+                "count": 15
+              },
+              {
+                "lower": 0.1,
+                "upper": 0.2,
+                "meanPrediction": 0.1547,
+                "observedRate": 0.1948,
+                "count": 77
+              },
+              {
+                "lower": 0.2,
+                "upper": 0.3,
+                "meanPrediction": 0.2531,
+                "observedRate": 0.2937,
+                "count": 143
+              },
+              {
+                "lower": 0.3,
+                "upper": 0.4,
+                "meanPrediction": 0.3495,
+                "observedRate": 0.3519,
+                "count": 162
+              },
+              {
+                "lower": 0.4,
+                "upper": 0.5,
+                "meanPrediction": 0.4514,
+                "observedRate": 0.4044,
+                "count": 136
+              },
+              {
+                "lower": 0.5,
+                "upper": 0.6,
+                "meanPrediction": 0.5482,
+                "observedRate": 0.5155,
+                "count": 97
+              },
+              {
+                "lower": 0.6,
+                "upper": 0.7,
+                "meanPrediction": 0.6417,
+                "observedRate": 0.617,
+                "count": 47
+              },
+              {
+                "lower": 0.7,
+                "upper": 0.8,
+                "meanPrediction": 0.7488,
+                "observedRate": 0.6591,
+                "count": 44
+              },
+              {
+                "lower": 0.8,
+                "upper": 0.9,
+                "meanPrediction": 0.8345,
+                "observedRate": 0.6842,
+                "count": 19
+              }
+            ]
+          },
+          {
+            "method": "sigmoid",
+            "validationBrierScore": 0.220371,
+            "reliabilityBins": [
+              {
+                "lower": 0.1,
+                "upper": 0.2,
+                "meanPrediction": 0.1654,
+                "observedRate": 0.2174,
+                "count": 46
+              },
+              {
+                "lower": 0.2,
+                "upper": 0.3,
+                "meanPrediction": 0.2582,
+                "observedRate": 0.2353,
+                "count": 136
+              },
+              {
+                "lower": 0.3,
+                "upper": 0.4,
+                "meanPrediction": 0.3489,
+                "observedRate": 0.3632,
+                "count": 223
+              },
+              {
+                "lower": 0.4,
+                "upper": 0.5,
+                "meanPrediction": 0.4459,
+                "observedRate": 0.4,
+                "count": 180
+              },
+              {
+                "lower": 0.5,
+                "upper": 0.6,
+                "meanPrediction": 0.5389,
+                "observedRate": 0.6067,
+                "count": 89
+              },
+              {
+                "lower": 0.6,
+                "upper": 0.7,
+                "meanPrediction": 0.6508,
+                "observedRate": 0.6667,
+                "count": 51
+              },
+              {
+                "lower": 0.7,
+                "upper": 0.8,
+                "meanPrediction": 0.7371,
+                "observedRate": 0.6667,
+                "count": 15
+              }
+            ]
+          },
+          {
+            "method": "isotonic",
+            "validationBrierScore": 0.215145,
+            "reliabilityBins": [
+              {
+                "lower": 0.0,
+                "upper": 0.1,
+                "meanPrediction": 0.0,
+                "observedRate": 0.0,
+                "count": 3
+              },
+              {
+                "lower": 0.1,
+                "upper": 0.2,
+                "meanPrediction": 0.186,
+                "observedRate": 0.186,
+                "count": 86
+              },
+              {
+                "lower": 0.2,
+                "upper": 0.3,
+                "meanPrediction": 0.2621,
+                "observedRate": 0.2621,
+                "count": 103
+              },
+              {
+                "lower": 0.3,
+                "upper": 0.4,
+                "meanPrediction": 0.3154,
+                "observedRate": 0.3154,
+                "count": 149
+              },
+              {
+                "lower": 0.4,
+                "upper": 0.5,
+                "meanPrediction": 0.4159,
+                "observedRate": 0.4159,
+                "count": 214
+              },
+              {
+                "lower": 0.5,
+                "upper": 0.6,
+                "meanPrediction": 0.5385,
+                "observedRate": 0.5385,
+                "count": 104
+              },
+              {
+                "lower": 0.7,
+                "upper": 0.8,
+                "meanPrediction": 0.7125,
+                "observedRate": 0.7125,
+                "count": 80
+              },
+              {
+                "lower": 0.9,
+                "upper": 1.0,
+                "meanPrediction": 1.0,
+                "observedRate": 1.0,
+                "count": 1
+              }
+            ]
+          }
+        ]
+      },
+      "CatBoostClassifier": {
+        "selected": "isotonic",
+        "rows": [
+          {
+            "method": "uncalibrated",
+            "validationBrierScore": 0.225484
+          },
+          {
+            "method": "sigmoid",
+            "validationBrierScore": 0.216571
+          },
+          {
+            "method": "isotonic",
+            "validationBrierScore": 0.209525
+          }
+        ]
+      },
+      "EmbeddingMLP": {
+        "selected": "sigmoid",
+        "rows": [
+          {
+            "method": "uncalibrated",
+            "validationBrierScore": 0.236621
+          },
+          {
+            "method": "sigmoid",
+            "validationBrierScore": 0.227105
+          },
+          {
+            "method": "temperature",
+            "validationBrierScore": 0.236617
+          }
+        ]
+      }
+    },
+    "purchase": {
+      "currentBaseline": {
+        "selected": "isotonic",
+        "rows": [
+          {
+            "method": "uncalibrated",
+            "validationBrierScore": 0.162841,
+            "reliabilityBins": [
+              {
+                "lower": 0.0,
+                "upper": 0.1,
+                "meanPrediction": 0.0404,
+                "observedRate": 0.0277,
+                "count": 4622
+              },
+              {
+                "lower": 0.1,
+                "upper": 0.2,
+                "meanPrediction": 0.1515,
+                "observedRate": 0.1025,
+                "count": 3121
+              },
+              {
+                "lower": 0.2,
+                "upper": 0.3,
+                "meanPrediction": 0.2468,
+                "observedRate": 0.1811,
+                "count": 2501
+              },
+              {
+                "lower": 0.3,
+                "upper": 0.4,
+                "meanPrediction": 0.3497,
+                "observedRate": 0.2554,
+                "count": 2169
+              },
+              {
+                "lower": 0.4,
+                "upper": 0.5,
+                "meanPrediction": 0.4514,
+                "observedRate": 0.3596,
+                "count": 2230
+              },
+              {
+                "lower": 0.5,
+                "upper": 0.6,
+                "meanPrediction": 0.5496,
+                "observedRate": 0.4557,
+                "count": 2710
+              },
+              {
+                "lower": 0.6,
+                "upper": 0.7,
+                "meanPrediction": 0.6498,
+                "observedRate": 0.5659,
+                "count": 2730
+              },
+              {
+                "lower": 0.7,
+                "upper": 0.8,
+                "meanPrediction": 0.7573,
+                "observedRate": 0.6953,
+                "count": 4007
+              },
+              {
+                "lower": 0.8,
+                "upper": 0.9,
+                "meanPrediction": 0.8455,
+                "observedRate": 0.802,
+                "count": 3955
+              },
+              {
+                "lower": 0.9,
+                "upper": 1.0,
+                "meanPrediction": 0.9346,
+                "observedRate": 0.9351,
+                "count": 555
+              }
+            ]
+          },
+          {
+            "method": "sigmoid",
+            "validationBrierScore": 0.158479,
+            "reliabilityBins": [
+              {
+                "lower": 0.0,
+                "upper": 0.1,
+                "meanPrediction": 0.0387,
+                "observedRate": 0.0391,
+                "count": 6056
+              },
+              {
+                "lower": 0.1,
+                "upper": 0.2,
+                "meanPrediction": 0.1454,
+                "observedRate": 0.1507,
+                "count": 3644
+              },
+              {
+                "lower": 0.2,
+                "upper": 0.3,
+                "meanPrediction": 0.2492,
+                "observedRate": 0.2437,
+                "count": 2478
+              },
+              {
+                "lower": 0.3,
+                "upper": 0.4,
+                "meanPrediction": 0.3508,
+                "observedRate": 0.3497,
+                "count": 2285
+              },
+              {
+                "lower": 0.4,
+                "upper": 0.5,
+                "meanPrediction": 0.4494,
+                "observedRate": 0.4444,
+                "count": 2579
+              },
+              {
+                "lower": 0.5,
+                "upper": 0.6,
+                "meanPrediction": 0.5497,
+                "observedRate": 0.5433,
+                "count": 2470
+              },
+              {
+                "lower": 0.6,
+                "upper": 0.7,
+                "meanPrediction": 0.6545,
+                "observedRate": 0.647,
+                "count": 2657
+              },
+              {
+                "lower": 0.7,
+                "upper": 0.8,
+                "meanPrediction": 0.7466,
+                "observedRate": 0.7549,
+                "count": 3839
+              },
+              {
+                "lower": 0.8,
+                "upper": 0.9,
+                "meanPrediction": 0.8377,
+                "observedRate": 0.8417,
+                "count": 2230
+              },
+              {
+                "lower": 0.9,
+                "upper": 1.0,
+                "meanPrediction": 0.9362,
+                "observedRate": 0.9475,
+                "count": 362
+              }
+            ]
+          },
+          {
+            "method": "isotonic",
+            "validationBrierScore": 0.157874,
+            "reliabilityBins": [
+              {
+                "lower": 0.0,
+                "upper": 0.1,
+                "meanPrediction": 0.0389,
+                "observedRate": 0.0389,
+                "count": 6087
+              },
+              {
+                "lower": 0.1,
+                "upper": 0.2,
+                "meanPrediction": 0.1424,
+                "observedRate": 0.1424,
+                "count": 3132
+              },
+              {
+                "lower": 0.2,
+                "upper": 0.3,
+                "meanPrediction": 0.2455,
+                "observedRate": 0.2455,
+                "count": 3645
+              },
+              {
+                "lower": 0.3,
+                "upper": 0.4,
+                "meanPrediction": 0.3605,
+                "observedRate": 0.3605,
+                "count": 1054
+              },
+              {
+                "lower": 0.4,
+                "upper": 0.5,
+                "meanPrediction": 0.4336,
+                "observedRate": 0.4336,
+                "count": 2906
+              },
+              {
+                "lower": 0.5,
+                "upper": 0.6,
+                "meanPrediction": 0.5362,
+                "observedRate": 0.5362,
+                "count": 2475
+              },
+              {
+                "lower": 0.6,
+                "upper": 0.7,
+                "meanPrediction": 0.6295,
+                "observedRate": 0.6295,
+                "count": 2394
+              },
+              {
+                "lower": 0.7,
+                "upper": 0.8,
+                "meanPrediction": 0.7516,
+                "observedRate": 0.7516,
+                "count": 4404
+              },
+              {
+                "lower": 0.8,
+                "upper": 0.9,
+                "meanPrediction": 0.8353,
+                "observedRate": 0.8353,
+                "count": 1907
+              },
+              {
+                "lower": 0.9,
+                "upper": 1.0,
+                "meanPrediction": 0.9379,
+                "observedRate": 0.9379,
+                "count": 596
+              }
+            ]
+          }
+        ]
+      },
+      "CatBoostClassifier": {
+        "selected": "isotonic",
+        "rows": [
+          {
+            "method": "uncalibrated",
+            "validationBrierScore": 0.164847
+          },
+          {
+            "method": "sigmoid",
+            "validationBrierScore": 0.16011
+          },
+          {
+            "method": "isotonic",
+            "validationBrierScore": 0.15944
+          }
+        ]
+      },
+      "EmbeddingMLP": {
+        "selected": "sigmoid",
+        "rows": [
+          {
+            "method": "uncalibrated",
+            "validationBrierScore": 0.16418
+          },
+          {
+            "method": "sigmoid",
+            "validationBrierScore": 0.159995
+          },
+          {
+            "method": "temperature",
+            "validationBrierScore": 0.164168
+          }
+        ]
+      },
+      "PurchaseGRU": {
+        "selected": "sigmoid",
+        "rows": [
+          {
+            "method": "uncalibrated",
+            "validationBrierScore": 0.165281
+          },
+          {
+            "method": "sigmoid",
+            "validationBrierScore": 0.160878
+          },
+          {
+            "method": "temperature",
+            "validationBrierScore": 0.165232
+          }
+        ]
+      }
+    }
+  }
+}
