@@ -1,6 +1,6 @@
 // ⚠️ MOCK — Akthr (أكثر) loyalty program. Akthr points are the bank's REAL
 // campaign-funded loyalty rewards — a separate currency from NXP (the app's
-// virtual game coins stored at game.coins). Never conflate the two.
+// virtual game points stored at game.nxp_balance). Never conflate the two.
 
 export const MOCK_SOURCE = "akthr";
 

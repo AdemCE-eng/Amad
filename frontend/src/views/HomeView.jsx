@@ -13,6 +13,8 @@ import ChallengeCard from '../components/ui/ChallengeCard';
 import CountUp from '../components/ui/CountUp';
 import BudgetOverview from '../components/ui/BudgetOverview';
 import SavingsPlanSheet from '../components/ui/SavingsPlanSheet';
+import SaveRewardTag from '../components/ui/SaveRewardTag';
+import { SAVE_PRESETS } from '../lib/catalog';
 
 const TX_LABELS = {
   purchase: { icon: ShoppingCart, sign: '-' },
@@ -37,7 +39,7 @@ function formatDate(ts) {
 export default function HomeView() {
   const {
     user, pet, game, transactions, family,
-    isSick, isSad, goalProgress,
+    isSick, isTired, goalProgress,
     isShaking, flashColor, setActiveView,
     isSubmitting, runAction,
     budgets, budgetPeriod, projectedRollover, savingsAccountOpened,
@@ -48,7 +50,7 @@ export default function HomeView() {
   const [planOpen, setPlanOpen] = useState(false);
 
   const promptSave = () => {
-    const amountStr = window.prompt('كم تبغى توفر؟ (ر.س)', '500');
+    const amountStr = window.prompt('كم تبغى توفر؟ (ر.س)', String(SAVE_PRESETS[1]));
     if (!amountStr) return;
     const amt = parseFloat(amountStr);
     if (!amt || amt <= 0) return;
@@ -79,7 +81,7 @@ export default function HomeView() {
         <div className="flex items-center gap-3">
           <div className="text-left">
             <p className="font-black text-cream text-lg leading-tight">{user.name}</p>
-            {accountOpen && <p className="text-[11px] text-violet font-bold">✦ {game.coins}</p>}
+            {accountOpen && <p className="text-[11px] text-violet font-bold">✦ {game.nxp_balance} NXP</p>}
           </div>
           {accountOpen && (
             <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center font-black text-cream text-lg">
@@ -191,6 +193,10 @@ export default function HomeView() {
           </button>
         )}
 
+        {/* Income-relative NXP receipt — proof on screen that the reward
+            scales with % of income (or the "back to your best" zero case). */}
+        {accountOpen && <SaveRewardTag reward={game.lastSaveReward} />}
+
         {/* Family Goal — nav card into the dedicated tab (always available) */}
         <button
           onClick={() => setActiveView('family')}
@@ -216,8 +222,8 @@ export default function HomeView() {
             <div className="flex items-center gap-3 mb-3">
               <StreakFlame streak={game.streak} />
               <div className="flex items-center gap-1 text-xs font-bold mr-auto">
-                <HeartPulse size={13} className={isSick ? 'text-red-400' : isSad ? 'text-orange-400' : 'text-emerald-400'} />
-                <span className={isSick ? 'text-red-400' : isSad ? 'text-orange-400' : 'text-emerald-400'}>{pet.health}%</span>
+                <HeartPulse size={13} className={isSick ? 'text-red-400' : isTired ? 'text-orange-400' : 'text-emerald-400'} />
+                <span className={isSick ? 'text-red-400' : isTired ? 'text-orange-400' : 'text-emerald-400'}>{pet.health}%</span>
               </div>
               <span className="text-xs font-black text-cream/70">الهدف {goalProgress}%</span>
             </div>
