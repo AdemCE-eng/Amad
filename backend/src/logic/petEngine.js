@@ -5,6 +5,8 @@
 // Relative-effort principle: heal amounts scale by the % of the user's PERSONAL
 // goal, not absolute SAR — a student and an executive get comparable payoff.
 
+import { initialBudgetFields, trackPurchase } from "./budgetEngine.js";
+
 // ── Tunable constants ────────────────────────────────────
 const SAVE_RATE = 0.2; // portion of a salary deposit auto-routed to Instant Savings
 const HEAL_K = 2; // scaling factor for goal-relative healing
@@ -46,6 +48,8 @@ export function initialState() {
       balance: 8000,
       monthlyBudget: 3000,
       spentThisMonth: 1400,
+      // Savings-plan + category-budget + auto-rollover fields.
+      ...initialBudgetFields(),
     },
     pet: {
       health: 100,
@@ -83,9 +87,6 @@ export function initialState() {
 }
 
 // Internal: stamp health/mood/animation onto the pet after a health change.
-// `mood` always derives from the resulting health — it must never disagree with
-// what the health bar shows. `animationState` can still be overridden per event
-// for a one-off Lottie cue (e.g. "eating"), independent of the persistent mood.
 function withHealth(pet, healthDelta, { animationState } = {}) {
   const health = clamp(Math.round(pet.health + healthDelta), 0, 100);
   const mood = moodFromHealth(health);
@@ -105,7 +106,6 @@ function moodToAnimation(mood) {
 // ── Events ───────────────────────────────────────────────
 
 // Salary deposit → a slice is auto-saved → pet heals and eats happily.
-// `saveRate` (0-1) is choosable per deposit — defaults to the standard auto-save rate.
 export function applySalary(state, amount, saveRate = SAVE_RATE) {
   const savedPortion = Math.round(amount * clamp(saveRate, 0, 1));
   const user = {
@@ -129,8 +129,6 @@ export function applySalary(state, amount, saveRate = SAVE_RATE) {
 }
 
 // Instant Savings → the user manually moves money straight into savings.
-// Unlike a salary deposit (only a slice is auto-saved), the FULL amount counts
-// toward the goal here, so it heals proportionally more per SAR.
 export function applyInstantSave(state, amount) {
   const user = {
     ...state.user,
@@ -156,10 +154,14 @@ export function applyInstantSave(state, amount) {
 export function applyPurchase(state, { amount, category = "general", label = "عملية شراء" }) {
   const spentThisMonth = state.user.spentThisMonth + amount;
   const overBudget = spentThisMonth > state.user.monthlyBudget;
+  // Fold into the matching category's current-period spend so the unspent
+  // remainder can roll into savings at the next settlement (time-advance).
+  const budgetPeriod = trackPurchase(state.user, category, amount);
   const user = {
     ...state.user,
     balance: state.user.balance - amount,
     spentThisMonth,
+    budgetPeriod,
   };
   let healthDelta = PURCHASE_IN_BUDGET_PENALTY;
   if (overBudget) {
@@ -170,9 +172,6 @@ export function applyPurchase(state, { amount, category = "general", label = "ع
       OVER_BUDGET_PENALTY_MAX
     );
   }
-  // No animation override: pose derives from the health band, same as mood.
-  // The over-budget "hit" feedback is the health drop itself (frontend shakes
-  // the screen and flashes red) — the pet only collapses when truly sick.
   const pet = withHealth(state.pet, healthDelta);
   return {
     ...state,
@@ -180,7 +179,7 @@ export function applyPurchase(state, { amount, category = "general", label = "ع
     pet,
     meta: { lastEvent: "purchase" },
     _aiContext: {
-      category: pet.mood, // AI reaction always matches what the health bar shows
+      category: pet.mood,
       event: "purchase",
       amount,
       txnCategory: category,
@@ -191,9 +190,7 @@ export function applyPurchase(state, { amount, category = "general", label = "ع
   };
 }
 
-// Small positive nudge from events outside the personal account (family-goal
-// contribution, followed saving plan). Health/mood only — stays in this
-// module's domain; family/offer state lives in its own engines.
+// Small positive nudge from events outside the personal account.
 export function applyCheer(state, { healthDelta = 5, event = "cheer", extra = {} } = {}) {
   const pet = withHealth(state.pet, healthDelta, { animationState: "happy" });
   return {
@@ -209,13 +206,12 @@ export function applyEmergency(state, { amount, label = "سحب طارئ" }) {
   const shielded = state.emergencyShield.usesRemaining > 0;
 
   if (!shielded) {
-    // No shield left → behaves like a large (likely over-budget) purchase.
     return applyPurchase(state, { amount, category: "emergency", label });
   }
 
   const user = { ...state.user, balance: state.user.balance - amount };
   const emergencyShield = { usesRemaining: state.emergencyShield.usesRemaining - 1 };
-  const pet = withHealth(state.pet, 0, { animationState: "idle" }); // untouched health, calm animation
+  const pet = withHealth(state.pet, 0, { animationState: "idle" });
   return {
     ...state,
     user,

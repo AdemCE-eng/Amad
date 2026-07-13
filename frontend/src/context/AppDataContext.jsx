@@ -15,10 +15,12 @@ export function AppDataProvider({ children }) {
   const backend = useBackendData();
   const { user, pet } = backend;
 
-  // Onboarding shows once per device; lives here (not in AppShell) so any
-  // view can trigger a full restart, not just the initial mount check.
+  // Home-first: the app lands on Home by default and surfaces setup as
+  // dismissible suggestion cards (open savings / pick a companion). The full
+  // onboarding flow is still reachable on demand (a card calls setOnboarded
+  // (false)) or via ?onboard=1.
   const [onboarded, setOnboarded] = useState(() =>
-    Boolean(localStorage.getItem('amad_onboarded')) && !new URLSearchParams(window.location.search).get('onboard')
+    !new URLSearchParams(window.location.search).get('onboard')
   );
   const [restarting, setRestarting] = useState(false);
 
@@ -64,6 +66,20 @@ export function AppDataProvider({ children }) {
     ? Math.min(100, Math.round((user.savedAmount / user.goalAmount) * 100))
     : 0;
 
+  // ── Budget / savings-plan derived state (single source, per docs) ──
+  const budgets = user?.budgets || null;
+  const budgetPeriod = user?.budgetPeriod || {};
+  const savingsPlan = user?.savingsPlan || null;
+  const savingsAccountOpened = user?.savingsAccountOpened ?? false;
+  // What WOULD sweep into savings right now if every open period closed — the
+  // "leftover heading to your savings" figure shown on Home.
+  const projectedRollover = budgets
+    ? Object.entries(budgets).reduce(
+        (sum, [cat, cfg]) => sum + Math.max(0, cfg.limit - (budgetPeriod[cat] || 0)),
+        0
+      )
+    : 0;
+
   // Tap squish — pure delight, no stats change.
   const handlePetInteraction = () => {
     if (isSick) return;
@@ -81,6 +97,7 @@ export function AppDataProvider({ children }) {
     } catch (err) {
       setActionError(err.message === 'insufficient_funds' ? 'الرصيد غير كافٍ لإتمام هذه العملية'
         : err.message === 'invalid_goal' ? 'قيمة الهدف غير صالحة'
+        : err.message === 'invalid_income' ? 'أدخل دخلاً شهرياً صحيحاً'
         : 'حدث خطأ، حاول مرة أخرى');
     } finally {
       setIsSubmitting(false);
@@ -116,6 +133,7 @@ export function AppDataProvider({ children }) {
     isShaking, flashColor,
     actionError, isSubmitting, runAction,
     isSick, isSad, isHappy, goalProgress,
+    budgets, budgetPeriod, savingsPlan, savingsAccountOpened, projectedRollover,
   };
 
   return <AppDataContext.Provider value={value}>{children}</AppDataContext.Provider>;

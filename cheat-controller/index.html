@@ -45,6 +45,8 @@
     .coffee   { background: var(--alinma); }
     .big      { background: var(--amber); }
     .emergency{ background: #2f7fd6; }
+    .time     { background: var(--alinma-dark); }
+    .timewarp { grid-column: 1 / -1; }
     .reset    { background: var(--red); grid-column: 1 / -1; padding: 18px 16px; }
     .status {
       margin-top: 20px; background: var(--card); border-radius: 16px;
@@ -100,12 +102,45 @@
         <input class="amt" type="number" id="amt-big" value="2500" min="0" step="100">
         <button class="big" onclick="callAmt('big', '/api/simulate/purchase', 'amt-big')">🛍️ شراء كبير</button>
       </div>
+      <div style="grid-column:1/-1; font-weight:700; color:var(--alinma-dark); margin:10px 0 -2px;">🧾 مشتريات حسب الفئة (تتبّع الميزانية والتدوير)</div>
+      <div class="action">
+        <input class="amt" type="number" id="amt-cat-coffee" value="12" min="0" step="1">
+        <button class="coffee" onclick="callCategory('coffee','قهوة يومية','amt-cat-coffee')">☕ قهوة يومية</button>
+      </div>
+      <div class="action">
+        <input class="amt" type="number" id="amt-cat-gas" value="25" min="0" step="1">
+        <button class="coffee" onclick="callCategory('gas','وقود','amt-cat-gas')">⛽ وقود</button>
+      </div>
+      <div class="action">
+        <input class="amt" type="number" id="amt-cat-groceries" value="150" min="0" step="1">
+        <button class="coffee" onclick="callCategory('groceries','بقالة','amt-cat-groceries')">🛒 بقالة</button>
+      </div>
+      <div class="action">
+        <input class="amt" type="number" id="amt-cat-dining" value="90" min="0" step="1">
+        <button class="coffee" onclick="callCategory('dining','مطعم','amt-cat-dining')">🍽️ مطاعم</button>
+      </div>
+      <div class="action">
+        <input class="amt" type="number" id="amt-cat-entertainment" value="50" min="0" step="1">
+        <button class="coffee" onclick="callCategory('entertainment','ترفيه','amt-cat-entertainment')">🎬 ترفيه</button>
+      </div>
+      <div class="action">
+        <input class="amt" type="number" id="amt-cat-subscriptions" value="40" min="0" step="1">
+        <button class="coffee" onclick="callCategory('subscriptions','اشتراك','amt-cat-subscriptions')">📱 اشتراكات</button>
+      </div>
       <div class="action">
         <input class="amt" type="number" id="amt-emergency" value="1500" min="0" step="100">
         <button class="emergency" onclick="callAmt('emergency', '/api/simulate/emergency', 'amt-emergency')">🛡️ درع الطوارئ</button>
       </div>
+      <!-- Time machine: advance the demo clock. Each jump settles the budgets
+           whose period closes (daily / weekly / monthly) into savings. -->
+      <div class="action timewarp">
+        <button class="time" onclick="call('/api/demo/advance-day', {})">🌅 يوم</button>
+        <button class="time" onclick="call('/api/demo/advance-week', {})">📆 أسبوع</button>
+        <button class="time" onclick="call('/api/demo/advance-month', {})">🗓️ شهر</button>
+      </div>
       <div class="action">
-        <button class="save" style="grid-column:1/-1" onclick="call('/api/demo/advance-day', {})">🌅 اليوم التالي (تقدّم السلسلة)</button>
+        <input class="amt" type="number" id="planIncome" value="8000" min="0" step="500" title="الدخل الشهري">
+        <button class="save" onclick="applyPlan()">💡 خطة ادخار حسب الدخل</button>
       </div>
       <div class="action">
         <button class="salary" style="grid-column:1/-1" onclick="call('/api/demo/complete-challenge', {})">✅ إنجاز تحدي الأسبوع</button>
@@ -135,6 +170,8 @@
       <div class="row"><span>🪙 العملات</span><b id="coins">—</b></div>
       <div class="row"><span>🐣 المرحلة</span><b id="stage">—</b></div>
       <div class="row"><span>📅 اليوم</span><b id="day">—</b></div>
+      <div class="row"><span>💰 حساب التوفير</span><b id="savings">—</b></div>
+      <div class="row"><span>♻️ إجمالي التدوير للتوفير</span><b id="rollover">—</b></div>
       <div class="bubble" id="bubble">…</div>
       <div style="text-align:center"><span class="badge" id="aiBadge">—</span></div>
       <div class="errBanner" id="errBanner"></div>
@@ -168,6 +205,15 @@
       const raw = Number(document.getElementById(inputId).value);
       const amount = Number.isFinite(raw) ? Math.max(0, Math.round(raw)) : 0;
       call(path, buildBody(kind, amount));
+    }
+
+    // Per-category purchase: hits the same purchase endpoint but with the exact
+    // budget category key, so trackPurchase folds it into that category's
+    // current-period spend (and the leftover rolls into savings on settlement).
+    function callCategory(category, label, inputId) {
+      const raw = Number(document.getElementById(inputId).value);
+      const amount = Number.isFinite(raw) ? Math.max(0, Math.round(raw)) : 0;
+      call('/api/simulate/purchase', { amount, category, label });
     }
 
     // Salary is the one action with a second input: the % of the deposit
@@ -262,6 +308,15 @@
       }
     }
 
+    // Apply a savings plan from a monthly income: opens the savings account
+    // and installs category budgets, then the state re-reads and the panel
+    // updates. The app's Firebase listener reflects it live too.
+    async function applyPlan() {
+      const raw = Number(document.getElementById('planIncome').value);
+      const monthlyIncome = Number.isFinite(raw) ? Math.max(1, Math.round(raw)) : 0;
+      await call('/api/plan/apply', { monthlyIncome });
+    }
+
     function render(data) {
       document.getElementById('raw').textContent = JSON.stringify(data, null, 2);
 
@@ -319,6 +374,10 @@
         document.getElementById('goalBar').style.width = pct + '%';
         document.getElementById('goalNum').textContent = pct + '%';
         document.getElementById('goalInput').value = user.goalAmount;
+        const sv = document.getElementById('savings');
+        if (sv) sv.textContent = Math.round(user.savedAmount) + ' ر.س';
+        const rl = document.getElementById('rollover');
+        if (rl) rl.textContent = Math.round(user.rolloverTotal || 0) + ' ر.س';
       }
       if (shield) document.getElementById('shield').textContent = shield.usesRemaining;
     }

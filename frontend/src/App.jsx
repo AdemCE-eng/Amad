@@ -1,12 +1,11 @@
 import React from 'react';
-import { Settings, Wifi } from 'lucide-react';
+import { Wifi } from 'lucide-react';
 import { AppDataProvider, useAppData } from './context/AppDataContext';
 import HomeView from './views/HomeView';
 import PetRoomView from './views/PetRoomView';
 import RewardsView from './views/RewardsView';
 import NotificationsView from './views/NotificationsView';
 import FamilyGoalView from './views/FamilyGoalView';
-import SimulatorView from './views/SimulatorView';
 import OnboardingFlow from './views/OnboardingFlow';
 import MascotLab from './views/MascotLab';
 import BottomNav from './components/ui/BottomNav';
@@ -39,10 +38,11 @@ function StatusBar() {
   );
 }
 
-// Shell only: device frame, view switching, onboarding gate, celebrations,
-// and the demo-operator FAB. All state lives in AppDataContext.
+// Shell only: device frame, view switching, onboarding gate, celebrations.
+// The operator/judge control panel is the standalone Cheat Controller served
+// by the backend at http://localhost:3000/ — no in-app PoC panel.
 function AppShell() {
-  const { loading, activeView, setActiveView, user, game, onboarded, setOnboarded } = useAppData();
+  const { loading, activeView, setActiveView, user, game, onboarded, setOnboarded, savingsAccountOpened } = useAppData();
 
   if (loading) {
     return (
@@ -69,14 +69,11 @@ function AppShell() {
             ) : (
               <>
                 {activeView === 'home' && <HomeView />}
-                {activeView === 'pet' && <PetRoomView />}
+                {activeView === 'pet' && savingsAccountOpened && <PetRoomView />}
                 {activeView === 'rewards' && <RewardsView />}
                 {activeView === 'family' && <FamilyGoalView />}
-                {activeView === 'simulator' && <SimulatorView />}
-                {activeView === 'notifications' && <NotificationsView setActiveView={setActiveView}/>}
-                {activeView !== 'simulator' && (
-                  <BottomNav activeView={activeView} setActiveView={setActiveView} petName={user?.petName} />
-                )}
+                {activeView === 'notifications' && <NotificationsView setActiveView={setActiveView} />}
+                <BottomNav activeView={activeView} setActiveView={setActiveView} petName={user?.petName} petLocked={!savingsAccountOpened} />
                 <RewardNotice />
               </>
             )}
@@ -86,24 +83,6 @@ function AppShell() {
 
       {/* Celebration layer — portal above the frame */}
       {onboarded && <CelebrationOverlay game={game} petName={user?.petName} />}
-
-      {/* Persistent Toggle Button for Presentation */}
-      <div className="fixed bottom-6 right-6 flex flex-col gap-3 z-[100]">
-        <button
-          onClick={() => setActiveView(activeView === 'simulator' ? 'home' : 'simulator')}
-          className="bg-slate-900 text-white w-16 h-16 rounded-full shadow-2xl border-4 border-coral hover:scale-110 transition-all flex items-center justify-center group relative overflow-hidden"
-        >
-          {activeView === 'simulator' ? (
-            <span className="text-2xl">🐤</span>
-          ) : (
-            <Settings size={28} className="text-coral group-hover:rotate-90 transition-transform" />
-          )}
-
-          <span className="absolute right-full mr-4 bg-slate-900 text-white text-xs font-bold px-3 py-2 rounded shadow-xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
-            {activeView === 'simulator' ? 'العودة لتطبيق الإنماء' : 'لوحة تحكم لجنة التحكيم'}
-          </span>
-        </button>
-      </div>
     </div>
   );
 }
