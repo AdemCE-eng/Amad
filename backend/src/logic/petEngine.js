@@ -18,7 +18,9 @@ const SEED_SAVED_AMOUNT = 1200;
 const HEAL_K = 2; // scaling factor for goal-relative healing
 const HEAL_MIN = 5;
 const HEAL_MAX = 25;
-const PURCHASE_IN_BUDGET_PENALTY = -3;
+// In-budget purchases cost NO health: spending inside your own budget is not a
+// failure, so Rafiq never punishes it. Health only ever falls from genuine
+// over-budget spending (the scaled penalty below).
 // Over-budget penalty scales with HOW FAR over budget this purchase pushes
 // you (same relative-effort principle as healing) instead of a flat hit —
 // barely crossing the line stings a little, blowing it out stings a lot.
@@ -171,11 +173,12 @@ export function applyInstantSave(state, amount) {
   };
 }
 
-// Purchase → within budget = minor dip; over budget = pet gets sick.
-// Goal-secured shield: once savings have met the savings goal, ordinary
-// spending can no longer hurt the pet — health loss is suppressed entirely.
-// Budget accounting, streaks and quests still run; only health is shielded,
-// and saving can still raise it. Health earned isn't undone by spending.
+// Purchase → within budget = NO health change; over budget = pet gets sick.
+// Goal-secured shield: once savings have met the savings goal, even
+// over-budget spending can no longer hurt the pet — health loss is suppressed
+// entirely. Budget accounting, streaks and quests still run; only health is
+// shielded, and saving can still raise it. Health earned isn't undone by
+// spending.
 export function applyPurchase(state, { amount, category = "general", label = "عملية شراء" }) {
   const spentThisMonth = state.user.spentThisMonth + amount;
   const overBudget = spentThisMonth > state.user.monthlyBudget;
@@ -185,7 +188,8 @@ export function applyPurchase(state, { amount, category = "general", label = "ع
     balance: state.user.balance - amount,
     spentThisMonth,
   };
-  let healthDelta = goalSecured ? 0 : PURCHASE_IN_BUDGET_PENALTY;
+  // Staying inside your budget is never punished.
+  let healthDelta = 0;
   if (overBudget && !goalSecured) {
     const overagePct = ((spentThisMonth - state.user.monthlyBudget) / state.user.monthlyBudget) * 100;
     healthDelta = -clamp(
