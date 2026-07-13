@@ -180,6 +180,8 @@ test("applyCheer: heals within bounds, mood follows health", () => {
   state.pet = { ...state.pet, health: 97 };
   const next = applyCheer(state, { healthDelta: 6, event: "family_goal" });
   assert.equal(next.pet.health, 100); // clamped
-  assert.equal(next.pet.mood, "happy");
+  // 5-state health bands (shared/rafiqIdentity.js): >=90 is "radiant", not
+  // "happy" (70-89). This expectation predated the 5-state model.
+  assert.equal(next.pet.mood, "radiant");
   assert.equal(next._aiContext.event, "family_goal");
 });

@@ -1,4 +1,4 @@
-// كاش باك — third reward type, fully separate from NXP (game.coins) and
+// كاش باك — third reward type, fully separate from NXP (game.nxp_balance) and
 // Akthr (/loyalty.akthrPoints). DEMO/MOCK rewards only: values are
 // deterministic and derived client-side from existing backend state, so no
 // Firebase shape, calculation, or contract changes. Campaign-funded framing

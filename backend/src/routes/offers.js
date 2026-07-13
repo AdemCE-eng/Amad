@@ -1,6 +1,6 @@
 // offers.js — predicted saving opportunities (MOCK-driven, deterministic).
 // Settlement closes the saving loop ONLY:
-//   offer → settled, family goal +saving, NXP (game.coins) +10, pet cheer,
+//   offer → settled, family goal +saving, NXP (game.nxp_balance) +10, pet cheer,
 //   transaction logged — all in ONE atomic multi-location root update.
 // Parent rewards / Akthr / notifications are a separate explicit action:
 // POST /api/family/reward.
@@ -66,15 +66,15 @@ router.post("/offers/settle", async (req, res, next) => {
     if (contributed.error) return res.status(400).json({ ok: false, error: contributed.error });
 
     // Pet cheers (health/mood/message); NXP through the authoritative
-    // game.coins field. Evolution stage untouched — it derives from PERSONAL
-    // savings only, and /user is not modified here.
+    // game.nxp_balance field. Evolution stage untouched — it derives from
+    // PERSONAL savings only, and /user is not modified here.
     let state = await readState();
     state = applyCheer(state, {
       healthDelta: 6,
       event: "family_goal",
       extra: { saving: outcome.saving, merchant: outcome.merchant },
     });
-    const game = { ...state.game, coins: (state.game.coins ?? 0) + outcome.nxpReward };
+    const game = { ...state.game, nxp_balance: (state.game.nxp_balance ?? 0) + outcome.nxpReward };
     const { text: message } = await generatePetMessage(state._aiContext);
     const pet = { ...state.pet, message, updatedAt: Date.now() };
 
@@ -99,7 +99,7 @@ router.post("/offers/settle", async (req, res, next) => {
       outcome,
       family: contributed.family,
       progressPct: familyProgressPct(contributed.family),
-      loyalty: { nxp: game.coins }, // Akthr untouched by settlement
+      loyalty: { nxp: game.nxp_balance }, // Akthr untouched by settlement
       pet,
       game,
     });

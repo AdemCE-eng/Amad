@@ -10,7 +10,7 @@ export default function ChallengeCard({ challenge, compact = false }) {
   if (compact) {
     return (
       <div className={`rounded-3xl p-3.5 flex items-center gap-3 ${done ? 'bg-emerald-400/10 border border-emerald-400/25' : 'bg-ink-card'}`}>
-        <span className="text-2xl">{done ? '✅' : '☕'}</span>
+        <span className="text-2xl">{done ? '✅' : challenge.icon || '☕'}</span>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-bold text-cream truncate">{challenge.title}</p>
           <p className="text-[11px] text-cream/50">{done ? `أنجزته! +${challenge.reward} 🪙` : `${challenge.used}/${challenge.limit} هذا الأسبوع`}</p>
@@ -32,7 +32,7 @@ export default function ChallengeCard({ challenge, compact = false }) {
           <h3 className="font-black text-cream">{challenge.title}</h3>
           {challenge.desc && <p className="text-xs text-cream/50 mt-1">{challenge.desc}</p>}
         </div>
-        <span className="text-3xl">{done ? '🎉' : '☕'}</span>
+        <span className="text-3xl">{done ? '🎉' : challenge.icon || '☕'}</span>
       </div>
       {done ? (
         <p className="text-sm font-bold text-emerald-300">أنجزته! حصلت على {challenge.reward} 🪙</p>

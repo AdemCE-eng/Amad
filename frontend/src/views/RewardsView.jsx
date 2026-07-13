@@ -15,14 +15,14 @@ const MILESTONES = [3, 7, 14];
 export default function RewardsView() {
   const { user, game, akthrPoints, isSubmitting, runAction, restartOnboarding, restarting } = useAppData();
   if (!game) return null;
-  const { streak, coins, achievements, activeChallenge, inventory, equipped } = game;
+  const { streak, nxp_balance, achievements, activeChallenge, inventory, equipped } = game;
   const cashback = cashbackState(user, game);
 
   return (
     <div className="bg-ink h-full overflow-y-auto font-sans pb-24 text-cream" dir="rtl">
       <div className="px-5 pt-5 pb-3 flex justify-between items-center">
         <h1 className="text-2xl font-black text-cream">المكافآت</h1>
-        <CoinPill coins={coins} />
+        <CoinPill coins={nxp_balance} />
       </div>
 
       <div className="px-4 space-y-5">
@@ -30,7 +30,7 @@ export default function RewardsView() {
         <div className="grid grid-cols-3 gap-2">
           <div className="bg-amber-400/10 border border-amber-400/25 rounded-2xl p-2.5 text-center">
             <p className="text-[10px] font-bold text-amber-200">🪙 NXP</p>
-            <p className="text-lg font-black text-amber-300 leading-tight">{coins}</p>
+            <p className="text-lg font-black text-amber-300 leading-tight">{nxp_balance}</p>
           </div>
           <div className="bg-emerald-400/10 border border-emerald-400/25 rounded-2xl p-2.5 text-center">
             <p className="text-[10px] font-bold text-emerald-200">🟢 أكثر</p>
@@ -116,7 +116,7 @@ export default function RewardsView() {
             {Object.entries(SHOP_ITEMS).map(([id, item]) => {
               const owned = Boolean(inventory[id]);
               const isEquipped = equipped === id;
-              const affordable = coins >= item.price;
+              const affordable = nxp_balance >= item.price;
               return (
                 <div key={id} className="bg-ink-card rounded-3xl p-3 flex items-center gap-3">
                   <div className="w-16 h-16 bg-cream rounded-2xl flex items-center justify-center overflow-hidden">

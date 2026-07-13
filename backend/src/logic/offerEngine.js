@@ -7,8 +7,8 @@
 // same offers on every run.
 //
 // Currencies (never conflate):
-//   NXP          = virtual game coins, stored at game.coins (gameEngine owns it;
-//                  /loyalty exposes it read-only for the UI).
+//   NXP          = virtual game points, stored at game.nxp_balance (gameEngine
+//                  owns it; /loyalty exposes it read-only for the UI).
 //   Akthr points = MOCK campaign-funded loyalty rewards, stored at
 //                  /loyalty/akthrPoints (this engine owns it).
 
@@ -28,8 +28,8 @@ function slugId(key) {
 // ── Initial state ────────────────────────────────────────
 
 export function initialLoyaltyState() {
-  // nxp intentionally NOT stored here — game.coins is the single source of
-  // truth; routes surface it as `nxp` in responses. Storing a copy would
+  // nxp intentionally NOT stored here — game.nxp_balance is the single source
+  // of truth; routes surface it as `nxp` in responses. Storing a copy would
   // create silent drift.
   return { akthrPoints: MOCK_AKTHR_STARTING_BALANCE };
 }
@@ -119,7 +119,7 @@ export function settleOffer(offers, { offerId }) {
     offers: nextOffers,
     outcome: {
       saving: offer.potentialSaving, // → family goal contribution
-      nxpReward: 10, // → game.coins (the authoritative NXP field)
+      nxpReward: 10, // → game.nxp_balance (the authoritative NXP field)
       merchant: offer.merchant,
       occasion: offer.occasion,
     },

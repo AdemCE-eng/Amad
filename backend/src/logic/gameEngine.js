@@ -5,7 +5,9 @@
 // Demo-clock rule: days advance ONLY via the advance-day endpoint (never
 // wall-clock), so a full week plays out in seconds on stage.
 
-import { clamp } from "./petEngine.js";
+// DEFAULT_INCOME powers the income-relative NXP math below; budgetEngine
+// provides the auto-rollover settlement used by advanceDay.
+import { clamp, DEFAULT_INCOME } from "./petEngine.js";
 import { settleBudgets, cadencesClosingOn } from "./budgetEngine.js";
 
 // ── Catalogs ─────────────────────────────────────────────
@@ -31,9 +33,52 @@ export const SHOP_ITEMS = {
   falcon_hood: { name: "تاج ذهبي", price: 150, icon: "👑" },
 };
 
+// Weekly quest pool — completing one auto-advances to the next (wraps around),
+// so activeChallenge never rests at "done". initialState() seeds the first
+// entry inline (demo-tuned used=1). Only coffee-shaped quests tick their
+// `used` counter automatically (applyGameEffects counts coffee purchases);
+// the rest advance via POST /api/demo/complete-challenge.
+export const CHALLENGE_POOL = [
+  { id: "less_coffee", title: "قهوة أقل هذا الأسبوع", desc: "حافظ على ٣ زيارات مقهى أو أقل", limit: 3, reward: 50, icon: "☕" },
+  { id: "no_delivery", title: "أسبوع بلا توصيل", desc: "٣ طلبات توصيل مطاعم أو أقل هذا الأسبوع", limit: 3, reward: 40, icon: "🛵" },
+  { id: "save_thrice", title: "وفّر ثلاث مرات", desc: "أودع في المدخرات الفورية ٣ مرات هذا الأسبوع", limit: 3, reward: 60, icon: "💰" },
+  { id: "budget_days", title: "خمسة أيام منضبطة", desc: "أنهِ ٥ أيام دون تجاوز ميزانيتك الشهرية", limit: 5, reward: 70, icon: "📅" },
+];
+
+// Rotation: hand back the pool entry after the one just finished, fresh.
+// Unknown ids (legacy DB states) restart from the top: findIndex's -1 + 1 → 0.
+function nextChallenge(currentId) {
+  const idx = CHALLENGE_POOL.findIndex((c) => c.id === currentId);
+  return { ...CHALLENGE_POOL[(idx + 1) % CHALLENGE_POOL.length], used: 0, status: "active" };
+}
+
+// Cheat Controller demo personas — same pet/goal/streak, meaningfully
+// different incomes, so equivalent-effort saves (same % of income) visibly
+// earn equal NXP live on stage.
+export const INCOME_PROFILES = {
+  student: { name: "نورة (طالبة)", income: 2000, balance: 2500 },
+  employee: { name: "آدم (موظف)", income: 8000, balance: 8000 },
+  executive: { name: "فيصل (تنفيذي)", income: 25000, balance: 30000 },
+};
+
 const STREAK_MILESTONES = { 3: 30, 7: 70, 14: 150 };
 const GOOD_DAY_COINS = 10;
 const MAX_FREEZES = 2;
+
+// Income-relative NXP — petEngine's relative-effort principle applied to NXP:
+// a save earns SAVE_NXP_K per 1% of MONTHLY INCOME saved, so a student saving
+// 100 of a 2,000 income earns the same 25 NXP as an executive saving 1,250 of
+// 25,000. Clamped so micro-saves still feel rewarded and a full salary
+// auto-save doesn't print NXP.
+const SAVE_NXP_K = 5;
+const SAVE_NXP_MIN = 5;
+const SAVE_NXP_MAX = 150;
+
+// NOTE: the old inline mockRetailCalendar / predictive-offer block that lived
+// here is gone — offerEngine.js is the canonical sales-prediction engine now
+// (deterministic, MOCK-campaign driven). The SRS pitch-trigger tunables that
+// sat alongside it went with the applySimulateTrigger functions this branch
+// removed; family state is owned by familyEngine.js.
 
 // ── Helpers ──────────────────────────────────────────────
 
@@ -43,7 +88,9 @@ function gameOf(state) {
   return {
     day: g.day ?? 1,
     streak: { current: 0, best: 0, freezesLeft: 1, status: "alive", ...(g.streak || {}) },
-    coins: g.coins ?? 0,
+    // `nxp_balance` is the ONE canonical NXP field. (It replaced the legacy
+    // `coins`; reading the old name here is what made saved NXP unspendable.)
+    nxp_balance: g.nxp_balance ?? 0,
     stage: g.stage ?? 0,
     today: { spent: 0, saved: 0, overBudget: false, coffees: 0, ...(g.today || {}) },
     achievements: g.achievements || {},
@@ -51,6 +98,7 @@ function gameOf(state) {
     inventory: g.inventory || {},
     equipped: g.equipped ?? null,
     lastCelebration: g.lastCelebration || { type: "none", id: "none", at: 0 },
+    lastSaveReward: g.lastSaveReward || { nxp: 0, pctOfIncome: 0, at: 0 },
   };
 }
 
@@ -64,7 +112,9 @@ function unlock(game, key) {
   return celebrate(
     {
       ...game,
-      coins: game.coins + a.coins,
+      // a.coins is the catalog's REWARD AMOUNT (see ACHIEVEMENTS); the balance
+      // it credits is nxp_balance.
+      nxp_balance: game.nxp_balance + a.coins,
       achievements: { ...game.achievements, [key]: { unlockedAt: Date.now() } },
     },
     "achievement",
@@ -75,7 +125,7 @@ function unlock(game, key) {
 // ── Per-event effects (piped after every petEngine event) ─
 export function applyGameEffects(state, ctx) {
   let game = gameOf(state);
-  const user = state.user;
+  let user = state.user;
 
   const today = { ...game.today };
   if (ctx.event === "purchase" || ctx.event === "emergency") today.spent += ctx.amount || 0;
@@ -88,6 +138,36 @@ export function applyGameEffects(state, ctx) {
     game = { ...game, activeChallenge: { ...game.activeChallenge, used: game.activeChallenge.used + 1 } };
   }
 
+  // Income-relative NXP on NEW savings only (anti-farming): the reward
+  // applies to the part of this deposit that pushes savedAmount past its
+  // all-time high, so deposit→withdraw→redeposit cycles earn nothing.
+  // `lastSaveReward` mirrors the lastCelebration pattern — timestamp-keyed
+  // so the frontend can surface "+X NXP — Y% of income", or the distinct
+  // "back to your best" zero receipt, for exactly this save.
+  const saved = ctx.savedPortion ?? ctx.amount ?? 0;
+  if ((ctx.event === "save" || ctx.event === "salary") && saved > 0) {
+    // savedAmount is already post-event here; legacy DB states without the
+    // field treat their pre-event savings as the high-water mark.
+    const ath = user.allTimeHighBalance ?? user.savedAmount - saved;
+    const rewardableDelta = Math.max(0, user.savedAmount - ath);
+    if (rewardableDelta > 0) {
+      const income = user.income > 0 ? user.income : DEFAULT_INCOME;
+      const pctOfIncome = (rewardableDelta / income) * 100;
+      const nxp = clamp(Math.round(pctOfIncome * SAVE_NXP_K), SAVE_NXP_MIN, SAVE_NXP_MAX);
+      game = {
+        ...game,
+        nxp_balance: game.nxp_balance + nxp,
+        lastSaveReward: { nxp, pctOfIncome: Math.round(pctOfIncome * 10) / 10, at: Date.now() },
+      };
+    } else {
+      game = { ...game, lastSaveReward: { nxp: 0, pctOfIncome: 0, at: Date.now() } };
+      // Let the voice layer know this save refilled old ground (no reward).
+      state = { ...state, _aiContext: { ...state._aiContext, redepositZero: true } };
+    }
+    user = { ...user, allTimeHighBalance: Math.max(ath, user.savedAmount) };
+  }
+
+  // Achievements from money events.
   if ((ctx.event === "save" || ctx.event === "salary") && (ctx.savedPortion ?? ctx.amount) > 0) {
     game = unlock(game, "first_save");
   }
@@ -102,7 +182,7 @@ export function applyGameEffects(state, ctx) {
     game = { ...game, stage: newStage };
   }
 
-  return { ...state, game };
+  return { ...state, user, game };
 }
 
 // ── Day advance (the demo-clock heart) ───────────────────
@@ -110,15 +190,16 @@ export function advanceDay(state) {
   let game = gameOf(state);
   const goodDay = !game.today.overBudget;
   let streak = { ...game.streak };
-  let coins = game.coins;
+  let nxp_balance = game.nxp_balance;
   let frozen = false;
 
   if (goodDay) {
     streak.current += 1;
     streak.best = Math.max(streak.best, streak.current);
     streak.status = "alive";
-    coins += GOOD_DAY_COINS;
-    if (STREAK_MILESTONES[streak.current]) coins += STREAK_MILESTONES[streak.current];
+    nxp_balance += GOOD_DAY_COINS;
+    if (STREAK_MILESTONES[streak.current]) nxp_balance += STREAK_MILESTONES[streak.current];
+    // Compassion economy: a freeze shield is EARNED every full week.
     if (streak.current % 7 === 0) streak.freezesLeft = Math.min(MAX_FREEZES, streak.freezesLeft + 1);
   } else if (streak.freezesLeft > 0) {
     streak = { ...streak, freezesLeft: streak.freezesLeft - 1, status: "frozen" };
@@ -129,7 +210,7 @@ export function advanceDay(state) {
   }
 
   const newDay = game.day + 1;
-  game = { ...game, streak, coins, day: newDay, today: { spent: 0, saved: 0, overBudget: false, coffees: 0 } };
+  game = { ...game, streak, nxp_balance, day: newDay, today: { spent: 0, saved: 0, overBudget: false, coffees: 0 } };
 
   if (goodDay && STREAK_MILESTONES[streak.current]) {
     game = celebrate(game, "streak", `day${streak.current}`);
@@ -189,8 +270,11 @@ export function completeChallenge(state) {
   let game = gameOf(state);
   const ch = game.activeChallenge;
   if (!ch || ch.status !== "active") return { ...state, game, _noop: true };
+  // Pay out, then rotate straight to the next pool quest — the celebration
+  // overlay announces the win, and the card immediately shows the fresh
+  // challenge instead of resting at "done" forever.
   game = celebrate(
-    { ...game, coins: game.coins + ch.reward, activeChallenge: { ...ch, status: "done" } },
+    { ...game, nxp_balance: game.nxp_balance + ch.reward, activeChallenge: nextChallenge(ch.id) },
     "challenge",
     ch.id
   );
@@ -209,11 +293,13 @@ export function buyItem(state, itemId) {
   const item = SHOP_ITEMS[itemId];
   if (!item) return { error: "unknown_item" };
   if (game.inventory[itemId]) return { error: "already_owned" };
-  if (game.coins < item.price) return { error: "insufficient_coins" };
+  // Spends the SAME balance saving/streaks/challenges credit — that identity
+  // is the whole point of unifying on nxp_balance.
+  if (game.nxp_balance < item.price) return { error: "insufficient_coins" };
   game = celebrate(
     {
       ...game,
-      coins: game.coins - item.price,
+      nxp_balance: game.nxp_balance - item.price,
       inventory: { ...game.inventory, [itemId]: true },
       equipped: itemId,
     },
@@ -236,6 +322,15 @@ export function equipItem(state, itemId) {
   const game = gameOf(state);
   if (itemId && !game.inventory[itemId]) return { error: "not_owned" };
   return { state: { ...state, game: { ...game, equipped: itemId || null } } };
+}
+
+// Swap the demo income persona — a settings change like setProfile, NOT a
+// financial event: pet, streak, goal progress and challenge all survive so
+// the operator can flip personas mid-pitch and compare saves live.
+export function setIncomeProfile(state, profileId) {
+  const p = INCOME_PROFILES[profileId];
+  if (!p) return { error: "unknown_profile" };
+  return { ...state, user: { ...state.user, name: p.name, income: p.income, balance: p.balance } };
 }
 
 export function setProfile(state, { petName, petType, goalAmount }) {

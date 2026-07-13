@@ -59,9 +59,10 @@ export function AppDataProvider({ children }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pet?.health]);
 
+  // 5-state model (shared/rafiqIdentity.js): radiant/happy/neutral/tired/sick.
   const isSick = pet?.mood === 'sick';
-  const isSad = pet?.mood === 'sad';
-  const isHappy = pet?.mood === 'happy';
+  const isTired = pet?.mood === 'tired';
+  const isHappy = pet?.mood === 'happy' || pet?.mood === 'radiant';
   const goalProgress = user && user.goalAmount > 0
     ? Math.min(100, Math.round((user.savedAmount / user.goalAmount) * 100))
     : 0;
@@ -118,9 +119,9 @@ export function AppDataProvider({ children }) {
     setRestarting(false);
   };
 
-  // Two separate currencies — never merged. NXP lives in game.coins (game
-  // rewards); Akthr is real campaign loyalty in /loyalty.akthrPoints.
-  const nxp = backend.game?.coins ?? 0;
+  // Two separate currencies — never merged. NXP lives in game.nxp_balance
+  // (game rewards); Akthr is real campaign loyalty in /loyalty.akthrPoints.
+  const nxp = backend.game?.nxp_balance ?? 0;
   const akthrPoints = backend.loyalty?.akthrPoints ?? 0;
 
   const value = {
@@ -132,7 +133,7 @@ export function AppDataProvider({ children }) {
     isPetted, handlePetInteraction,
     isShaking, flashColor,
     actionError, isSubmitting, runAction,
-    isSick, isSad, isHappy, goalProgress,
+    isSick, isTired, isHappy, goalProgress,
     budgets, budgetPeriod, savingsPlan, savingsAccountOpened, projectedRollover,
   };
 

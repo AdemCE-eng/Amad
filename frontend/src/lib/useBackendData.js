@@ -25,20 +25,21 @@ export function useBackendData() {
       watch('/game', (g) => setGame({
         day: g?.day ?? 1,
         streak: { current: 0, best: 0, freezesLeft: 0, status: 'alive', ...(g?.streak || {}) },
-        coins: g?.coins ?? 0,
+        nxp_balance: g?.nxp_balance ?? 0,
         stage: g?.stage ?? 0,
         achievements: g?.achievements || {},
         activeChallenge: g?.activeChallenge || null,
         inventory: g?.inventory || {},
         equipped: g?.equipped ?? null,
         lastCelebration: g?.lastCelebration || { type: 'none', id: 'none', at: 0 },
+        lastSaveReward: g?.lastSaveReward || { nxp: 0, pctOfIncome: 0, at: 0 },
       })),
       watch('/transactions', (val) => {
         const list = Object.entries(val || {}).map(([id, tx]) => ({ id, ...tx }));
         list.sort((a, b) => b.timestamp - a.timestamp);
         setTransactions(list);
       }),
-      // Family goal, plan, loyalty (Akthr only — NXP stays in /game.coins),
+      // Family goal, plan, loyalty (Akthr only — NXP stays in /game.nxp_balance),
       // and per-role notifications. RTDB drops empty nodes → default to null.
       watch('/family', (f) => setFamily(f || null)),
       watch('/contributionPlan', (p) => setContributionPlan(p || null)),

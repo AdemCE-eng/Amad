@@ -1,8 +1,11 @@
 /* eslint-disable react/no-unknown-property */
-import React, { useEffect, useId, useState } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import { motion, useMotionValue, useTransform } from 'motion/react';
 import { EMOTIONS } from './emotions';
 import { springs } from './springs';
+// Per-state coloured aura — single source of truth shared with the backend
+// voice/health config (deep path: mascot → components → src → frontend → repo).
+import { glowFor } from '../../../../shared/rafiqIdentity.js';
 
 // صقّور — the falcon chick. One SVG rig; every part interpolates toward the
 // EMOTIONS table with springs. Cute-proportion rules (Duolingo/Finch): head
@@ -235,7 +238,10 @@ function Accessory({ id }) {
   return null;
 }
 
-function Mascot({ emotion = 'idle', stage = 1, size = 240, track = true, equipped = null, onTap }) {
+function Mascot({
+  emotion = 'idle', stage = 1, size = 240, track = true, equipped = null, onTap,
+  petTier = 'classic',
+}) {
   const e = EMOTIONS[emotion] || EMOTIONS.idle;
   // Unique clipPath ids — multiple Mascots can share a page (MascotLab,
   // onboarding). Strip colons from useId()'s output: some SVG renderers
@@ -285,18 +291,46 @@ function Mascot({ emotion = 'idle', stage = 1, size = 240, track = true, equippe
   const grown = stage >= 2;
   const P = grown ? FALCON : C;
   const bodyLoop = BODY_LOOP_CLASS[e.body] ?? '';
-  const flapping = emotion === 'celebrating' || emotion === 'happy';
+  const flapping = emotion === 'celebrating' || emotion === 'happy' || emotion === 'radiant';
+
+  // Per-state coloured aura + the Akthr signature-tier gold aura, both on the
+  // wrapping div (kept off the svg's own `animate` filter so they never fight
+  // the saturate() transition below). The aura transitions smoothly between
+  // states, coordinated with the emotion morph.
+  const stateGlow = glowFor(emotion);
+  const tierShadow = petTier === 'signature' ? 'drop-shadow(0 0 14px rgba(212,175,55,0.65))' : '';
+  const stateShadow = stateGlow && stateGlow !== 'none' ? `drop-shadow(${stateGlow})` : '';
+  const wrapperFilter = [tierShadow, stateShadow].filter(Boolean).join(' ') || 'none';
+
+  // Revive burst — the most-watched pitch moment. Leaving `sick` for any
+  // healthier state fires a one-shot pop + expanding ring (~0.9s).
+  const [reviving, setReviving] = useState(false);
+  const prevEmotion = useRef(emotion);
+  useEffect(() => {
+    if (prevEmotion.current === 'sick' && emotion !== 'sick') {
+      setReviving(true);
+      const t = setTimeout(() => setReviving(false), 900);
+      prevEmotion.current = emotion;
+      return () => clearTimeout(t);
+    }
+    prevEmotion.current = emotion;
+  }, [emotion]);
 
   return (
-    <motion.svg
-      initial={false}
-      viewBox="0 0 240 240" width={size} height={size}
-      animate={{ filter: `saturate(${e.sat})` }}
-      transition={{ duration: 0.6 }}
-      style={{ overflow: 'visible', touchAction: 'manipulation' }}
-      onPointerDown={onTap}
+    <div
+      className={`relative inline-block ${reviving ? 'anim-revive-pop' : ''}`}
+      style={{ filter: wrapperFilter, transition: 'filter 0.6s ease' }}
     >
-      <ellipse cx="120" cy="212" rx="52" ry="9" fill="#000" opacity="0.08" />
+      {reviving && <span className="mascot-revive-ring" aria-hidden="true" />}
+      <motion.svg
+        initial={false}
+        viewBox="0 0 240 240" width={size} height={size}
+        animate={{ filter: `saturate(${e.sat})` }}
+        transition={{ duration: 0.6 }}
+        style={{ overflow: 'visible', touchAction: 'manipulation' }}
+        onPointerDown={onTap}
+      >
+        <ellipse cx="120" cy="212" rx="52" ry="9" fill="#000" opacity="0.08" />
 
       {/* Root: squish pivot at bottom-center; droop sinks the whole bird. */}
       <Pivot
@@ -468,7 +502,8 @@ function Mascot({ emotion = 'idle', stage = 1, size = 240, track = true, equippe
 
         <Effects fx={e.fx} />
       </Pivot>
-    </motion.svg>
+      </motion.svg>
+    </div>
   );
 }
 

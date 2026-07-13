@@ -48,6 +48,11 @@
     .time     { background: var(--alinma-dark); }
     .timewarp { grid-column: 1 / -1; }
     .reset    { background: var(--red); grid-column: 1 / -1; padding: 18px 16px; }
+    .persona   { background: #5a6acf; }
+
+    /* Section label — same light-theme heading treatment as the page title,
+       just smaller, so groups of controls read as one consistent page. */
+    .sectionTitle { color: var(--alinma-dark); font-size: 1.05rem; font-weight: 800; margin: 4px 0 12px; }
     .status {
       margin-top: 20px; background: var(--card); border-radius: 16px;
       padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,.06);
@@ -78,6 +83,25 @@
   <div class="wrap">
     <h1>🎮 لوحة التحكم السرية — Cheat Controller</h1>
     <div class="sub">اضغط الأزرار لتحديث Firebase مباشرة — يتفاعل الحيوان الأليف فوراً على شاشة التطبيق.</div>
+
+    <!-- The old "أزرار العرض التقديمي" SRS buttons (FAMILY_CONTRIBUTION,
+         SUKUK_PURCHASE, EARLY_LIQUIDATION, PRIVATE_PET_NUDGE, PREDICTIVE_OFFER,
+         GENERATE_AI_PLAN) are gone: they drove POST /api/game/simulate-trigger,
+         which this merge removed along with its engine functions. The family /
+         offers buttons further down hit the canonical endpoints instead. -->
+
+    <h2 class="sectionTitle">بروفايلات الدخل 💼 — نفس نسبة التوفير = نفس NXP</h2>
+    <div class="actions" style="margin-bottom: 20px">
+      <div class="action">
+        <button class="persona" onclick="setIncomeProfile('student')">👩‍🎓 نورة — طالبة (دخل ٢٬٠٠٠)</button>
+      </div>
+      <div class="action">
+        <button class="persona" onclick="setIncomeProfile('employee')">👨‍💼 آدم — موظف (دخل ٨٬٠٠٠)</button>
+      </div>
+      <div class="action">
+        <button class="persona" onclick="setIncomeProfile('executive')">👔 فيصل — تنفيذي (دخل ٢٥٬٠٠٠)</button>
+      </div>
+    </div>
 
     <div class="settings">
       <input class="amt" type="number" id="goalInput" value="5000" min="1" step="100" placeholder="هدف الادخار (ر.س)">
@@ -167,7 +191,10 @@
       <div class="row"><span>التقدم نحو الهدف</span><div class="bar"><span id="goalBar" style="width:0%; background:var(--alinma)"></span></div><b id="goalNum">—</b></div>
       <div class="row"><span>درع الطوارئ المتبقي</span><b id="shield">—</b></div>
       <div class="row"><span>🔥 السلسلة</span><b id="streak">—</b></div>
-      <div class="row"><span>🪙 العملات</span><b id="coins">—</b></div>
+      <div class="row"><span>💼 الدخل الشهري</span><b id="income">—</b></div>
+      <div class="row"><span>⭐ NXP</span><b id="nxp">—</b></div>
+      <div class="row"><span>🎯 تحدي الأسبوع</span><b id="challenge">—</b></div>
+      <div class="row"><span>◆ Akthr Points</span><b id="akthr">—</b></div>
       <div class="row"><span>🐣 المرحلة</span><b id="stage">—</b></div>
       <div class="row"><span>📅 اليوم</span><b id="day">—</b></div>
       <div class="row"><span>💰 حساب التوفير</span><b id="savings">—</b></div>
@@ -180,7 +207,7 @@
   </div>
 
   <script>
-    const EMOJI = { happy: '😄', neutral: '🙂', sad: '😟', sick: '🤒' };
+    const EMOJI = { radiant: '🤩', happy: '😄', neutral: '🙂', tired: '🥱', sick: '🤒' };
 
     // Relative URLs only resolve when this page is served BY the backend
     // (http://localhost:3000/). If it's opened directly (file://) or previewed
@@ -230,6 +257,13 @@
       const raw = Number(document.getElementById('goalInput').value);
       const goalAmount = Number.isFinite(raw) ? Math.max(1, Math.round(raw)) : 0;
       call('/api/user/goal', { goalAmount });
+    }
+
+    // Income-persona switch — swaps name/income/balance only (pet, streak and
+    // goal progress survive), so the operator can save the same % of income
+    // from two personas back-to-back and show identical NXP payouts.
+    function setIncomeProfile(profileId) {
+      call('/api/demo/set-income-profile', { profileId });
     }
 
     async function call(path, body) {
@@ -345,9 +379,20 @@
         document.getElementById('streak').textContent =
           (game.streak?.current ?? 0) + ' يوم' + (frozen ? ' ❄️ (محمية)' : '') +
           ' · درع ×' + (game.streak?.freezesLeft ?? 0);
-        document.getElementById('coins').textContent = game.coins ?? 0;
+        document.getElementById('nxp').textContent = game.nxp_balance ?? 0;
         document.getElementById('stage').textContent = ['بيضة 🥚', 'فرخ 🐤', 'صقر 🦅'][game.stage ?? 0];
         document.getElementById('day').textContent = game.day ?? 1;
+        // The %-of-income-saved receipt is a USER-facing surface only (Home,
+        // Pet Room) — deliberately not mirrored here in the operator console.
+        const ch = game.activeChallenge;
+        document.getElementById('challenge').textContent =
+          ch ? `${ch.title} · ${ch.used ?? 0}/${ch.limit}` : '—';
+      }
+
+      // Akthr is campaign loyalty in /loyalty — separate currency from NXP.
+      // family/offers responses carry it; other responses simply leave it be.
+      if (data.loyalty) {
+        document.getElementById('akthr').textContent = data.loyalty.akthrPoints ?? 0;
       }
 
       // Makes it obvious whether this reply came from a real Gemini call, the
@@ -374,6 +419,8 @@
         document.getElementById('goalBar').style.width = pct + '%';
         document.getElementById('goalNum').textContent = pct + '%';
         document.getElementById('goalInput').value = user.goalAmount;
+        document.getElementById('income').textContent =
+          user.income ? `${user.income} ر.س (${user.name})` : '—';
         const sv = document.getElementById('savings');
         if (sv) sv.textContent = Math.round(user.savedAmount) + ' ر.س';
         const rl = document.getElementById('rollover');
