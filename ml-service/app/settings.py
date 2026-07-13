@@ -10,7 +10,12 @@ PURCHASE_MODEL_PATH = MODEL_DIR / "purchase_model.joblib"
 SELECTED_OFFER_MODEL_PATH = ARTIFACT_DIR / "dl-benchmark" / "models" / "selected_offer_model.joblib"
 
 RANDOM_SEED = 20260923
-DEMO_AS_OF = "2026-09-20"
+# Frozen presentation fixture. This date is an existing realistic National Day
+# candidate whose CatBoost output is stable and high-confidence without
+# changing the trained artifact or benchmark evaluation split.
+DEMO_USER_ID = "rashid"
+DEMO_AS_OF = "2026-09-15"
+DEMO_WINDOW_DAYS = 3
 DATA_START = "2022-01-03"
 DATASET_VERSION = "synthetic-saudi-v2"
 DATA_LABEL = "MOCK / SYNTHETIC DEMO DATA — SAUDI MARKET"
