@@ -72,8 +72,12 @@ fallback/Gemini voice, and the mascot visual treatment key off these.
 | 15–39 | tired |
 | 0–14 | sick |
 
-**Goal-secured spending shield:** once `savedAmount >= goalAmount`, ordinary
-spending (in- or over-budget) applies **no** health loss — budget/streak/quest
+**In-budget purchases cost no health.** Spending inside your own monthly budget
+is never punished — health falls *only* from genuine over-budget spending (the
+scaled 10–35 penalty). Saving still heals as before.
+
+**Goal-secured spending shield:** once `savedAmount >= goalAmount`, even
+over-budget spending applies **no** health loss — budget/streak/quest
 accounting still runs, and saving can still raise health. Health earned by
 saving can't be undone by spending once the goal is met.
 

@@ -116,3 +116,24 @@ test("not-secured pet still loses health on over-budget spending", () => {
   assert.ok(after.pet.health < 45, "unshielded health must drop");
   assert.ok(after.pet.health < 40, "should fall below Neutral");
 });
+
+// ── In-budget purchases never cost health (even before the goal is secured) ──
+test("not-secured pet takes NO health loss from in-budget purchases", () => {
+  let s = { ...initialState() };
+  s.user = { ...s.user, savedAmount: 1200, spentThisMonth: 0, monthlyBudget: 3000 }; // 1200 < goal(5000)
+  s.pet = { ...s.pet, health: 70 };
+
+  // Several in-budget purchases in a row — total stays under the 3000 budget.
+  for (const amount of [50, 100, 200, 300]) {
+    s = applyPurchase(s, { amount, category: "coffee" });
+    assert.equal(s.pet.health, 70, `in-budget purchase of ${amount} must not move health`);
+    assert.equal(s._aiContext.overBudget, false);
+    assert.equal(s._aiContext.healthDelta, 0);
+  }
+  assert.equal(s.user.spentThisMonth, 650); // budget accounting still runs
+
+  // The moment the SAME pet crosses the budget, the penalty still bites.
+  const over = applyPurchase(s, { amount: 3000, category: "shopping" });
+  assert.ok(over.pet.health < 70, "over-budget must still drop health");
+  assert.equal(over._aiContext.overBudget, true);
+});
