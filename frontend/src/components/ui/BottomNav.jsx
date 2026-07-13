@@ -54,9 +54,6 @@ export default function BottomNav({ activeView, setActiveView, petName, petLocke
           >
             <span className={t.center ? 'relative bg-white/10 rounded-2xl px-2.5 py-1' : ''}>
               {t.icon}
-              {t.center && !locked && (
-                <span className="absolute -top-2 -right-3 bg-coral-deep text-white text-[8px] font-black px-1.5 py-0.5 rounded-full">جديد</span>
-              )}
               {t.center && locked && (
                 <span className="absolute -top-2 -right-2 bg-white/15 text-cream/70 text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center">🔒</span>
               )}
