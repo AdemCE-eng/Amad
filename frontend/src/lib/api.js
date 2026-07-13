@@ -45,6 +45,7 @@ export const api = {
   // ── Notifications
   getNotifications: () => get('/api/user/notifications'),
   addNotification: (notification) => post('/api/user/notifications', notification),
+  markAllNotificationsRead: () => post('/api/user/mark-all-notifications-read'),
 
   // ── Phase 2A: family goal + explainable contribution plan ──
   familyState: () => get('/api/family/state'),

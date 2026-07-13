@@ -9,8 +9,6 @@ export default function NotificationsView({ setActiveView }) {
     async function loadNotifications() {
       try {
         const response = await api.getNotifications();
-
-        // depends on your API response shape
         setNotifications(response.notifications ?? []);
       } catch (error) {
         console.error("Failed to load notifications:", error);
@@ -18,6 +16,12 @@ export default function NotificationsView({ setActiveView }) {
     }
 
     loadNotifications();
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      await api.markAllNotificationsRead();
+   })();
   }, []);
 
   notifications.sort((n1, n2) => (n2.createdAt - n1.createdAt));

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect} from 'react';
 import {
   Bell, Sun, Edit3, Eye, EyeOff, ShoppingCart, HeartPulse, ArrowLeftRight,
   Wallet, PiggyBank, ShieldAlert, Receipt, Smartphone, Car, Zap, ChevronLeft,
@@ -15,6 +15,7 @@ import BudgetOverview from '../components/ui/BudgetOverview';
 import SavingsPlanSheet from '../components/ui/SavingsPlanSheet';
 import SaveRewardTag from '../components/ui/SaveRewardTag';
 import { SAVE_PRESETS } from '../lib/catalog';
+import { time } from 'motion/react';
 
 const TX_LABELS = {
   purchase: { icon: ShoppingCart, sign: '-' },
@@ -48,7 +49,7 @@ export default function HomeView() {
   const petName = user.petName || 'صقر';
   const [showBalance, setShowBalance] = useState(true);
   const [planOpen, setPlanOpen] = useState(false);
-
+  
   const promptSave = () => {
     const amountStr = window.prompt('كم تبغى توفر؟ (ر.س)', String(SAVE_PRESETS[1]));
     if (!amountStr) return;
@@ -57,6 +58,23 @@ export default function HomeView() {
     runAction(() => api.save(amt));
   };
 
+  const [notifications, setNotifications] = useState([]);
+  useEffect(() => {
+      const interval = setInterval(() => {
+          async function loadNotifications() {
+          try {
+            const response = await api.getNotifications();
+            setNotifications(response.notifications ?? []);
+          } catch (error) {
+            console.error("Failed to load notifications:", error);
+          }
+        }
+        loadNotifications();
+      }, 2000); // Check every 2 seconds
+
+      return () => clearInterval(interval);
+  }, []);
+  
   // The savings account is the gate: the pet + budget only appear once it's
   // activated (the user applies a plan). Before that, Home shows the CTA only.
   const accountOpen = savingsAccountOpened;
@@ -69,14 +87,16 @@ export default function HomeView() {
       <div className="px-5 pt-5 pb-2 flex justify-between items-center z-10">
         <div className="flex items-center gap-4 text-cream/90">
           <span className="border border-white/15 rounded-xl p-1.5"><Sun size={18} strokeWidth={1.8} /></span>
-          <Edit3 size={20} strokeWidth={1.8} />
+          <button onClick={() => api.addNotification({title: "WOOHOOOO", message: "YOOO", type: "No"})}>
+            <Edit3 size={20} strokeWidth={1.8} />
+          </button>
           <div className="relative">
-            <button onClick={() => setActiveView('notifications')} className="text-cream/60">
+            <button onClick={() => setActiveView('notifications')} className="text-cream/60 translate-y-1">
               <Bell size={20} strokeWidth={1.8} />
             </button>
-            <span className="absolute -top-0.5 -left-0.5 bg-coral-deep w-2 h-2 rounded-full"></span>
+            {notifications.some((n) => !n.read) && <span className="absolute -top-0.9 -left-0.5 bg-coral-deep w-2 h-2 rounded-full"></span>}
+            
           </div>
-          <span className="w-4 h-6 rounded-md bg-coral inline-block" title="alinma"></span>
         </div>
         <div className="flex items-center gap-3">
           <div className="text-left">

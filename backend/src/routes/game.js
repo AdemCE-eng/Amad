@@ -165,6 +165,25 @@ router.post("/user/notifications", async (req, res, next) => {
   }
 });
 
+router.post("/user/mark-all-notifications-read", async (_req, res, next) => {
+  try {
+    const snapshot = await db.ref("/user/notifications").get();
+    const notifications = snapshot.val() ?? {};
+
+    const updates = {};
+
+    Object.keys(notifications).forEach((id) => {
+      updates[`${id}/read`] = true;
+    });
+
+    await db.ref("/user/notifications").update(updates);
+
+    res.json({ ok: true });
+  } catch (e) {
+    next(e);
+  }
+});
+
 router.get("/user/notifications", async (_req, res, next) => {
   try {
     const snapshot = await db.ref("/user/notifications").get();
