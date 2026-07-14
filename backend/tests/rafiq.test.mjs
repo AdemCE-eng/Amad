@@ -137,3 +137,73 @@ test("not-secured pet takes NO health loss from in-budget purchases", () => {
   assert.ok(over.pet.health < 70, "over-budget must still drop health");
   assert.equal(over._aiContext.overBudget, true);
 });
+
+// ── Percentage-based penalty/heal redesign ───────────────────────────────
+// Both formulas are now clamp(fraction * K, MIN, MAX), fraction = overage as
+// a % of monthlyBudget (penalty) or save amount as a % of goalAmount (heal).
+
+test("purchase penalty scales with overPercentage of monthlyBudget, not a flat number", () => {
+  const base = { ...initialState() };
+  base.user = { ...base.user, spentThisMonth: base.user.monthlyBudget }; // exactly at budget
+
+  // 20% over budget (600 of a 3000 budget) -> clamp(round(0.2*40), 5, 25) = 8.
+  const twentyOver = applyPurchase(base, { amount: 600, category: "shopping" });
+  assert.equal(twentyOver._aiContext.healthDelta, -8);
+
+  // Barely over budget -> floors at PURCHASE_PENALTY_MIN (5), never less.
+  const barelyOver = applyPurchase(base, { amount: 10, category: "coffee" });
+  assert.equal(barelyOver._aiContext.healthDelta, -5);
+
+  // Massive overage caps at PURCHASE_PENALTY_MAX (25) — a single purchase can
+  // never zero out health from a healthy starting point.
+  const massiveOver = applyPurchase(base, { amount: 100000, category: "shopping" });
+  assert.equal(massiveOver._aiContext.healthDelta, -25);
+});
+
+test("save heal scales with percentOfGoal, not a flat number", () => {
+  const s = initialState(); // goalAmount 5000
+
+  // 20% of goal (1000 SAR) -> clamp(round(0.2*60), 8, 30) = 12.
+  const twentyPct = applyInstantSave(s, 1000);
+  assert.equal(twentyPct._aiContext.healthDelta, 12);
+
+  // A tiny save floors at SAVE_HEAL_MIN (8), never less.
+  const tinySave = applyInstantSave(s, 10);
+  assert.equal(tinySave._aiContext.healthDelta, 8);
+
+  // A huge save (more than the whole goal) caps at SAVE_HEAL_MAX (30).
+  const hugeSave = applyInstantSave(s, 5000);
+  assert.equal(hugeSave._aiContext.healthDelta, 30);
+});
+
+test("calibration: saving X% of the goal always heals more than overspending by the same X%", () => {
+  const s = initialState(); // goalAmount 5000, monthlyBudget 3000
+  const atBudget = { ...s, user: { ...s.user, spentThisMonth: s.user.monthlyBudget } };
+
+  for (const pct of [0.02, 0.05, 0.2, 0.5, 1, 2]) {
+    const penalty = Math.abs(
+      applyPurchase(atBudget, { amount: pct * s.user.monthlyBudget, category: "shopping" })._aiContext.healthDelta
+    );
+    const heal = applyInstantSave(s, pct * s.user.goalAmount)._aiContext.healthDelta;
+    assert.ok(heal > penalty, `at ${pct * 100}%: heal(${heal}) must exceed penalty(${penalty})`);
+  }
+});
+
+// ── Demo seed: over-budget reachable in <= 2 purchase actions from reset ──
+test("fresh Panic Reset: one coffee stays calmly in-budget, a second one tips over", () => {
+  let s = initialState();
+  assert.equal(s.user.monthlyBudget, 3000);
+  assert.equal(s.user.spentThisMonth, 2910); // 90 SAR of headroom
+
+  s = applyPurchase(s, { amount: 50, category: "coffee", label: "قهوة" });
+  assert.equal(s.user.spentThisMonth, 2960);
+  assert.equal(s._aiContext.overBudget, false);
+  assert.equal(s._aiContext.healthDelta, 0);
+  assert.equal(s.pet.health, 100);
+
+  s = applyPurchase(s, { amount: 50, category: "coffee", label: "قهوة" });
+  assert.equal(s.user.spentThisMonth, 3010);
+  assert.equal(s._aiContext.overBudget, true);
+  assert.equal(s._aiContext.healthDelta, -5);
+  assert.equal(s.pet.health, 95);
+});
