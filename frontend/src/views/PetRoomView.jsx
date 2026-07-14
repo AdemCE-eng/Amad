@@ -28,7 +28,6 @@ export default function PetRoomView() {
     petActiveTab, setPetActiveTab,
   } = useAppData();
   const { emotion, poke } = useMascotEmotion(pet);
-  const petName = user.petName || 'صقر';
   const [emergencyOpen, setEmergencyOpen] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const evolution = buildEvolutionPresentation({

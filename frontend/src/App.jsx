@@ -44,7 +44,7 @@ function StatusBar() {
 // The operator/judge control panel is the standalone Cheat Controller served
 // by the backend at http://localhost:3000/ — no in-app PoC panel.
 function AppShell() {
-  const { loading, activeView, setActiveView, user, pet, game, savingsAccountOpened, demoResetVersion } = useAppData();
+  const { loading, activeView, setActiveView, user, pet, game, savingsAccountOpened, demoResetVersion, activeRole } = useAppData();
 
   if (loading) {
     return (
@@ -85,7 +85,7 @@ function AppShell() {
       </div>
 
       {/* Celebration layer — portal above the frame */}
-      <CelebrationOverlay key={demoResetVersion} game={game} petName={user?.petName} />
+      <CelebrationOverlay key={demoResetVersion} game={game} petName={user?.petName} activeRole={activeRole} />
     </div>
   );
 }

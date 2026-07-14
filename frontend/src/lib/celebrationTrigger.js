@@ -1,11 +1,20 @@
-// The timestamp is the backend's authoritative one-shot celebration identity.
-// Mounting an existing state, repeating the same timestamp, and reset-to-zero
-// never enqueue an overlay. A genuinely new timestamp does.
-export function evaluateCelebrationCursor(previousAt, celebration) {
+// The backend timestamp identifies the operation; type + id identify its
+// semantic outcome. Together they form a stable event key for deduplication.
+export function celebrationEventKey(celebration) {
   const nextAt = Number(celebration?.at) || 0;
-  if (previousAt === null) return { nextAt, shouldQueue: false };
+  return `${celebration?.type || 'none'}:${celebration?.id || 'none'}:${nextAt}`;
+}
+
+// Mounting hydrated state, repeating an event, reset-to-zero, and events for
+// an inactive demo role never enqueue a dialog. The cursor always advances so
+// switching roles later cannot replay an event that belonged to another role.
+export function evaluateCelebrationCursor(previousCursor, celebration, { eligible = true } = {}) {
+  const nextAt = Number(celebration?.at) || 0;
+  const nextCursor = celebrationEventKey(celebration);
+  if (previousCursor === null) return { nextAt, nextCursor, shouldQueue: false };
   return {
     nextAt,
-    shouldQueue: nextAt > 0 && nextAt !== previousAt,
+    nextCursor,
+    shouldQueue: eligible && nextAt > 0 && nextCursor !== previousCursor,
   };
 }

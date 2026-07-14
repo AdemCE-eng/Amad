@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ACHIEVEMENTS, SHOP_ITEMS } from '../../lib/catalog';
 import { api } from '../../lib/api';
 import Mascot from '../mascot/Mascot';
@@ -71,11 +71,26 @@ function ChallengesAndAchievements({ game }) {
 function Accessories({ game, isSubmitting, runAction }) {
   const { nxp_balance, inventory, equipped } = game;
   const equippedItem = equipped ? SHOP_ITEMS[equipped] : null;
+  const [equipFeedback, setEquipFeedback] = useState('');
+  const feedbackTimer = useRef(null);
+
+  useEffect(() => () => clearTimeout(feedbackTimer.current), []);
+
+  const equipItem = (id, item, isEquipped) => {
+    const nextItem = isEquipped ? null : id;
+    runAction(async () => {
+      await api.equipItem(nextItem);
+      setEquipFeedback(isEquipped ? `تمت إزالة ${item.name}.` : `تم تجهيز ${item.name}.`);
+      clearTimeout(feedbackTimer.current);
+      feedbackTimer.current = setTimeout(() => setEquipFeedback(''), 2400);
+    });
+  };
+
   return (
     <section data-testid="pet-accessory-store">
       <div className="bg-coral/10 border border-coral/20 rounded-3xl p-4 mb-5 flex items-center gap-3" data-testid="equipped-accessory-summary">
         <div className="w-16 h-16 rounded-2xl bg-cream grid place-items-center overflow-hidden shrink-0">
-          <Mascot emotion="idle" stage={1} size={58} track={false} equipped={equipped} />
+          <Mascot emotion={equipFeedback ? 'happy' : 'idle'} stage={1} size={58} track={false} equipped={equipped} />
         </div>
         <div className="min-w-0"><p className="text-[10px] text-coral font-black">الإكسسوار المجهّز</p><h2 className="font-black mt-1">{equippedItem?.name || 'بدون إكسسوار'}</h2><p className="text-[10px] text-cream/45 mt-1">يمكنك التجهيز أو الإزالة من العناصر المملوكة.</p></div>
       </div>
@@ -83,6 +98,14 @@ function Accessories({ game, isSubmitting, runAction }) {
         <div><h2 className="font-black text-cream">متجر إكسسوارات صقر</h2><p className="text-[10px] text-cream/50 font-bold mt-1">المملوك والمجهز محفوظان في حسابك.</p></div>
         <span className="text-[11px] font-black text-amber-300 whitespace-nowrap">{nxp_balance} NXP</span>
       </div>
+      <p
+        role="status"
+        aria-live="polite"
+        data-testid="accessory-equip-feedback"
+        className={`mb-2 min-h-5 px-1 text-[11px] font-bold text-emerald-300 transition-opacity ${equipFeedback ? 'opacity-100' : 'opacity-0'}`}
+      >
+        {equipFeedback || ' '}
+      </p>
       <div className="space-y-3">
         {Object.entries(SHOP_ITEMS).map(([id, item]) => {
           const owned = Boolean(inventory[id]);
@@ -97,7 +120,7 @@ function Accessories({ game, isSubmitting, runAction }) {
                 {owned && <p className="text-[9px] text-emerald-300 font-bold mt-1">مملوك {isEquipped ? '· مجهز الآن' : ''}</p>}
               </div>
               {owned ? (
-                <button disabled={isSubmitting} onClick={() => runAction(() => api.equipItem(isEquipped ? null : id))} className={`px-3 py-2 rounded-xl text-xs font-black border shrink-0 ${isEquipped ? 'bg-coral text-ink border-coral' : 'bg-transparent text-coral border-coral/50'}`}>{isEquipped ? 'إزالة' : 'تجهيز'}</button>
+                <button disabled={isSubmitting} onClick={() => equipItem(id, item, isEquipped)} className={`px-3 py-2 rounded-xl text-xs font-black border shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-coral ${isEquipped ? 'bg-coral text-ink border-coral' : 'bg-transparent text-coral border-coral/50'}`}>{isEquipped ? 'إزالة' : 'تجهيز'}</button>
               ) : (
                 <button disabled={isSubmitting || !affordable} onClick={() => runAction(() => api.buyItem(id))} className={`px-3 py-2 rounded-xl text-xs font-black shrink-0 ${affordable ? 'bg-coin text-ink shadow' : 'bg-white/5 text-cream/40'}`}>{affordable ? 'شراء' : 'رصيد غير كافٍ'}</button>
               )}
