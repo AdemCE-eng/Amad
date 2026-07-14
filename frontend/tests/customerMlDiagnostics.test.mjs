@@ -2,16 +2,16 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
-const familyViewPath = new URL('../src/views/FamilyGoalView.jsx', import.meta.url);
+const opportunitiesViewPath = new URL('../src/views/OpportunitiesView.jsx', import.meta.url);
 const apiPath = new URL('../src/lib/api.js', import.meta.url);
 const controllerPath = new URL('../../cheat-controller/index.html', import.meta.url);
 
 test('customer recommendation cards do not render raw ML diagnostics', async () => {
-  const source = await readFile(familyViewPath, 'utf8');
+  const source = await readFile(opportunitiesViewPath, 'utf8');
   assert.doesNotMatch(source, /recommendationResult\.source|recommendationResult\.fallbackReason/);
   assert.doesNotMatch(source, /data-testid=["']recommendation-source["']/);
   assert.match(source, /data-testid=["']recommendation-card["']/);
-  assert.match(source, /recommendationResult\?\.recommendations \|\| \[\]/);
+  assert.match(source, /opportunityResult\?\.recommendations \|\| \[\]/);
 });
 
 test('recommendation API still carries backend metadata to callers', async () => {

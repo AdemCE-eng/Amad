@@ -21,6 +21,7 @@ export function AppDataProvider({ children }) {
   const [demoResetVersion, setDemoResetVersion] = useState(0);
 
   const [activeView, setActiveView] = useState('home');
+  const [opportunityResult, setOpportunityResult] = useState(null);
   const [activeRole, setActiveRoleState] = useState(() => {
     const stored = localStorage.getItem(ROLE_KEY);
     return ['rashid', 'ahmed', 'sarah'].includes(stored) ? stored : CANONICAL_DEMO_ROLE;
@@ -112,6 +113,7 @@ export function AppDataProvider({ children }) {
       clearDemoBrowserState();
       setActiveRoleState(CANONICAL_DEMO_ROLE);
       setActiveView('home');
+      setOpportunityResult(null);
       setIsPetted(false);
       setIsShaking(false);
       setFlashColor(null);
@@ -135,6 +137,7 @@ export function AppDataProvider({ children }) {
     ...backend,
     restartDemo, restarting, demoResetVersion,
     activeView, setActiveView,
+    opportunityResult, setOpportunityResult,
     activeRole, setActiveRole,
     ...notificationState,
     nxp, akthrPoints,

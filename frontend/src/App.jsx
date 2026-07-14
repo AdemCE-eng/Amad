@@ -6,6 +6,8 @@ import PetRoomView from './views/PetRoomView';
 import RewardsView from './views/RewardsView';
 import NotificationsView from './views/NotificationsView';
 import FamilyGoalView from './views/FamilyGoalView';
+import OpportunitiesView from './views/OpportunitiesView';
+import TransactionsView from './views/TransactionsView';
 import MascotLab from './views/MascotLab';
 import BottomNav from './components/ui/BottomNav';
 import CelebrationOverlay from './components/ui/CelebrationOverlay';
@@ -68,8 +70,12 @@ function AppShell() {
                 {activeView === 'pet' && savingsAccountOpened && <PetRoomView />}
                 {activeView === 'rewards' && <RewardsView />}
                 {activeView === 'family' && <FamilyGoalView />}
+                {activeView === 'opportunities' && <OpportunitiesView />}
+                {activeView === 'transactions' && <TransactionsView />}
                 {activeView === 'notifications' && <NotificationsView setActiveView={setActiveView} />}
-                <BottomNav activeView={activeView} setActiveView={setActiveView} petName={user?.petName} petLocked={!savingsAccountOpened} />
+                {!['notifications', 'transactions'].includes(activeView) && (
+                  <BottomNav activeView={activeView} setActiveView={setActiveView} petName={user?.petName} petLocked={!savingsAccountOpened} />
+                )}
                 <RewardNotice />
             </React.Fragment>
           </div>
