@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, HeartPulse, ShieldAlert, ShoppingBag, Trophy } from 'lucide-react';
+import { ArrowLeft, ChevronDown, HeartPulse, ShieldAlert, ShoppingBag, Trophy } from 'lucide-react';
 import { useAppData } from '../context/AppDataContext';
 import { api } from '../lib/api';
 import Mascot from '../components/mascot/Mascot';
@@ -30,6 +30,7 @@ export default function PetRoomView() {
   const { emotion, poke } = useMascotEmotion(pet);
   const petName = user.petName || 'صقر';
   const [emergencyOpen, setEmergencyOpen] = useState(false);
+  const [detailsOpen, setDetailsOpen] = useState(false);
   const evolution = buildEvolutionPresentation({
     stage: game.stage,
     goalProgress,
@@ -106,7 +107,7 @@ export default function PetRoomView() {
           <div id="pet-panel-status" role="tabpanel" aria-labelledby="pet-tab-status" className="w-full flex flex-col items-center" data-testid="pet-status-panel">
 
         {/* --- MAIN INTERACTIVE PET AREA --- */}
-        <div className="relative w-60 h-60 mb-4 flex items-center justify-center" data-testid="pet-mascot-hero">
+        <div className="relative w-60 h-60 mb-2 flex items-center justify-center" data-testid="pet-mascot-hero">
           {/* Background Glow */}
           <div className={`absolute inset-10 rounded-full blur-xl transition-all duration-500 ${
             isSick ? 'bg-red-500/20' :
@@ -136,18 +137,62 @@ export default function PetRoomView() {
           </div>
         </div>
 
-        {/* GenAI Chat Bubble */}
-        <div className="bg-ink-card p-3.5 rounded-3xl w-full mb-4 relative" data-testid="pet-status-message">
-          <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 w-6 h-6 bg-ink-card rotate-45"></div>
-          <p className="text-center text-cream leading-relaxed relative z-10 font-bold">
+        {/* Short live companion message. Secondary metadata lives below the financial cards. */}
+        <div className="bg-ink-card px-4 py-3 rounded-2xl w-full mb-3 relative" data-testid="pet-status-message">
+          <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-ink-card rotate-45" aria-hidden="true" />
+          <p className="text-center text-sm text-cream leading-relaxed relative z-10 font-bold">
             "{pet.message}"
           </p>
-          <div className="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-white/5 text-center">
-            <div><span className="block text-[9px] text-cream/40 font-bold">المزاج</span><strong className="text-[11px]">{MOOD_LABEL[pet.mood] || pet.mood}</strong></div>
-            <div><span className="block text-[9px] text-cream/40 font-bold">الحماية</span><strong className="text-[11px]">{emergencyShield.usesRemaining} درع</strong></div>
-            <div><span className="block text-[9px] text-cream/40 font-bold">الإكسسوار</span><strong className="text-[11px]">{SHOP_ITEMS[game.equipped]?.name || 'بدون'}</strong></div>
-          </div>
         </div>
+
+        {/* Savings is the primary action and the only input to Saqr evolution. */}
+        <section className="w-full bg-ink-card rounded-3xl px-4 py-3.5 mb-3" data-testid="pet-savings-summary" aria-labelledby="pet-savings-title">
+          <div className="flex items-end justify-between gap-3">
+            <div className="min-w-0">
+              <p id="pet-savings-title" className="text-[10px] text-cream/50 font-bold">إجمالي المدخرات</p>
+              <p className="mt-0.5 text-xl font-black text-emerald-400 tabular-nums" data-testid="pet-saved-amount">
+                {SAR_NUMBER.format(user.savedAmount)} <span className="text-[11px]">ر.س</span>
+              </p>
+            </div>
+            <div className="text-left shrink-0">
+              <p className="text-[10px] text-cream/50 font-bold">هدف الادخار</p>
+              <p className="mt-0.5 text-lg font-black text-coral tabular-nums" data-testid="pet-goal-amount">
+                {SAR_NUMBER.format(user.goalAmount)} <span className="text-[10px]">ر.س</span>
+              </p>
+            </div>
+          </div>
+
+          <div
+            className="mt-2 h-2 overflow-hidden rounded-full bg-white/10"
+            role="progressbar"
+            aria-label="تقدم هدف الادخار الشخصي"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-valuenow={goalProgress}
+            data-testid="pet-savings-progress"
+          >
+            <div className="h-full rounded-full bg-gradient-to-l from-emerald-400 to-coral transition-[width] duration-700 motion-reduce:transition-none" style={{ width: `${goalProgress}%` }} />
+          </div>
+          <div className="mt-1.5 flex items-center justify-between gap-3 text-[9px] font-bold text-cream/45">
+            <span>كل توفير يقرّبك من هدفك ويطوّر صقر</span>
+            <span className="shrink-0 tabular-nums">{goalProgress}%</span>
+          </div>
+
+          <div className="mt-2.5 grid grid-cols-3 gap-2" aria-label="مبالغ التوفير السريع">
+            {SAVE_PRESETS.map((amount) => (
+              <button
+                key={amount}
+                type="button"
+                disabled={isSubmitting}
+                onClick={() => runAction(() => api.save(amount))}
+                className="rounded-xl bg-coral-tile py-2 text-xs font-black text-ink transition-transform active:scale-95 disabled:opacity-50"
+              >
+                +{amount}
+              </button>
+            ))}
+          </div>
+          <SaveRewardTag reward={game.lastSaveReward} compact />
+        </section>
 
         {/* The authoritative stage and goal percentage come from shared app state. */}
         <section className="w-full bg-ink-card rounded-3xl px-4 py-3.5 mb-5" data-testid="pet-evolution-card" aria-labelledby="pet-evolution-title">
@@ -175,7 +220,7 @@ export default function PetRoomView() {
 
           <p className="text-[10px] text-cream/65 font-bold leading-relaxed mt-2" data-testid="pet-next-milestone-explanation">
             {evolution.nextStage
-              ? <>باقي <strong className="text-coral">{SAR_NUMBER.format(evolution.remainingAmount)} ر.س</strong> من مدخراتك الشخصية للوصول إلى مرحلة {evolution.nextStage.name}.</>
+              ? <>باقي <strong className="text-coral">{SAR_NUMBER.format(evolution.remainingAmount)} ر.س</strong> للوصول إلى مرحلة {evolution.nextStage.name}.</>
               : 'وصل صقر إلى مرحلته النهائية؛ واصل الادخار الشخصي لإكمال هدفك.'}
           </p>
 
@@ -195,38 +240,25 @@ export default function PetRoomView() {
           </div>
         </section>
 
-        {/* Savings card */}
-        <div className="w-full bg-ink-card rounded-3xl p-5 mb-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <p className="text-[11px] text-cream/50 mb-1 font-bold">إجمالي المدخرات</p>
-              <h3 className="text-2xl font-black text-emerald-400">{user.savedAmount.toFixed(2)} <span className="text-sm">ر.س</span></h3>
+        <section className="w-full mb-3" data-testid="pet-secondary-details">
+          <button
+            type="button"
+            aria-expanded={detailsOpen}
+            aria-controls="pet-secondary-details-content"
+            onClick={() => setDetailsOpen((open) => !open)}
+            className="flex w-full items-center justify-between rounded-2xl border border-white/10 bg-white/[0.04] px-3.5 py-2.5 text-xs font-black text-cream/70 transition-colors hover:bg-white/[0.07] focus-visible:outline focus-visible:outline-2 focus-visible:outline-coral"
+          >
+            <span>تفاصيل الحالة</span>
+            <ChevronDown size={15} className={`text-coral transition-transform motion-reduce:transition-none ${detailsOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
+          </button>
+          {detailsOpen && (
+            <div id="pet-secondary-details-content" className="mt-2 grid grid-cols-3 gap-2 rounded-2xl bg-ink-card px-3 py-2.5 text-center" data-testid="pet-secondary-details-content">
+              <div><span className="block text-[8px] font-bold text-cream/40">المزاج</span><strong className="text-[10px]">{MOOD_LABEL[pet.mood] || pet.mood}</strong></div>
+              <div><span className="block text-[8px] font-bold text-cream/40">الحماية</span><strong className="text-[10px]">{emergencyShield.usesRemaining} درع</strong></div>
+              <div><span className="block text-[8px] font-bold text-cream/40">الإكسسوار</span><strong className="text-[10px]">{SHOP_ITEMS[game.equipped]?.name || 'بدون'}</strong></div>
             </div>
-            <div className="text-left bg-white/5 p-2 rounded-2xl">
-              <p className="text-[10px] text-cream/50 mb-1 font-bold">هدف الادخار</p>
-              <h3 className="text-xl font-black text-coral">{user.goalAmount.toFixed(0)}</h3>
-            </div>
-          </div>
-
-          {/* Quick-save — the core action: feed the companion by saving */}
-          <div className="mt-4 pt-3 border-t border-white/10">
-            <p className="text-[11px] text-cream/50 font-bold mb-2">💰 وفّر الآن — {petName} يفرح ويكبر</p>
-            <div className="grid grid-cols-3 gap-2">
-              {SAVE_PRESETS.map((amt) => (
-                <button
-                  key={amt}
-                  disabled={isSubmitting}
-                  onClick={() => runAction(() => api.save(amt))}
-                  className="py-2.5 rounded-xl font-black text-sm bg-coral-tile text-ink active:scale-95 transition-all disabled:opacity-50"
-                >
-                  +{amt}
-                </button>
-              ))}
-            </div>
-            {/* Income-relative NXP receipt — same backend stamp HomeView shows */}
-            <SaveRewardTag reward={game.lastSaveReward} compact />
-          </div>
-        </div>
+          )}
+        </section>
 
         <PetProgressionSections section="status" game={game} isSubmitting={isSubmitting} runAction={runAction} />
 
