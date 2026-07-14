@@ -16,18 +16,25 @@ export const DEFAULT_INCOME = 8000;
 // Seed savings (SAR) — one constant feeds both savedAmount and its NXP
 // high-water mark so they can never disagree at seed time.
 const SEED_SAVED_AMOUNT = 1200;
-const HEAL_K = 2; // scaling factor for goal-relative healing
-const HEAL_MIN = 5;
-const HEAL_MAX = 25;
+// Save-heal scales with the FRACTION OF THE GOAL this save represents
+// (savedAmount and salary auto-saves both feed the same goal), same shape as
+// gameEngine's SAVE_NXP_K pattern. Calibrated against PURCHASE_PENALTY_* below
+// so that saving X% of the goal always heals more than overspending by the
+// same X% hurts (see backend/tests/rafiq.test.mjs calibration test).
+const SAVE_HEAL_K = 60;
+const SAVE_HEAL_MIN = 8;
+const SAVE_HEAL_MAX = 30;
 // In-budget purchases cost NO health: spending inside your own budget is not a
 // failure, so Rafiq never punishes it. Health only ever falls from genuine
 // over-budget spending (the scaled penalty below).
 // Over-budget penalty scales with HOW FAR over budget this purchase pushes
-// you (same relative-effort principle as healing) instead of a flat hit —
-// barely crossing the line stings a little, blowing it out stings a lot.
-const OVER_BUDGET_PENALTY_K = 0.5;
-const OVER_BUDGET_PENALTY_MIN = 10;
-const OVER_BUDGET_PENALTY_MAX = 35;
+// you, as a FRACTION OF THE MONTHLY BUDGET (same relative-effort principle as
+// healing) instead of a flat hit — barely crossing the line stings a little,
+// blowing it out stings a lot. K/MIN/MAX deliberately sit below SAVE_HEAL_*'s
+// at every matching percentage so spending never out-hurts saving's payoff.
+const PURCHASE_PENALTY_K = 40;
+const PURCHASE_PENALTY_MIN = 5;
+const PURCHASE_PENALTY_MAX = 25;
 
 // ── Helpers ──────────────────────────────────────────────
 export const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
@@ -61,7 +68,10 @@ export function initialState() {
       allTimeHighBalance: SEED_SAVED_AMOUNT,
       balance: 8000,
       monthlyBudget: 3000,
-      spentThisMonth: 1400,
+      // Demo-tuned: 90 SAR of headroom left. One 50 SAR coffee stays calmly
+      // in-budget (40 left over); a second one tips over budget — the
+      // over-budget moment is 2 clicks away from a fresh Panic Reset, not 34.
+      spentThisMonth: 2910,
       // Savings-plan + category-budget + auto-rollover fields.
       ...initialBudgetFields(),
     },
@@ -133,10 +143,11 @@ export function applySalary(state, amount, saveRate = SAVE_RATE) {
     balance: state.user.balance + amount,
     savedAmount: state.user.savedAmount + savedPortion,
   };
+  const percentOfGoal = savedPortion / user.goalAmount;
   const healthDelta = clamp(
-    Math.round((savedPortion / user.goalAmount) * 100 * HEAL_K),
-    HEAL_MIN,
-    HEAL_MAX
+    Math.round(percentOfGoal * SAVE_HEAL_K),
+    SAVE_HEAL_MIN,
+    SAVE_HEAL_MAX
   );
   const pet = withHealth(state.pet, healthDelta, { animationState: "eating" });
   return {
@@ -155,10 +166,11 @@ export function applyInstantSave(state, amount) {
     balance: state.user.balance - amount,
     savedAmount: state.user.savedAmount + amount,
   };
+  const percentOfGoal = amount / user.goalAmount;
   const healthDelta = clamp(
-    Math.round((amount / user.goalAmount) * 100 * HEAL_K),
-    HEAL_MIN,
-    HEAL_MAX
+    Math.round(percentOfGoal * SAVE_HEAL_K),
+    SAVE_HEAL_MIN,
+    SAVE_HEAL_MAX
   );
   const pet = withHealth(state.pet, healthDelta, { animationState: "eating" });
   return {
@@ -192,11 +204,11 @@ export function applyPurchase(state, { amount, category = "general", label = "ع
   // Staying inside your budget is never punished.
   let healthDelta = 0;
   if (overBudget && !goalSecured) {
-    const overagePct = ((spentThisMonth - state.user.monthlyBudget) / state.user.monthlyBudget) * 100;
+    const overPercentage = (spentThisMonth - state.user.monthlyBudget) / state.user.monthlyBudget;
     healthDelta = -clamp(
-      Math.round(overagePct * OVER_BUDGET_PENALTY_K),
-      OVER_BUDGET_PENALTY_MIN,
-      OVER_BUDGET_PENALTY_MAX
+      Math.round(overPercentage * PURCHASE_PENALTY_K),
+      PURCHASE_PENALTY_MIN,
+      PURCHASE_PENALTY_MAX
     );
   }
   const pet = withHealth(state.pet, healthDelta);
