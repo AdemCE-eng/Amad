@@ -6,8 +6,14 @@ const read = (relativePath) => readFile(new URL(relativePath, import.meta.url), 
 
 test('Home shows a compact live Saqr preview only after savings activation', async () => {
   const home = await read('../src/views/HomeView.jsx');
+  const quickActionsIndex = home.indexOf('aria-label="الخدمات المصرفية السريعة"');
+  const previewIndex = home.indexOf('data-testid="home-saqr-preview"');
+  const budgetIndex = home.indexOf('<BudgetOverview');
 
   assert.match(home, /data-testid="home-saqr-preview"/);
+  assert.equal(home.match(/data-testid="home-saqr-preview"/g)?.length, 1);
+  assert.ok(quickActionsIndex >= 0 && quickActionsIndex < previewIndex);
+  assert.ok(previewIndex < budgetIndex);
   assert.match(home, /\{accountOpen && \(/);
   assert.match(home, /<Mascot emotion=\{emotion\} stage=\{game\.stage\} equipped=\{game\.equipped\}/);
   assert.match(home, /pet\.health/);

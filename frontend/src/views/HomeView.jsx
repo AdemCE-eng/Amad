@@ -79,14 +79,6 @@ export default function HomeView() {
           ))}
         </section>
 
-        {!accountOpen ? (
-          <button onClick={() => setPlanOpen(true)} className="w-full bg-gradient-to-l from-coral/20 to-ink-card border border-coral/35 rounded-3xl p-4 flex items-center gap-4 text-right" data-testid="home-setup-card">
-            <span className="bg-coral text-ink p-3.5 rounded-2xl"><Sparkles size={21} /></span>
-            <span className="flex-1"><small className="block text-coral font-black">ابدأ من هنا</small><strong className="block">فعّل حساب التوفير وخطّط ادخارك</strong><small className="block text-cream/50 mt-1">خطة ميزانية وهدف ادخار يناسبان دخلك.</small></span>
-            <ChevronLeft size={18} className="text-cream/40" />
-          </button>
-        ) : <BudgetOverview budgets={budgets} budgetPeriod={budgetPeriod} projectedRollover={projectedRollover} />}
-
         {accountOpen && (
           <section className="bg-gradient-to-l from-coral/15 via-ink-card to-ink-card border border-coral/25 rounded-3xl p-4" data-testid="home-saqr-preview" aria-label="ملخص صقر">
             <div className="flex items-center gap-4">
@@ -115,6 +107,14 @@ export default function HomeView() {
             </button>
           </section>
         )}
+
+        {!accountOpen ? (
+          <button onClick={() => setPlanOpen(true)} className="w-full bg-gradient-to-l from-coral/20 to-ink-card border border-coral/35 rounded-3xl p-4 flex items-center gap-4 text-right" data-testid="home-setup-card">
+            <span className="bg-coral text-ink p-3.5 rounded-2xl"><Sparkles size={21} /></span>
+            <span className="flex-1"><small className="block text-coral font-black">ابدأ من هنا</small><strong className="block">فعّل حساب التوفير وخطّط ادخارك</strong><small className="block text-cream/50 mt-1">خطة ميزانية وهدف ادخار يناسبان دخلك.</small></span>
+            <ChevronLeft size={18} className="text-cream/40" />
+          </button>
+        ) : <BudgetOverview budgets={budgets} budgetPeriod={budgetPeriod} projectedRollover={projectedRollover} />}
 
         <button onClick={() => setActiveView('family')} className="w-full bg-ink-card rounded-3xl p-4 text-right" data-testid="home-family-preview">
           <div className="flex items-center justify-between"><span className="flex items-center gap-2 text-xs text-coral font-black"><Users size={16} /> هدف العائلة</span><ChevronLeft size={17} className="text-cream/40" /></div>
