@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { ChevronRight } from 'lucide-react';
 import { useAppData } from '../context/AppDataContext';
+import NestedPageHeader from '../components/ui/NestedPageHeader';
 import TransactionRow from '../components/ui/TransactionRow';
 
 const FILTERS = [
@@ -20,10 +20,7 @@ export default function TransactionsView() {
 
   return (
     <div className="bg-ink h-full overflow-y-auto overflow-x-hidden text-cream" dir="rtl">
-      <header className="px-5 pt-5 pb-4 flex items-center gap-3">
-        <button aria-label="العودة إلى الرئيسية" onClick={() => setActiveView('home')} className="w-10 h-10 rounded-xl bg-white/5 grid place-items-center"><ChevronRight size={21} /></button>
-        <div><h1 className="text-2xl font-black">كل العمليات</h1><p className="text-xs text-cream/45 font-bold">مرتبة من الأحدث إلى الأقدم.</p></div>
-      </header>
+      <NestedPageHeader title="كل العمليات" subtitle="مرتبة من الأحدث إلى الأقدم." onBack={() => setActiveView('home')} />
       <div className="px-5 pb-8">
         <div className="flex gap-2 overflow-x-auto pb-3" data-testid="transaction-filters">
           {FILTERS.map((item) => <button key={item.id} onClick={() => setFilter(item.id)} className={`px-3 py-2 rounded-xl text-xs font-black whitespace-nowrap ${filter === item.id ? 'bg-coral text-ink' : 'bg-white/5 text-cream/60'}`}>{item.label}</button>)}

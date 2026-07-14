@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ArrowRight } from 'lucide-react';
 import { useAppData } from '../context/AppDataContext';
+import NestedPageHeader from '../components/ui/NestedPageHeader';
 import { api } from '../lib/api';
 
 export default function NotificationsView({ setActiveView }) {
@@ -17,18 +17,8 @@ export default function NotificationsView({ setActiveView }) {
   }, [activeRole, notificationsLoaded, userNotifications]);
 
   return (
-    <div className="flex flex-col h-full bg-ink p-4 overflow-y-auto" dir="rtl">
-      <div className="flex items-center justify-between p-4">
-        <h1 className="text-2xl font-bold text-white">الإشعارات</h1>
-        <button
-          type="button"
-          aria-label="العودة إلى الرئيسية"
-          onClick={() => setActiveView('home')}
-          className="p-2 rounded-full hover:bg-white/10 transition"
-        >
-          <ArrowRight className="w-6 h-6 text-white" />
-        </button>
-      </div>
+    <div className="flex flex-col h-full bg-ink overflow-y-auto" dir="rtl">
+      <NestedPageHeader title="الإشعارات" onBack={() => setActiveView('home')} />
 
       {readError && (
         <p className="mx-4 mb-3 rounded-xl bg-red-500/10 p-3 text-sm text-red-200">
@@ -36,7 +26,7 @@ export default function NotificationsView({ setActiveView }) {
         </p>
       )}
 
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3 px-4 pb-8">
         {!notificationsLoaded && <p className="p-4 text-center text-zinc-400">جارٍ تحميل الإشعارات…</p>}
         {notificationsLoaded && userNotifications.length === 0 && (
           <p className="p-8 text-center text-zinc-400">لا توجد إشعارات جديدة.</p>

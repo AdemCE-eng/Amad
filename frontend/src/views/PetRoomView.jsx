@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronRight, ShieldAlert, HeartPulse } from 'lucide-react';
+import { ShieldAlert, HeartPulse } from 'lucide-react';
 import { useAppData } from '../context/AppDataContext';
 import { api } from '../lib/api';
 import Mascot from '../components/mascot/Mascot';
@@ -16,7 +16,7 @@ export default function PetRoomView() {
   const {
     user, pet, game, emergencyShield,
     isSick, isHappy, goalProgress,
-    handlePetInteraction, isSubmitting, runAction, setActiveView,
+    handlePetInteraction, isSubmitting, runAction,
   } = useAppData();
   const { emotion, poke } = useMascotEmotion(pet);
   const petName = user.petName || 'صقر';
@@ -27,11 +27,8 @@ export default function PetRoomView() {
       isSick ? 'from-red-950 to-ink' : 'from-ink-soft to-ink'
     } h-full flex flex-col font-sans text-cream transition-colors duration-500`} dir="rtl">
 
-      {/* Header — back arrow points right in RTL */}
+      {/* Pet is a primary BottomNav destination, so its header has no nested back control. */}
       <div className="p-4 flex items-center justify-between gap-3 z-20">
-        <button onClick={() => setActiveView('home')} className="bg-white/10 backdrop-blur p-2 rounded-full text-cream hover:bg-white/20 transition-all">
-          <ChevronRight size={24} />
-        </button>
         <h1 className="font-black text-cream text-lg tracking-wide">غرفة {petName}</h1>
         <CoinPill coins={game.nxp_balance} />
       </div>
