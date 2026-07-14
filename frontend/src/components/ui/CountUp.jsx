@@ -3,9 +3,9 @@ import { animate } from 'motion/react';
 
 // Number ticker: animates from the previously shown value to the new one.
 // Writes into the DOM node directly — no per-frame React renders.
-export default function CountUp({ value, decimals = 2, duration = 0.8, className }) {
+export default function CountUp({ value, decimals = 2, duration = 0.8, className, startFrom }) {
   const ref = useRef(null);
-  const shown = useRef(value);
+  const shown = useRef(startFrom ?? value);
 
   useEffect(() => {
     const from = shown.current ?? value;
@@ -20,5 +20,5 @@ export default function CountUp({ value, decimals = 2, duration = 0.8, className
     return () => controls.stop();
   }, [value, decimals, duration]);
 
-  return <span ref={ref} className={className}>{Number(value).toFixed(decimals)}</span>;
+  return <span ref={ref} className={className}>{Number(startFrom ?? value).toFixed(decimals)}</span>;
 }

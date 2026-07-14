@@ -2,14 +2,17 @@ import React, { useEffect, useRef, useState } from 'react';
 import { CheckCircle2, ChevronDown, Hourglass, Search, Sparkles, TrendingUp } from 'lucide-react';
 import { useAppData } from '../context/AppDataContext';
 import { api } from '../lib/api';
+import { runStagedRequest } from '../lib/stagedRequest';
+import StagedProgress from '../components/ui/StagedProgress';
 
-const ANALYSIS_STEPS = [
-  'جاري تحليل نمط مشترياتك…',
-  'جاري مقارنة المواسم السابقة…',
-  'جاري فحص فرص التجار…',
-  'تم ترتيب الفرص حسب ملاءمتها لك',
+export const ANALYSIS_STEPS = [
+  'نقرأ أنماط مشترياتك',
+  'نقدّر احتمالية الشراء',
+  'نحلل المواسم وحملات التجار',
+  'نقارن فرص التوفير بميزانيتك',
+  'نرتب أفضل الفرص لك',
 ];
-const ANALYSIS_STEP_MS = 550;
+export const ANALYSIS_MIN_MS = 4800;
 
 function actionLabel(action) {
   if (action === 'wait_for_offer') return 'انتظر العرض المتوقع';
@@ -85,13 +88,12 @@ export default function OpportunitiesView() {
     setExpanded(false);
     setAnalysisStep(0);
     try {
-      const request = api.personalizedRecommendations('rashid');
-      for (let step = 1; step < ANALYSIS_STEPS.length; step += 1) {
-        await new Promise((resolve) => setTimeout(resolve, ANALYSIS_STEP_MS));
-        if (runId.current !== currentRun) return;
-        setAnalysisStep(step);
-      }
-      const result = await request;
+      const result = await runStagedRequest({
+        request: () => api.personalizedRecommendations('rashid'),
+        stages: ANALYSIS_STEPS,
+        minimumMs: ANALYSIS_MIN_MS,
+        onStage: (index) => { if (runId.current === currentRun) setAnalysisStep(index); },
+      });
       if (runId.current === currentRun) setOpportunityResult(result);
     } catch {
       if (runId.current === currentRun) setAnalysisError('تعذر إكمال التحليل. حاول مرة أخرى.');
@@ -130,22 +132,27 @@ export default function OpportunitiesView() {
       </header>
 
       <div className="px-5 pb-28 space-y-5">
-        {!opportunityResult && analysisStep === -1 && (
+        {!opportunityResult && analysisStep === -1 && !analysisError && (
           <section className="bg-gradient-to-l from-coral/15 to-ink-card border border-coral/25 rounded-3xl p-6 text-center">
             <Sparkles size={30} className="mx-auto text-coral mb-3" />
             <h2 className="font-black text-lg">اكتشف أفضل فرصة لك</h2>
             <p className="text-sm text-cream/60 mt-2 leading-relaxed">تحليل جديد لنمط مشترياتك والمواسم والحملات السابقة.</p>
-            <button onClick={runAnalysis} className="mt-5 bg-coral text-ink font-black px-5 py-3 rounded-2xl inline-flex items-center gap-2"><Search size={16} /> حلّل فرص التوفير</button>
+            <button type="button" onClick={runAnalysis} className="mt-5 bg-coral text-ink font-black px-5 py-3 rounded-2xl inline-flex items-center gap-2"><Search size={16} /> حلّل فرص التوفير</button>
           </section>
         )}
 
         {analysisStep >= 0 && (
-          <section className="bg-ink-card rounded-3xl p-5" data-testid="analysis-progress">
-            <div className="flex items-center gap-3"><span className="w-8 h-8 border-2 border-coral border-t-transparent rounded-full animate-spin" /><p className="font-black text-sm">{ANALYSIS_STEPS[analysisStep]}</p></div>
-            <div className="flex gap-1.5 mt-4">{ANALYSIS_STEPS.map((_, index) => <span key={index} className={`h-1.5 flex-1 rounded-full ${index <= analysisStep ? 'bg-coral' : 'bg-white/10'}`} />)}</div>
+          <section className="bg-ink-card rounded-3xl p-5" aria-busy="true">
+            <StagedProgress steps={ANALYSIS_STEPS} activeIndex={analysisStep} testId="analysis-progress" />
+            <button type="button" disabled className="mt-4 w-full bg-coral/40 text-cream/60 font-black py-2.5 rounded-2xl cursor-wait">جارٍ تحليل الفرص…</button>
           </section>
         )}
-        {analysisError && <p className="bg-red-500/10 text-red-300 rounded-2xl p-3 text-sm font-bold text-center">{analysisError}</p>}
+        {analysisError && (
+          <section className="bg-red-500/10 border border-red-400/20 text-red-200 rounded-3xl p-5 text-center" role="alert">
+            <p className="text-sm font-bold">{analysisError}</p>
+            <button type="button" onClick={runAnalysis} className="mt-4 bg-white/10 text-cream px-5 py-2.5 rounded-2xl text-sm font-black">إعادة المحاولة</button>
+          </section>
+        )}
 
         {opportunityResult && !best && <div className="bg-ink-card rounded-3xl p-6 text-center text-cream/60 font-bold">لا توجد فرصة مناسبة حاليًا.</div>}
 

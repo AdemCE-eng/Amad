@@ -1,8 +1,19 @@
-import React, { useState } from 'react';
-import { ChevronDown, Sparkles, Trophy, Users, TrendingUp } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { ChevronDown, RefreshCw, Sparkles, Trophy, Users, TrendingUp } from 'lucide-react';
 import { useAppData } from '../context/AppDataContext';
 import { api } from '../lib/api';
+import { runStagedRequest } from '../lib/stagedRequest';
 import RoleSwitch from '../components/ui/RoleSwitch';
+import StagedProgress from '../components/ui/StagedProgress';
+import CountUp from '../components/ui/CountUp';
+
+export const CONTRIBUTION_STAGES = [
+  'نحلل دخل والتزامات أفراد العائلة',
+  'نحسب القدرة الادخارية لكل فرد',
+  'نوزع المساهمات بشكل عادل',
+  'الخطة جاهزة',
+];
+export const CONTRIBUTION_MIN_MS = 3200;
 
 const PRIVACY_EXPLANATION =
   'تم احتساب المساهمة حسب القدرة الادخارية والالتزامات، مع الحفاظ على احتياطي الأمان.';
@@ -21,6 +32,16 @@ export default function FamilyGoalView() {
   } = useAppData();
   const [openDetails, setOpenDetails] = useState(false);
   const [rewardMsg, setRewardMsg] = useState(null);
+  const [visiblePlan, setVisiblePlan] = useState(contributionPlan);
+  const [planStage, setPlanStage] = useState(-1);
+  const [planError, setPlanError] = useState(null);
+  const planRunning = useRef(false);
+  const planRunId = useRef(0);
+
+  useEffect(() => () => { planRunId.current += 1; planRunning.current = false; }, []);
+  useEffect(() => {
+    if (!planRunning.current && planStage === -1 && !planError) setVisiblePlan(contributionPlan);
+  }, [contributionPlan, planError, planStage]);
 
   if (!family) {
     return <div className="bg-ink h-full grid place-items-center text-cream/60" dir="rtl">جارٍ تحميل العائلة…</div>;
@@ -50,7 +71,36 @@ export default function FamilyGoalView() {
   const memberList = Object.entries(members || {})
     .map(([id, member]) => ({ id, ...member }))
     .sort((a, b) => b.contributed - a.contributed);
-  const allocations = contributionPlan?.allocations || null;
+  const allocations = visiblePlan?.allocations || null;
+
+  const generateContributionPlan = async () => {
+    if (planRunning.current) return;
+    planRunning.current = true;
+    const currentRun = ++planRunId.current;
+    setVisiblePlan(null);
+    setPlanError(null);
+    setPlanStage(0);
+    try {
+      const response = await runStagedRequest({
+        request: () => api.generatePlan(),
+        stages: CONTRIBUTION_STAGES,
+        minimumMs: CONTRIBUTION_MIN_MS,
+        onStage: (index) => { if (planRunId.current === currentRun) setPlanStage(index); },
+      });
+      if (planRunId.current === currentRun) {
+        setVisiblePlan(response.contributionPlan);
+        setPlanStage(-1);
+      }
+    } catch {
+      if (planRunId.current === currentRun) {
+        setVisiblePlan(null);
+        setPlanStage(-1);
+        setPlanError('تعذر حساب خطة المساهمة. تحقق من الاتصال وحاول مرة أخرى.');
+      }
+    } finally {
+      if (planRunId.current === currentRun) planRunning.current = false;
+    }
+  };
 
   const rewardChild = async (memberId) => {
     setRewardMsg(null);
@@ -99,14 +149,22 @@ export default function FamilyGoalView() {
         <section>
           <div className="flex items-center justify-between mb-3 px-1">
             <div className="flex items-center gap-2"><Sparkles size={16} className="text-violet" /><h2 className="font-black">خطة المساهمة</h2></div>
-            {contributionPlan && <span className="text-xs text-violet font-black">{contributionPlan.monthlyRequired} ر.س شهريًا</span>}
+            {visiblePlan && <span className="text-xs text-violet font-black">{visiblePlan.monthlyRequired} ر.س شهريًا</span>}
           </div>
-          {!allocations ? (
+          {planStage >= 0 ? (
+            <div className="bg-violet/15 border border-violet/30 rounded-3xl p-5" aria-busy="true">
+              <StagedProgress steps={CONTRIBUTION_STAGES} activeIndex={planStage} testId="contribution-progress" />
+              <button type="button" disabled className="mt-4 w-full bg-violet/50 text-white/70 font-black px-5 py-2.5 rounded-2xl cursor-wait">جارٍ حساب الخطة…</button>
+            </div>
+          ) : planError ? (
+            <div className="bg-red-500/10 border border-red-400/20 rounded-3xl p-5 text-center" role="alert">
+              <p className="text-sm text-red-200 font-bold">{planError}</p>
+              <button type="button" onClick={generateContributionPlan} className="mt-4 bg-white/10 text-cream font-black px-5 py-2.5 rounded-2xl inline-flex items-center gap-2"><RefreshCw size={15} /> إعادة المحاولة</button>
+            </div>
+          ) : !allocations ? (
             <div className="bg-violet/15 border border-violet/30 rounded-3xl p-5 text-center">
               <p className="text-sm text-cream/70 leading-relaxed">ولّد توزيعًا عادلًا حسب القدرة الادخارية لكل فرد.</p>
-              <button disabled={isSubmitting} onClick={() => runAction(() => api.generatePlan())} className="mt-4 bg-violet text-white font-black px-5 py-2.5 rounded-2xl disabled:opacity-50">
-                {isSubmitting ? 'جارٍ التوليد…' : 'ولّد الخطة'}
-              </button>
+              <button type="button" onClick={generateContributionPlan} className="mt-4 bg-violet text-white font-black px-5 py-2.5 rounded-2xl">ولّد الخطة</button>
             </div>
           ) : (
             <div className="space-y-2">
@@ -122,7 +180,7 @@ export default function FamilyGoalView() {
                         <p className="font-black text-sm">{member.name}{isSelf && <span className="mr-2 text-[9px] text-coral">أنت</span>}</p>
                         <p className="text-[11px] text-cream/55 font-bold">ساهم حتى الآن بـ {member.contributed} ر.س</p>
                       </div>
-                      <span className="text-coral font-black text-sm">{allocation.amount} ر.س</span>
+                      <span className="text-coral font-black text-sm"><CountUp value={allocation.amount} decimals={0} duration={0.65} startFrom={0} /> ر.س</span>
                     </div>
                     {isSelf ? (
                       <div className="mt-2">
@@ -135,6 +193,7 @@ export default function FamilyGoalView() {
                   </article>
                 );
               })}
+              <button type="button" onClick={generateContributionPlan} className="w-full pt-3 text-xs text-cream/50 font-bold inline-flex items-center justify-center gap-2"><RefreshCw size={13} /> إعادة حساب الخطة</button>
             </div>
           )}
         </section>
