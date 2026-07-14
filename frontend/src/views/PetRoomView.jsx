@@ -8,7 +8,14 @@ import CoinPill from '../components/ui/CoinPill';
 import SaveRewardTag from '../components/ui/SaveRewardTag';
 import EmergencyWithdrawModal from '../components/ui/EmergencyWithdrawModal';
 import PetProgressionSections from '../components/pet/PetProgressionSections';
-import { STAGE_INFO, SAVE_PRESETS } from '../lib/catalog';
+import { STAGE_INFO, SAVE_PRESETS, SHOP_ITEMS } from '../lib/catalog';
+
+const PET_TABS = [
+  { id: 'status', label: 'الحالة' },
+  { id: 'progress', label: 'التحديات والإنجازات' },
+  { id: 'accessories', label: 'الإكسسوارات' },
+];
+const MOOD_LABEL = { radiant: 'مشرق', happy: 'سعيد', neutral: 'هادئ', tired: 'متعب', sick: 'يحتاج عناية' };
 
 // The hero screen — YOUR companion, singular and named. Full pupil tracking,
 // tap to squish, accessories on, evolution meter toward the goal. Dark ink.
@@ -17,6 +24,7 @@ export default function PetRoomView() {
     user, pet, game, emergencyShield,
     isSick, isHappy, goalProgress,
     handlePetInteraction, isSubmitting, runAction,
+    petActiveTab, setPetActiveTab,
   } = useAppData();
   const { emotion, poke } = useMascotEmotion(pet);
   const petName = user.petName || 'صقر';
@@ -33,7 +41,29 @@ export default function PetRoomView() {
         <CoinPill coins={game.nxp_balance} />
       </div>
 
-      <div className="flex-1 flex flex-col items-center justify-start p-6 overflow-y-auto pb-28 z-10">
+      <div className="px-4 pb-3 z-20">
+        <div className="grid grid-cols-3 gap-1 bg-white/5 border border-white/5 rounded-2xl p-1" role="tablist" aria-label="أقسام صقر">
+          {PET_TABS.map((tab) => (
+            <button
+              key={tab.id}
+              id={`pet-tab-${tab.id}`}
+              type="button"
+              role="tab"
+              aria-selected={petActiveTab === tab.id}
+              aria-controls={`pet-panel-${tab.id}`}
+              onClick={() => setPetActiveTab(tab.id)}
+              className={`min-h-11 rounded-xl px-1 text-[10px] leading-tight font-black transition-colors ${petActiveTab === tab.id ? 'bg-coral text-ink' : 'text-cream/55 hover:text-cream'}`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex-1 flex flex-col items-center justify-start px-5 pt-3 overflow-y-auto pb-28 z-10">
+
+        {petActiveTab === 'status' && (
+          <div id="pet-panel-status" role="tabpanel" aria-labelledby="pet-tab-status" className="w-full flex flex-col items-center" data-testid="pet-status-panel">
 
         {/* --- MAIN INTERACTIVE PET AREA --- */}
         <div className="relative w-64 h-64 mb-6 flex items-center justify-center mt-1">
@@ -72,6 +102,11 @@ export default function PetRoomView() {
           <p className="text-center text-cream leading-relaxed relative z-10 font-bold">
             "{pet.message}"
           </p>
+          <div className="grid grid-cols-3 gap-2 mt-4 pt-3 border-t border-white/5 text-center">
+            <div><span className="block text-[9px] text-cream/40 font-bold">المزاج</span><strong className="text-[11px]">{MOOD_LABEL[pet.mood] || pet.mood}</strong></div>
+            <div><span className="block text-[9px] text-cream/40 font-bold">الحماية</span><strong className="text-[11px]">{emergencyShield.usesRemaining} درع</strong></div>
+            <div><span className="block text-[9px] text-cream/40 font-bold">الإكسسوار</span><strong className="text-[11px]">{SHOP_ITEMS[game.equipped]?.name || 'بدون'}</strong></div>
+          </div>
         </div>
 
         {/* --- EVOLUTION METER — growth tied to the savings goal --- */}
@@ -131,7 +166,7 @@ export default function PetRoomView() {
           </div>
         </div>
 
-        <PetProgressionSections game={game} isSubmitting={isSubmitting} runAction={runAction} />
+        <PetProgressionSections section="status" game={game} isSubmitting={isSubmitting} runAction={runAction} />
 
         {/* Emergency Shield */}
         <button
@@ -143,6 +178,20 @@ export default function PetRoomView() {
           سحب طارئ ({emergencyShield.usesRemaining} متبقٍ)
         </button>
         <p className="text-[10px] text-cream/60 mt-3 text-center font-medium">يفعل الدرع مؤقتاً لحماية المرافق من التأثر النفسي عند سحب مبلغ للظروف القاهرة.</p>
+          </div>
+        )}
+
+        {petActiveTab === 'progress' && (
+          <div id="pet-panel-progress" role="tabpanel" aria-labelledby="pet-tab-progress" className="w-full" data-testid="pet-progress-panel">
+            <PetProgressionSections section="progress" game={game} isSubmitting={isSubmitting} runAction={runAction} />
+          </div>
+        )}
+
+        {petActiveTab === 'accessories' && (
+          <div id="pet-panel-accessories" role="tabpanel" aria-labelledby="pet-tab-accessories" className="w-full" data-testid="pet-accessories-panel">
+            <PetProgressionSections section="accessories" game={game} isSubmitting={isSubmitting} runAction={runAction} />
+          </div>
+        )}
       </div>
 
       <EmergencyWithdrawModal

@@ -21,6 +21,7 @@ export function AppDataProvider({ children }) {
   const [demoResetVersion, setDemoResetVersion] = useState(0);
 
   const [activeView, setActiveView] = useState('home');
+  const [petActiveTab, setPetActiveTab] = useState('status');
   const [opportunityResult, setOpportunityResult] = useState(null);
   const [activeRole, setActiveRoleState] = useState(() => {
     const stored = localStorage.getItem(ROLE_KEY);
@@ -113,6 +114,7 @@ export function AppDataProvider({ children }) {
       clearDemoBrowserState();
       setActiveRoleState(CANONICAL_DEMO_ROLE);
       setActiveView('home');
+      setPetActiveTab('status');
       setOpportunityResult(null);
       setIsPetted(false);
       setIsShaking(false);
@@ -137,6 +139,7 @@ export function AppDataProvider({ children }) {
     ...backend,
     restartDemo, restarting, demoResetVersion,
     activeView, setActiveView,
+    petActiveTab, setPetActiveTab,
     opportunityResult, setOpportunityResult,
     activeRole, setActiveRole,
     ...notificationState,
