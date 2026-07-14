@@ -6,6 +6,19 @@ Its virtual companion **صقر** reacts to financial habits in real time: saving
 companion's health and progression, while compassionate safeguards avoid punishing genuine emergencies.
 It is a demonstration experience, not a production banking application.
 
+## Product navigation
+
+The customer application uses five primary RTL destinations: **Home**, **Family**, **Saqr**,
+**Saving Opportunities**, and **Rewards**. Family owns shared goals, contribution planning, and
+parent-to-child rewards; personalized merchant analysis lives separately under Saving Opportunities.
+Home keeps banking services as quick actions, summarizes the family goal and best opportunity, and
+shows only the four latest transactions. The complete transaction history remains available through
+Home as a nested view.
+
+Customer screens use product-ready copy and do not repeat technical MOCK labels. The repository,
+model documentation, API documentation, and Cheat Controller retain the full prototype and
+MOCK/SYNTHETIC data disclosures.
+
 ## Architecture
 
 ```

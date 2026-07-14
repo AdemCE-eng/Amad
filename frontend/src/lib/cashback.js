@@ -25,7 +25,7 @@ export const CASHBACK_REWARDS = [
   },
 ];
 
-export const CASHBACK_SPONSOR_LABEL = 'مكافأة تجريبية · بتمويل حملات التجار';
+export const CASHBACK_SPONSOR_LABEL = 'مكافآت مرتبطة بالعروض المؤهلة';
 
 export function cashbackState(user, game) {
   if (!user) return { earned: [], locked: CASHBACK_REWARDS, total: 0 };

@@ -77,7 +77,7 @@ export default function PetProgressionSections({ game, isSubmitting, runAction }
         <div className="flex items-end justify-between gap-3 mb-3 px-1">
           <div>
             <h2 className="font-black text-cream">متجر إكسسوارات صقر</h2>
-            <p className="text-[10px] text-cream/50 font-bold mt-1">المملوك والمجهز محفوظان في حسابك التجريبي.</p>
+            <p className="text-[10px] text-cream/50 font-bold mt-1">المملوك والمجهز محفوظان في حسابك.</p>
           </div>
           <span className="text-[11px] font-black text-amber-300 whitespace-nowrap">{nxp_balance} NXP</span>
         </div>
