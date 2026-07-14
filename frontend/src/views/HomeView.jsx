@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
 import {
-  ArrowLeftRight, Bell, Car, ChevronLeft, Eye, EyeOff,
-  Receipt, Smartphone, Sparkles, TrendingUp, Users,
+  ArrowLeftRight, Bell, Car, ChevronLeft, Eye, EyeOff, Flame,
+  HeartPulse, Receipt, Smartphone, Sparkles, TrendingUp, Users,
 } from 'lucide-react';
 import { useAppData } from '../context/AppDataContext';
+import Mascot from '../components/mascot/Mascot';
+import { useMascotEmotion } from '../components/mascot/useMascotEmotion';
 import BudgetOverview from '../components/ui/BudgetOverview';
 import CountUp from '../components/ui/CountUp';
 import SavingsPlanSheet from '../components/ui/SavingsPlanSheet';
 import TransactionRow from '../components/ui/TransactionRow';
+import { STAGE_INFO } from '../lib/catalog';
 
 const QUICK_ACTIONS = [
   { label: 'دفع الفواتير', icon: Receipt },
@@ -18,10 +21,11 @@ const QUICK_ACTIONS = [
 
 export default function HomeView() {
   const {
-    user, game, transactions, family, opportunityResult,
+    user, pet, game, transactions, family, opportunityResult,
     isShaking, flashColor, setActiveView, unreadNotificationCount,
     budgets, budgetPeriod, projectedRollover, savingsAccountOpened,
   } = useAppData();
+  const { emotion } = useMascotEmotion(pet);
   const [showBalance, setShowBalance] = useState(true);
   const [planOpen, setPlanOpen] = useState(false);
   const accountOpen = savingsAccountOpened;
@@ -29,6 +33,12 @@ export default function HomeView() {
   const familyProgress = family?.goalAmount > 0 ? Math.min(100, Math.round((family.savedAmount / family.goalAmount) * 100)) : 0;
   const rashidContribution = family?.members?.rashid?.contributed ?? 0;
   const topOpportunity = opportunityResult?.recommendations?.[0] || null;
+  const saqrStage = STAGE_INFO[game.stage]?.name || `المرحلة ${game.stage + 1}`;
+  const saqrStatus = pet.health < 45
+    ? 'يحتاج إلى عناية مالية اليوم'
+    : game.streak.current > 0
+      ? `سلسلتك مستمرة منذ ${game.streak.current} أيام`
+      : 'مبسوط بالتزامك المالي اليوم';
 
   return (
     <div className={`bg-ink h-full flex flex-col font-sans text-cream transition-all ${isShaking ? 'animate-screen-shake' : ''}`} dir="rtl">
@@ -76,6 +86,35 @@ export default function HomeView() {
             <ChevronLeft size={18} className="text-cream/40" />
           </button>
         ) : <BudgetOverview budgets={budgets} budgetPeriod={budgetPeriod} projectedRollover={projectedRollover} />}
+
+        {accountOpen && (
+          <section className="bg-gradient-to-l from-coral/15 via-ink-card to-ink-card border border-coral/25 rounded-3xl p-4" data-testid="home-saqr-preview" aria-label="ملخص صقر">
+            <div className="flex items-center gap-4">
+              <div className="w-[92px] h-[92px] shrink-0 rounded-3xl bg-white/5 border border-white/5 grid place-items-center overflow-hidden" aria-hidden="true">
+                <Mascot emotion={emotion} stage={game.stage} equipped={game.equipped} size={84} track={false} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="text-[11px] text-coral font-black">رفيقك المالي</p>
+                    <h2 className="font-black text-lg leading-tight">{user.petName || 'صقر'} · {saqrStage}</h2>
+                  </div>
+                  <span className="text-[10px] bg-white/5 border border-white/10 rounded-full px-2.5 py-1 font-bold text-cream/60 whitespace-nowrap">
+                    {game.equipped ? 'إكسسوار مجهّز' : 'جاهز للنمو'}
+                  </span>
+                </div>
+                <p className="text-[11px] text-cream/55 mt-1.5">{saqrStatus}</p>
+                <div className="flex items-center gap-3 mt-2 text-[11px] font-black">
+                  <span className="flex items-center gap-1 text-emerald-400"><HeartPulse size={14} /> {pet.health}%</span>
+                  <span className="flex items-center gap-1 text-coin"><Flame size={14} /> {game.streak.current} أيام</span>
+                </div>
+              </div>
+            </div>
+            <button type="button" onClick={() => setActiveView('pet')} className="w-full mt-3 py-2.5 rounded-2xl bg-coral text-ink text-sm font-black flex items-center justify-center gap-1.5">
+              افتح صقر <ChevronLeft size={16} />
+            </button>
+          </section>
+        )}
 
         <button onClick={() => setActiveView('family')} className="w-full bg-ink-card rounded-3xl p-4 text-right" data-testid="home-family-preview">
           <div className="flex items-center justify-between"><span className="flex items-center gap-2 text-xs text-coral font-black"><Users size={16} /> هدف العائلة</span><ChevronLeft size={17} className="text-cream/40" /></div>

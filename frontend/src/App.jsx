@@ -43,7 +43,7 @@ function StatusBar() {
 // The operator/judge control panel is the standalone Cheat Controller served
 // by the backend at http://localhost:3000/ — no in-app PoC panel.
 function AppShell() {
-  const { loading, activeView, setActiveView, user, game, savingsAccountOpened, demoResetVersion } = useAppData();
+  const { loading, activeView, setActiveView, user, pet, game, savingsAccountOpened, demoResetVersion } = useAppData();
 
   if (loading) {
     return (
@@ -74,7 +74,7 @@ function AppShell() {
                 {activeView === 'transactions' && <TransactionsView />}
                 {activeView === 'notifications' && <NotificationsView setActiveView={setActiveView} />}
                 {!['notifications', 'transactions'].includes(activeView) && (
-                  <BottomNav activeView={activeView} setActiveView={setActiveView} petName={user?.petName} petLocked={!savingsAccountOpened} />
+                  <BottomNav activeView={activeView} setActiveView={setActiveView} petName={user?.petName} pet={pet} game={game} petLocked={!savingsAccountOpened} />
                 )}
                 <RewardNotice />
             </React.Fragment>
