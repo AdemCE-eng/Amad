@@ -23,7 +23,7 @@ test('family contribution calculation stages a fresh immediate backend request',
   assert.match(family, /إعادة حساب الخطة/);
 });
 
-test('opportunity analysis uses five stages and waits 6.5 seconds around the live request', async () => {
+test('opportunity analysis uses five stages and waits 7.5 seconds around the live request', async () => {
   const opportunities = await read('../src/views/OpportunitiesView.jsx');
 
   for (const stage of [
@@ -33,7 +33,7 @@ test('opportunity analysis uses five stages and waits 6.5 seconds around the liv
     'نقارن فرص التوفير بميزانيتك',
     'نرتب أفضل الفرص لك',
   ]) assert.match(opportunities, new RegExp(stage));
-  assert.match(opportunities, /ANALYSIS_MIN_MS = 6500/);
+  assert.match(opportunities, /ANALYSIS_MIN_MS = 7500/);
   assert.match(opportunities, /request: \(\) => api\.personalizedRecommendations\('rashid'\)/);
   assert.match(opportunities, /if \(running\.current\) return/);
   assert.match(opportunities, /setOpportunityResult\(null\)/);

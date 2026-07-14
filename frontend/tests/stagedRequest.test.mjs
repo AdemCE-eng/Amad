@@ -27,10 +27,10 @@ test('a slow request holds on the final visual stage until its response arrives'
   const pending = runStagedRequest({
     request: () => new Promise((resolve) => { resolveRequest = resolve; }),
     stages: ['one', 'two', 'three', 'four', 'five'],
-    minimumMs: 6500,
+    minimumMs: 7500,
     onStage: (index) => seen.push(index),
     sleep: async () => {},
-    now: () => 6500,
+    now: () => 7500,
   }).then((value) => { settled = true; return value; });
 
   for (let index = 0; index < 12; index += 1) await Promise.resolve();
@@ -40,13 +40,13 @@ test('a slow request holds on the final visual stage until its response arrives'
   assert.deepEqual(await pending, { ok: true });
 });
 
-test('five opportunity stages start at stage one and span the 6.5 second presentation', async () => {
+test('five opportunity stages start immediately and span the 7.5 second presentation', async () => {
   let clock = 0;
   const events = [];
   const result = await runStagedRequest({
     request: () => { events.push(`request:${clock}`); return { source: 'live' }; },
     stages: ['one', 'two', 'three', 'four', 'five'],
-    minimumMs: 6500,
+    minimumMs: 7500,
     onStage: (index) => events.push(`stage:${index}:${clock}`),
     sleep: async (milliseconds) => { clock += milliseconds; },
     now: () => clock,
@@ -55,13 +55,32 @@ test('five opportunity stages start at stage one and span the 6.5 second present
   assert.deepEqual(events, [
     'stage:0:0',
     'request:0',
-    'stage:1:1300',
-    'stage:2:2600',
-    'stage:3:3900',
-    'stage:4:5200',
+    'stage:1:1500',
+    'stage:2:3000',
+    'stage:3:4500',
+    'stage:4:6000',
   ]);
-  assert.equal(clock, 6500);
+  assert.equal(clock, 7500);
   assert.equal(result.source, 'live');
+});
+
+test('fallback response uses the same 7.5 second visual contract', async () => {
+  let clock = 0;
+  const events = [];
+  const result = await runStagedRequest({
+    request: () => { events.push(`request:${clock}`); return { source: 'deterministic-fallback' }; },
+    stages: ['one', 'two', 'three', 'four', 'five'],
+    minimumMs: 7500,
+    onStage: (index) => events.push(`stage:${index}:${clock}`),
+    sleep: async (milliseconds) => { clock += milliseconds; },
+    now: () => clock,
+  });
+
+  assert.equal(events[0], 'stage:0:0');
+  assert.equal(events[1], 'request:0');
+  assert.equal(events.at(-1), 'stage:4:6000');
+  assert.equal(clock, 7500);
+  assert.equal(result.source, 'deterministic-fallback');
 });
 
 test('request failure rejects without revealing a stale result', async () => {

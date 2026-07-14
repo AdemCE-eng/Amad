@@ -12,7 +12,7 @@ export const ANALYSIS_STEPS = [
   'نقارن فرص التوفير بميزانيتك',
   'نرتب أفضل الفرص لك',
 ];
-export const ANALYSIS_MIN_MS = 6500;
+export const ANALYSIS_MIN_MS = 7500;
 
 function actionLabel(action) {
   if (action === 'wait_for_offer') return 'انتظر العرض المتوقع';
