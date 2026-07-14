@@ -172,3 +172,15 @@ body {
   pointer-events: none;
   animation: reviveRing 0.9s ease-out forwards;
 }
+
+/* The evolution dialog crossfades instead of animating any mascot internals
+   when the operating system requests reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+  .evolution-dialog *,
+  .evolution-dialog *::before,
+  .evolution-dialog *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

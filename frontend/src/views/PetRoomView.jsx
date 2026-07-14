@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Check, CircleDot, HeartPulse, LockKeyhole, ShieldAlert, ShoppingBag, Trophy } from 'lucide-react';
+import { ArrowLeft, HeartPulse, ShieldAlert, ShoppingBag, Trophy } from 'lucide-react';
 import { useAppData } from '../context/AppDataContext';
 import { api } from '../lib/api';
 import Mascot from '../components/mascot/Mascot';
@@ -57,25 +57,25 @@ export default function PetRoomView() {
     } h-full flex flex-col font-sans text-cream transition-colors duration-500`} dir="rtl">
 
       {/* Pet is a primary BottomNav destination, so its header has no nested back control. */}
-      <header className="px-5 pt-4 pb-2 flex items-center justify-between gap-3 z-20" data-testid="pet-product-header">
-        <div className="min-w-0">
-          <h1 className="font-black text-cream text-xl leading-tight">صقر</h1>
-          <p className="text-[11px] text-cream/55 font-bold mt-0.5 truncate">
-            رفيقك المالي <span aria-hidden="true">·</span> مرحلة {evolution.currentStage.name}
-          </p>
+      <header className="h-12 px-5 flex items-center justify-between gap-3 z-20" data-testid="pet-product-header">
+        <div className="min-w-0 flex items-center gap-2">
+          <h1 className="font-black text-cream text-lg leading-none">صقر</h1>
+          <span className="text-[9px] font-black text-coral bg-coral/10 border border-coral/20 rounded-full px-2 py-1" data-testid="pet-header-stage">
+            {evolution.currentStage.name}
+          </span>
         </div>
         <div
-          className="shrink-0 inline-flex items-center gap-2 rounded-full bg-amber-400/10 border border-amber-300/25 px-3 py-1.5"
+          className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-amber-400/10 border border-amber-300/20 px-2.5 py-1"
           aria-label={`رصيد NXP: ${game.nxp_balance}`}
           data-testid="pet-nxp-balance"
         >
-          <span className="text-[10px] font-black tracking-wide text-amber-300">NXP</span>
-          <strong className="text-sm font-black text-cream tabular-nums">{game.nxp_balance}</strong>
+          <strong className="text-xs font-black text-cream tabular-nums">{game.nxp_balance}</strong>
+          <span className="text-[9px] font-black tracking-wide text-amber-300">NXP</span>
         </div>
       </header>
 
-      <div className="px-4 pb-2 z-20">
-        <div className="grid grid-cols-3 gap-1 bg-white/[0.04] border border-white/10 rounded-2xl p-1" role="tablist" aria-label="أقسام صقر">
+      <div className="px-4 pb-1 z-20">
+        <div className="h-9 grid grid-cols-3 gap-0.5 bg-white/[0.04] border border-white/10 rounded-xl p-0.5" role="tablist" aria-label="أقسام صقر">
           {PET_TABS.map((tab, index) => {
             const TabIcon = tab.icon;
             const selected = petActiveTab === tab.id;
@@ -90,9 +90,9 @@ export default function PetRoomView() {
               tabIndex={selected ? 0 : -1}
               onClick={() => setPetActiveTab(tab.id)}
               onKeyDown={(event) => handleTabKeyDown(event, index)}
-              className={`min-h-10 rounded-xl px-1 py-1 inline-flex items-center justify-center gap-1 text-[9px] leading-[1.05] font-black border transition-colors ${selected ? 'bg-coral/15 border-coral/45 text-coral' : 'border-transparent text-cream/55 hover:text-cream hover:bg-white/5'}`}
+              className={`h-8 rounded-[10px] px-1 inline-flex items-center justify-center gap-1 text-[8.5px] leading-none font-black border transition-colors ${selected ? 'bg-coral/10 border-coral/35 text-coral' : 'border-transparent text-cream/55 hover:text-cream hover:bg-white/5'}`}
             >
-              <TabIcon size={12} strokeWidth={2.5} className="shrink-0" aria-hidden="true" />
+              <TabIcon size={10} strokeWidth={2.5} className="shrink-0" aria-hidden="true" />
               <span>{tab.label}</span>
             </button>
             );
@@ -100,18 +100,18 @@ export default function PetRoomView() {
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col items-center justify-start px-5 pt-1 overflow-y-auto pb-28 z-10">
+      <div className="flex-1 flex flex-col items-center justify-start px-5 pt-0 overflow-y-auto pb-28 z-10">
 
         {petActiveTab === 'status' && (
           <div id="pet-panel-status" role="tabpanel" aria-labelledby="pet-tab-status" className="w-full flex flex-col items-center" data-testid="pet-status-panel">
 
         {/* --- MAIN INTERACTIVE PET AREA --- */}
-        <div className="relative w-64 h-64 mb-5 flex items-center justify-center">
+        <div className="relative w-60 h-60 mb-4 flex items-center justify-center" data-testid="pet-mascot-hero">
           {/* Background Glow */}
-          <div className={`absolute inset-6 rounded-full blur-2xl transition-all duration-1000 ${
-            isSick ? 'bg-red-500/30 animate-pulse' :
-            isHappy ? 'bg-yellow-400/30 animate-pulse' :
-            'bg-coral/20 animate-pulse'
+          <div className={`absolute inset-10 rounded-full blur-xl transition-all duration-500 ${
+            isSick ? 'bg-red-500/20' :
+            isHappy ? 'bg-yellow-400/16' :
+            'bg-coral/14'
           }`}></div>
 
           {/* The living mascot — tap to squish */}
@@ -120,15 +120,15 @@ export default function PetRoomView() {
               emotion={emotion}
               stage={game.stage}
               equipped={game.equipped}
-              size={250}
+              size={230}
               track
               onTap={() => { poke(); handlePetInteraction(); }}
             />
           </div>
 
           {/* Health Badge Overlay */}
-          <div className="absolute -bottom-2 bg-ink-soft px-4 py-2 rounded-full shadow-xl border border-white/10 flex items-center gap-2 z-20">
-            <HeartPulse size={20} className={isSick ? 'text-red-400 animate-pulse' : 'text-emerald-400'} />
+          <div className="absolute bottom-0 bg-ink-soft px-3.5 py-1.5 rounded-full shadow-xl border border-white/10 flex items-center gap-2 z-20" data-testid="pet-health-status">
+            <HeartPulse size={17} className={isSick ? 'text-red-400 motion-safe:animate-pulse' : 'text-emerald-400'} />
             <div className="w-20 bg-white/10 rounded-full h-2">
               <div className={`h-2 rounded-full transition-all duration-1000 ${isSick ? 'bg-red-400' : 'bg-emerald-400'}`} style={{ width: `${pet.health}%` }}></div>
             </div>
@@ -137,7 +137,7 @@ export default function PetRoomView() {
         </div>
 
         {/* GenAI Chat Bubble */}
-        <div className="bg-ink-card p-4 rounded-3xl w-full mb-5 relative">
+        <div className="bg-ink-card p-3.5 rounded-3xl w-full mb-4 relative" data-testid="pet-status-message">
           <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 w-6 h-6 bg-ink-card rotate-45"></div>
           <p className="text-center text-cream leading-relaxed relative z-10 font-bold">
             "{pet.message}"
@@ -150,73 +150,48 @@ export default function PetRoomView() {
         </div>
 
         {/* The authoritative stage and goal percentage come from shared app state. */}
-        <section className="w-full bg-ink-card rounded-3xl p-5 mb-6" data-testid="pet-evolution-card" aria-labelledby="pet-evolution-title">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <h2 id="pet-evolution-title" className="font-black text-cream text-base">نمو صقر</h2>
-              <p className="text-[10px] text-cream/45 font-bold mt-1">يتطور وفق مدخراتك الشخصية</p>
-            </div>
-            <span className="rounded-full bg-coral/15 border border-coral/25 text-coral px-3 py-1 text-xs font-black tabular-nums" data-testid="pet-evolution-progress">
-              {evolution.progress}%
-            </span>
+        <section className="w-full bg-ink-card rounded-3xl px-4 py-3.5 mb-5" data-testid="pet-evolution-card" aria-labelledby="pet-evolution-title">
+          <div className="flex items-center justify-between gap-3">
+            <h2 id="pet-evolution-title" className="font-black text-cream text-sm">نمو صقر</h2>
+            <span className="text-xs font-black text-coral tabular-nums" data-testid="pet-evolution-progress">{evolution.progress}%</span>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 mt-4">
-            <div className="rounded-2xl bg-white/5 border border-white/5 p-3" data-testid="pet-current-stage">
-              <p className="text-[9px] text-cream/40 font-bold">المرحلة الحالية</p>
-              <p className="font-black text-cream mt-1">{evolution.currentStage.name}</p>
-              <p className="text-[9px] text-cream/45 mt-1">{evolution.progress}% من هدف الادخار الشخصي</p>
+          <div className="flex items-center justify-between gap-3 mt-1.5">
+            <div className="inline-flex items-center gap-1.5 text-xs font-black">
+              <span className="text-cream" data-testid="pet-current-stage">{evolution.currentStage.name}</span>
+              {evolution.nextStage && <ArrowLeft size={13} className="text-cream/35" aria-hidden="true" />}
+              <span className="text-coral" data-testid="pet-next-stage">{evolution.nextStage?.name || 'اكتمل التطور'}</span>
             </div>
-            <div className="rounded-2xl bg-white/5 border border-white/5 p-3" data-testid="pet-next-stage">
-              <p className="text-[9px] text-cream/40 font-bold">المرحلة التالية</p>
-              <p className="font-black text-coral mt-1">{evolution.nextStage?.name || 'اكتمل التطور'}</p>
-              <p className="text-[9px] text-cream/45 mt-1">
-                {evolution.nextStage ? `تبدأ عند ${evolution.nextStage.at}%` : 'وصل صقر إلى مرحلته النهائية'}
-              </p>
-            </div>
+            <span className="text-[9px] text-cream/40 font-bold">من هدف الادخار الشخصي</span>
           </div>
 
-          <div className="relative h-24 mx-8 mt-5" dir="rtl" data-testid="pet-evolution-track" aria-label={`تقدم الادخار الشخصي ${evolution.progress}%`}>
-            <div className="absolute top-4 right-0 left-0 h-2 rounded-full bg-white/10 overflow-hidden">
+          <div className="h-1.5 rounded-full bg-white/10 overflow-hidden mt-2" dir="rtl" data-testid="pet-evolution-track" aria-label={`تقدم الادخار الشخصي ${evolution.progress}%`}>
+            <div
+              className="h-full rounded-full bg-gradient-to-l from-coral to-coin transition-[width] duration-700 motion-reduce:transition-none mr-0"
+              style={{ width: `${evolution.progress}%` }}
+              data-testid="pet-evolution-fill"
+            />
+          </div>
+
+          <p className="text-[10px] text-cream/65 font-bold leading-relaxed mt-2" data-testid="pet-next-milestone-explanation">
+            {evolution.nextStage
+              ? <>باقي <strong className="text-coral">{SAR_NUMBER.format(evolution.remainingAmount)} ر.س</strong> من مدخراتك الشخصية للوصول إلى مرحلة {evolution.nextStage.name}.</>
+              : 'وصل صقر إلى مرحلته النهائية؛ واصل الادخار الشخصي لإكمال هدفك.'}
+          </p>
+
+          <div className="grid grid-cols-3 gap-2 mt-2.5 pt-2 border-t border-white/5" dir="rtl" data-testid="pet-evolution-milestones">
+            {evolution.milestones.map((milestone) => (
               <div
-                className="absolute right-0 top-0 h-full rounded-full bg-gradient-to-l from-coral to-coin transition-[width] duration-1000 motion-reduce:transition-none"
-                style={{ width: `${evolution.progress}%` }}
-                data-testid="pet-evolution-fill"
-              />
-            </div>
-            {evolution.milestones.map((milestone) => {
-              const completed = milestone.state === 'completed';
-              const current = milestone.state === 'current';
-              return (
-                <div
-                  key={milestone.name}
-                  className="absolute top-0 w-16 text-center"
-                  style={{ right: `${milestone.at}%`, transform: 'translateX(50%)' }}
-                  data-stage-state={milestone.state}
-                  data-threshold={milestone.at}
-                >
-                  <span className={`mx-auto w-10 h-10 rounded-full border-2 grid place-items-center shadow-lg ${completed ? 'bg-emerald-400 border-emerald-300 text-ink' : current ? 'bg-coral border-coral text-ink ring-4 ring-coral/15' : 'bg-ink-soft border-white/15 text-cream/35'}`}>
-                    {completed && <Check size={17} strokeWidth={3} aria-label="مكتملة" />}
-                    {current && <CircleDot size={17} strokeWidth={3} aria-label="المرحلة الحالية" />}
-                    {!completed && !current && <LockKeyhole size={14} aria-label="مرحلة مستقبلية" />}
-                  </span>
-                  <span className={`block text-[10px] font-black mt-1 ${current ? 'text-coral' : completed ? 'text-emerald-300' : 'text-cream/40'}`}>{milestone.name}</span>
-                  <span className="block text-[9px] text-cream/40 font-bold">{milestone.at}%</span>
-                  {current && <span className="block text-[8px] text-coral font-black">أنت هنا</span>}
-                </div>
-              );
-            })}
-          </div>
-
-          <div className="rounded-2xl bg-coral/10 border border-coral/20 px-3 py-2.5 mt-2" data-testid="pet-next-milestone-explanation">
-            {evolution.nextStage ? (
-              <p className="text-[11px] text-cream/75 font-bold leading-relaxed">
-                أضف <strong className="text-coral">{SAR_NUMBER.format(evolution.remainingAmount)} ر.س</strong> من مدخراتك الشخصية للوصول إلى مرحلة {evolution.nextStage.name}.
-                <span className="block text-[9px] text-cream/45 mt-0.5">باقي {evolution.remainingPercentage}% من هدفك الشخصي حتى هذا المستوى.</span>
-              </p>
-            ) : (
-              <p className="text-[11px] text-cream/75 font-bold leading-relaxed">وصل صقر إلى مرحلته النهائية؛ واصل الادخار الشخصي لإكمال هدفك.</p>
-            )}
+                key={milestone.name}
+                className={`flex items-center justify-center gap-1.5 min-w-0 ${milestone.state === 'current' ? 'text-coral' : milestone.state === 'completed' ? 'text-emerald-300' : 'text-cream/35'}`}
+                data-stage-state={milestone.state}
+                data-threshold={milestone.at}
+              >
+                <span className={`w-2 h-2 rounded-full shrink-0 ${milestone.state === 'current' ? 'bg-coral ring-2 ring-coral/20' : milestone.state === 'completed' ? 'bg-emerald-400' : 'bg-white/15'}`} aria-hidden="true" />
+                <span className="text-[9px] font-black truncate">{milestone.name}</span>
+                <span className="text-[8px] font-bold opacity-70">{milestone.at}%</span>
+              </div>
+            ))}
           </div>
         </section>
 

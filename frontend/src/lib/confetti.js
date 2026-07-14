@@ -19,17 +19,3 @@ export function goalRain() {
     if (Date.now() < end) requestAnimationFrame(frame);
   })();
 }
-
-// Evolution: golden star burst from the mascot's chest height.
-export function evolutionStars() {
-  confetti({
-    particleCount: 60,
-    spread: 100,
-    startVelocity: 32,
-    shapes: ['star'],
-    scalar: 1.1,
-    origin: { y: 0.45 },
-    colors: ['#FFD54F', '#F5B841', '#FFF3C4'],
-  });
-  setTimeout(() => confetti({ particleCount: 40, spread: 140, shapes: ['star'], scalar: 0.7, origin: { y: 0.45 }, colors: ['#FFD54F'] }), 250);
-}
