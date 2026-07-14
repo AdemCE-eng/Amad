@@ -1,0 +1,133 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title description">
+  <title id="title">Namo system architecture</title>
+  <desc id="description">Three product innovations flow into the Namo customer experience, then through Namo Core Services to the Financial Platform and AI Recommendation Engine. The recommendation returns through Core Services to the customer.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f8fbff"/>
+      <stop offset="1" stop-color="#fffaf7"/>
+    </linearGradient>
+    <linearGradient id="app" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#143d64"/>
+      <stop offset="1" stop-color="#0a2440"/>
+    </linearGradient>
+    <linearGradient id="core" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#f3f8fd"/>
+    </linearGradient>
+    <linearGradient id="ai" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff7f2"/>
+      <stop offset="1" stop-color="#ffe9df"/>
+    </linearGradient>
+    <linearGradient id="finance" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f7fdfa"/>
+      <stop offset="1" stop-color="#eaf8f3"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-25%" width="140%" height="160%">
+      <feDropShadow dx="0" dy="12" stdDeviation="15" flood-color="#17324d" flood-opacity="0.10"/>
+    </filter>
+    <filter id="hero-shadow" x="-20%" y="-25%" width="140%" height="165%">
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#0a2440" flood-opacity="0.18"/>
+    </filter>
+    <marker id="arrow-blue" markerWidth="10" markerHeight="10" refX="8.5" refY="5" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M1 1l8 4-8 4z" fill="#2b70b9"/>
+    </marker>
+    <marker id="arrow-orange" markerWidth="10" markerHeight="10" refX="8.5" refY="5" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+      <path d="M1 1l8 4-8 4z" fill="#e96f51"/>
+    </marker>
+    <marker id="arrow-green" markerWidth="10" markerHeight="10" refX="8.5" refY="5" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+      <path d="M1 1l8 4-8 4z" fill="#23977a"/>
+    </marker>
+    <style>
+      text { font-family: Inter, "Segoe UI", Arial, sans-serif; fill: #102a43; }
+      .title { font-size: 44px; font-weight: 760; letter-spacing: -1px; }
+      .subtitle { font-size: 18px; font-weight: 450; fill: #486581; }
+      .eyebrow { font-size: 12px; font-weight: 800; letter-spacing: 1.5px; }
+      .pillar-title { font-size: 22px; font-weight: 740; }
+      .pillar-copy { font-size: 15px; font-weight: 500; fill: #486581; }
+      .node-title { font-size: 25px; font-weight: 760; }
+      .node-copy { font-size: 16px; font-weight: 500; fill: #486581; }
+      .flow-label { font-size: 13px; font-weight: 750; }
+      .on-dark-title { fill: #ffffff; }
+      .on-dark-copy { fill: #d9e9f7; }
+      .on-dark-eyebrow { fill: #a7d1f4; }
+      .connector { fill: none; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="900" rx="34" fill="url(#background)"/>
+  <rect x="1" y="1" width="1598" height="898" rx="33" fill="none" stroke="#d9e7f3" stroke-width="2"/>
+
+  <text class="title" x="800" y="58" text-anchor="middle">Namo System Architecture</text>
+  <text class="subtitle" x="800" y="89" text-anchor="middle">Three innovations working together to guide better financial decisions</text>
+  <text class="eyebrow" x="800" y="124" text-anchor="middle" fill="#627d98">THREE PRODUCT INNOVATIONS</text>
+
+  <g filter="url(#shadow)">
+    <rect x="150" y="142" width="400" height="110" rx="24" fill="#ffffff" stroke="#b9d8f6" stroke-width="2"/>
+    <circle cx="202" cy="184" r="24" fill="#e8f3ff"/>
+    <path d="M192 188l8 8 15-22" fill="none" stroke="#2474c6" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <text class="pillar-title" x="240" y="181">1. Gamification</text>
+    <text class="pillar-copy" x="240" y="211">Saqr, rewards, progress and habits</text>
+
+    <rect x="600" y="142" width="400" height="110" rx="24" fill="#ffffff" stroke="#f2baa7" stroke-width="2"/>
+    <circle cx="652" cy="184" r="24" fill="#fff0e9"/>
+    <path d="M641 193l9-12 8 7 12-17" fill="none" stroke="#e96f51" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+    <text class="pillar-title" x="690" y="181">2. AI Prediction</text>
+    <text class="pillar-copy" x="690" y="211">Guidance before a financial decision</text>
+
+    <rect x="1050" y="142" width="400" height="110" rx="24" fill="#ffffff" stroke="#b4e0d2" stroke-width="2"/>
+    <circle cx="1102" cy="184" r="24" fill="#eaf9f3"/>
+    <circle cx="1095" cy="180" r="5.5" fill="#23977a"/>
+    <circle cx="1108" cy="178" r="5.5" fill="#23977a"/>
+    <path d="M1085 195c3-8 12-10 18-5 6-6 15-3 17 5" fill="none" stroke="#23977a" stroke-width="3.5" stroke-linecap="round"/>
+    <text class="pillar-title" x="1140" y="181">3. Family Saving</text>
+    <text class="pillar-copy" x="1140" y="211">Shared goals, plans and encouragement</text>
+  </g>
+
+  <path class="connector" d="M520 252L650 304" stroke="#75aee0" marker-end="url(#arrow-blue)"/>
+  <path class="connector" d="M800 252V304" stroke="#e89177" marker-end="url(#arrow-orange)"/>
+  <path class="connector" d="M1080 252L950 304" stroke="#6fc0a7" marker-end="url(#arrow-green)"/>
+
+  <g filter="url(#hero-shadow)">
+    <rect x="500" y="304" width="600" height="132" rx="30" fill="url(#app)"/>
+    <text class="eyebrow on-dark-eyebrow" x="800" y="338" text-anchor="middle">CUSTOMER EXPERIENCE</text>
+    <text class="node-title on-dark-title" x="800" y="378" text-anchor="middle">Namo Customer Application</text>
+    <text class="node-copy on-dark-copy" x="800" y="408" text-anchor="middle">One experience for saving, guidance, rewards and family goals</text>
+  </g>
+
+  <path class="connector" d="M765 436V500" stroke="#2b70b9" marker-end="url(#arrow-blue)"/>
+  <text class="flow-label" x="748" y="473" text-anchor="end" fill="#2467a9">Customer Actions</text>
+  <path class="connector" d="M845 500V436" stroke="#e96f51" marker-end="url(#arrow-orange)"/>
+  <text class="flow-label" x="862" y="473" fill="#c9583e">Recommendation</text>
+
+  <g filter="url(#shadow)">
+    <rect x="540" y="504" width="520" height="146" rx="28" fill="url(#core)" stroke="#9fc8ed" stroke-width="2.5"/>
+    <rect x="570" y="530" width="128" height="28" rx="14" fill="#e8f3ff"/>
+    <text class="eyebrow" x="634" y="549" text-anchor="middle" fill="#2467a9">BUSINESS LOGIC</text>
+    <text class="node-title" x="580" y="593">Namo Core Services</text>
+    <text class="node-copy" x="580" y="623">Financial logic, rewards, family journeys and coordination</text>
+  </g>
+
+  <path d="M1060 552H1100" fill="none" stroke="#9aabba" stroke-width="2" stroke-linecap="round" stroke-dasharray="5 6"/>
+  <rect x="1100" y="526" width="340" height="62" rx="18" fill="#f6f8fa" stroke="#aebdcc" stroke-width="1.5" stroke-dasharray="5 5"/>
+  <text x="1124" y="551" font-size="14" font-weight="750" fill="#486581">Reliable fallback</text>
+  <text x="1124" y="574" font-size="13" font-weight="500" fill="#627d98">Keeps the customer journey available</text>
+
+  <path class="connector" d="M700 650V666Q700 682 684 682H436Q420 682 420 698V722" stroke="#23977a" marker-start="url(#arrow-green)" marker-end="url(#arrow-green)"/>
+  <text class="flow-label" x="560" y="670" text-anchor="middle" fill="#187c63">Financial Data Sync</text>
+  <path class="connector" d="M900 650V666Q900 682 916 682H1164Q1180 682 1180 698V722" stroke="#e96f51" marker-start="url(#arrow-orange)" marker-end="url(#arrow-orange)"/>
+  <text class="flow-label" x="1040" y="670" text-anchor="middle" fill="#c9583e">Prediction Request &amp; Result</text>
+
+  <g filter="url(#shadow)">
+    <rect x="170" y="722" width="500" height="138" rx="28" fill="url(#finance)" stroke="#9ed7c5" stroke-width="2"/>
+    <rect x="202" y="748" width="176" height="28" rx="14" fill="#dcf4ec"/>
+    <text class="eyebrow" x="290" y="767" text-anchor="middle" fill="#198365">FINANCIAL FOUNDATION</text>
+    <text class="node-title" x="202" y="811">Financial Platform</text>
+    <text class="node-copy" x="202" y="840">Balances, savings, rewards and family progress</text>
+
+    <rect x="930" y="722" width="500" height="138" rx="28" fill="url(#ai)" stroke="#f0a98f" stroke-width="2"/>
+    <rect x="962" y="748" width="188" height="28" rx="14" fill="#ffffff"/>
+    <text class="eyebrow" x="1056" y="767" text-anchor="middle" fill="#d95f43">PREDICTIVE INTELLIGENCE</text>
+    <text class="node-title" x="962" y="811">AI Recommendation Engine</text>
+    <text class="node-copy" x="962" y="840">Predicts saving opportunities and recommends the best action</text>
+  </g>
+</svg>
