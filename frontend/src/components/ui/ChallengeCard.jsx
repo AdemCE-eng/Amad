@@ -1,7 +1,7 @@
 import React from 'react';
 
 // Weekly challenge card, dark-ink styling. compact = the Home strip;
-// full = Rewards version.
+// full = the companion progression view.
 export default function ChallengeCard({ challenge, compact = false }) {
   if (!challenge) return null;
   const done = challenge.status === 'done';

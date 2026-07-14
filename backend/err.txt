@@ -1,0 +1,8 @@
+/sessions/affectionate-magical-wright/mnt/Amad/backend/src/index.js:46
+
+
+
+SyntaxError: Unexpected end of input
+    at checkSyntax (node:internal/main/check_syntax:74:5)
+
+Node.js v22.22.3

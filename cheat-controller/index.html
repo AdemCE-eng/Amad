@@ -45,12 +45,30 @@
     .coffee   { background: var(--alinma); }
     .big      { background: var(--amber); }
     .emergency{ background: #2f7fd6; }
+    .time     { background: var(--alinma-dark); }
+    .timewarp { grid-column: 1 / -1; }
     .reset    { background: var(--red); grid-column: 1 / -1; padding: 18px 16px; }
     .persona   { background: #5a6acf; }
 
     /* Section label — same light-theme heading treatment as the page title,
        just smaller, so groups of controls read as one consistent page. */
     .sectionTitle { color: var(--alinma-dark); font-size: 1.05rem; font-weight: 800; margin: 4px 0 12px; }
+    .engineStatus {
+      margin-top: 20px; background: var(--card); border-radius: 16px;
+      padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,.06);
+      border: 1px solid #ebe7f2;
+    }
+    .engineHead { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+    .engineTitle { display: flex; align-items: center; gap: 8px; font-weight: 800; color: var(--alinma-dark); }
+    .engineDot { width: 10px; height: 10px; border-radius: 50%; background: #aaa; box-shadow: 0 0 0 4px #eee; }
+    .engineDot.online { background: var(--green); box-shadow: 0 0 0 4px rgba(31,170,89,.13); }
+    .engineDot.fallback { background: var(--amber); box-shadow: 0 0 0 4px rgba(224,165,0,.14); }
+    .statusRefresh { flex: none; padding: 7px 11px; border-radius: 9px; background: #eee8f7; color: var(--alinma-dark); font-size: .76rem; box-shadow: none; }
+    .engineGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .engineMetric { background: #f8f7fb; border-radius: 11px; padding: 9px 10px; min-width: 0; }
+    .engineMetric span { display: block; color: #777; font-size: .7rem; margin-bottom: 3px; }
+    .engineMetric b { display: block; font-size: .82rem; overflow-wrap: anywhere; direction: ltr; text-align: right; }
+    .engineReason { display: none; margin-top: 9px; padding: 8px 10px; border-radius: 10px; background: #fff7df; color: #765600; font-size: .78rem; font-weight: 700; }
     .status {
       margin-top: 20px; background: var(--card); border-radius: 16px;
       padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,.06);
@@ -124,12 +142,45 @@
         <input class="amt" type="number" id="amt-big" value="2500" min="0" step="100">
         <button class="big" onclick="callAmt('big', '/api/simulate/purchase', 'amt-big')">🛍️ شراء كبير</button>
       </div>
+      <div style="grid-column:1/-1; font-weight:700; color:var(--alinma-dark); margin:10px 0 -2px;">🧾 مشتريات حسب الفئة (تتبّع الميزانية والتدوير)</div>
+      <div class="action">
+        <input class="amt" type="number" id="amt-cat-coffee" value="12" min="0" step="1">
+        <button class="coffee" onclick="callCategory('coffee','قهوة يومية','amt-cat-coffee')">☕ قهوة يومية</button>
+      </div>
+      <div class="action">
+        <input class="amt" type="number" id="amt-cat-gas" value="25" min="0" step="1">
+        <button class="coffee" onclick="callCategory('gas','وقود','amt-cat-gas')">⛽ وقود</button>
+      </div>
+      <div class="action">
+        <input class="amt" type="number" id="amt-cat-groceries" value="150" min="0" step="1">
+        <button class="coffee" onclick="callCategory('groceries','بقالة','amt-cat-groceries')">🛒 بقالة</button>
+      </div>
+      <div class="action">
+        <input class="amt" type="number" id="amt-cat-dining" value="90" min="0" step="1">
+        <button class="coffee" onclick="callCategory('dining','مطعم','amt-cat-dining')">🍽️ مطاعم</button>
+      </div>
+      <div class="action">
+        <input class="amt" type="number" id="amt-cat-entertainment" value="50" min="0" step="1">
+        <button class="coffee" onclick="callCategory('entertainment','ترفيه','amt-cat-entertainment')">🎬 ترفيه</button>
+      </div>
+      <div class="action">
+        <input class="amt" type="number" id="amt-cat-subscriptions" value="40" min="0" step="1">
+        <button class="coffee" onclick="callCategory('subscriptions','اشتراك','amt-cat-subscriptions')">📱 اشتراكات</button>
+      </div>
       <div class="action">
         <input class="amt" type="number" id="amt-emergency" value="1500" min="0" step="100">
         <button class="emergency" onclick="callAmt('emergency', '/api/simulate/emergency', 'amt-emergency')">🛡️ درع الطوارئ</button>
       </div>
+      <!-- Time machine: advance the demo clock. Each jump settles the budgets
+           whose period closes (daily / weekly / monthly) into savings. -->
+      <div class="action timewarp">
+        <button class="time" onclick="call('/api/demo/advance-day', {})">🌅 يوم</button>
+        <button class="time" onclick="call('/api/demo/advance-week', {})">📆 أسبوع</button>
+        <button class="time" onclick="call('/api/demo/advance-month', {})">🗓️ شهر</button>
+      </div>
       <div class="action">
-        <button class="save" style="grid-column:1/-1" onclick="call('/api/demo/advance-day', {})">🌅 اليوم التالي (تقدّم السلسلة)</button>
+        <input class="amt" type="number" id="planIncome" value="8000" min="0" step="500" title="الدخل الشهري">
+        <button class="save" onclick="applyPlan()">💡 خطة ادخار حسب الدخل</button>
       </div>
       <div class="action">
         <button class="salary" style="grid-column:1/-1" onclick="call('/api/demo/complete-challenge', {})">✅ إنجاز تحدي الأسبوع</button>
@@ -147,6 +198,23 @@
       <button class="reset" onclick="call('/api/reset', {})">🔄 إعادة تعيين العرض (Panic Reset)</button>
     </div>
 
+    <section class="engineStatus" aria-live="polite" aria-labelledby="engineTitle">
+      <div class="engineHead">
+        <div class="engineTitle" id="engineTitle">
+          <span class="engineDot" id="mlStatusDot"></span>
+          <span>Recommendation Engine</span>
+        </div>
+        <button class="statusRefresh" type="button" onclick="refreshMlStatus()">تحديث الحالة</button>
+      </div>
+      <div class="engineGrid">
+        <div class="engineMetric"><span>ML Service</span><b id="mlServiceStatus">Checking…</b></div>
+        <div class="engineMetric"><span>Last response</span><b id="mlLastResponse">—</b></div>
+        <div class="engineMetric"><span>Offer model</span><b id="mlOfferModel">—</b></div>
+        <div class="engineMetric"><span>Purchase model</span><b id="mlPurchaseModel">—</b></div>
+      </div>
+      <div class="engineReason" id="mlFallbackReason"></div>
+    </section>
+
     <div class="status">
       <div style="text-align:center">
         <div class="emoji" id="emoji">🐣</div>
@@ -162,6 +230,8 @@
       <div class="row"><span>◆ Akthr Points</span><b id="akthr">—</b></div>
       <div class="row"><span>🐣 المرحلة</span><b id="stage">—</b></div>
       <div class="row"><span>📅 اليوم</span><b id="day">—</b></div>
+      <div class="row"><span>💰 حساب التوفير</span><b id="savings">—</b></div>
+      <div class="row"><span>♻️ إجمالي التدوير للتوفير</span><b id="rollover">—</b></div>
       <div class="bubble" id="bubble">…</div>
       <div style="text-align:center"><span class="badge" id="aiBadge">—</span></div>
       <div class="errBanner" id="errBanner"></div>
@@ -179,6 +249,46 @@
       ? 'http://localhost:3000'
       : '';
 
+    function shortModelName(name, expected) {
+      if (typeof name !== 'string') return expected;
+      if (name.includes('CatBoost')) return 'CatBoost';
+      if (name.includes('HistGradientBoosting')) return 'HistGradientBoosting';
+      return name.replace(/Classifier$/, '') || expected;
+    }
+
+    function renderMlStatus(data = {}) {
+      const online = data.state === 'online' && data.source === 'ml-service';
+      const dot = document.getElementById('mlStatusDot');
+      dot.className = `engineDot ${online ? 'online' : 'fallback'}`;
+      document.getElementById('mlServiceStatus').textContent = online ? 'Online' : 'Fallback active';
+      document.getElementById('mlLastResponse').textContent = data.source || 'unavailable';
+      document.getElementById('mlOfferModel').textContent = online
+        ? shortModelName(data.models?.offer?.name, 'CatBoost')
+        : '—';
+      document.getElementById('mlPurchaseModel').textContent = online
+        ? shortModelName(data.models?.purchase?.name, 'HistGradientBoosting')
+        : '—';
+
+      const reason = document.getElementById('mlFallbackReason');
+      if (online) {
+        reason.style.display = 'none';
+        reason.textContent = '';
+      } else {
+        reason.style.display = 'block';
+        reason.textContent = `Reason: ${data.fallbackReason || 'ml_unavailable'}`;
+      }
+    }
+
+    async function refreshMlStatus() {
+      try {
+        const response = await fetch(API_BASE + '/api/ml/status?userId=rashid', { headers: { Accept: 'application/json' } });
+        if (!response.ok) throw new Error('status_unavailable');
+        renderMlStatus(await response.json());
+      } catch {
+        renderMlStatus({ state: 'fallback', source: 'unavailable', fallbackReason: 'backend_unavailable' });
+      }
+    }
+
     // Each action button reads its own amount input so demo operators (or
     // judges) can drive custom scenarios instead of only fixed values.
     function buildBody(kind, amount) {
@@ -195,6 +305,15 @@
       const raw = Number(document.getElementById(inputId).value);
       const amount = Number.isFinite(raw) ? Math.max(0, Math.round(raw)) : 0;
       call(path, buildBody(kind, amount));
+    }
+
+    // Per-category purchase: hits the same purchase endpoint but with the exact
+    // budget category key, so trackPurchase folds it into that category's
+    // current-period spend (and the leftover rolls into savings on settlement).
+    function callCategory(category, label, inputId) {
+      const raw = Number(document.getElementById(inputId).value);
+      const amount = Number.isFinite(raw) ? Math.max(0, Math.round(raw)) : 0;
+      call('/api/simulate/purchase', { amount, category, label });
     }
 
     // Salary is the one action with a second input: the % of the deposit
@@ -296,6 +415,15 @@
       }
     }
 
+    // Apply a savings plan from a monthly income: opens the savings account
+    // and installs category budgets, then the state re-reads and the panel
+    // updates. The app's Firebase listener reflects it live too.
+    async function applyPlan() {
+      const raw = Number(document.getElementById('planIncome').value);
+      const monthlyIncome = Number.isFinite(raw) ? Math.max(1, Math.round(raw)) : 0;
+      await call('/api/plan/apply', { monthlyIncome });
+    }
+
     function render(data) {
       document.getElementById('raw').textContent = JSON.stringify(data, null, 2);
 
@@ -366,6 +494,10 @@
         document.getElementById('goalInput').value = user.goalAmount;
         document.getElementById('income').textContent =
           user.income ? `${user.income} ر.س (${user.name})` : '—';
+        const sv = document.getElementById('savings');
+        if (sv) sv.textContent = Math.round(user.savedAmount) + ' ر.س';
+        const rl = document.getElementById('rollover');
+        if (rl) rl.textContent = Math.round(user.rolloverTotal || 0) + ' ر.س';
       }
       if (shield) document.getElementById('shield').textContent = shield.usesRemaining;
     }
@@ -374,6 +506,7 @@
 
     // Load initial state on open.
     fetch(API_BASE + '/api/state').then(r => r.json()).then(render).catch(() => {});
+    refreshMlStatus();
   </script>
 </body>
 </html>

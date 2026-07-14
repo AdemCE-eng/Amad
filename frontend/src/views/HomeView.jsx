@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect} from 'react';
 import {
   Bell, Sun, Edit3, Eye, EyeOff, ShoppingCart, HeartPulse, ArrowLeftRight,
-  Wallet, PiggyBank, ShieldAlert, Receipt, Smartphone, Car, Zap, ChevronLeft, Users,
+  Wallet, PiggyBank, ShieldAlert, Receipt, Smartphone, Car, Zap, ChevronLeft,
+  Users, Sparkles,
 } from 'lucide-react';
 import { useAppData } from '../context/AppDataContext';
 import { api } from '../lib/api';
@@ -10,8 +11,11 @@ import { useMascotEmotion } from '../components/mascot/useMascotEmotion';
 import StreakFlame from '../components/ui/StreakFlame';
 import ChallengeCard from '../components/ui/ChallengeCard';
 import CountUp from '../components/ui/CountUp';
+import BudgetOverview from '../components/ui/BudgetOverview';
+import SavingsPlanSheet from '../components/ui/SavingsPlanSheet';
 import SaveRewardTag from '../components/ui/SaveRewardTag';
 import { SAVE_PRESETS } from '../lib/catalog';
+import { time } from 'motion/react';
 
 const TX_LABELS = {
   purchase: { icon: ShoppingCart, sign: '-' },
@@ -39,11 +43,13 @@ export default function HomeView() {
     isSick, isTired, goalProgress,
     isShaking, flashColor, setActiveView,
     isSubmitting, runAction,
+    budgets, budgetPeriod, projectedRollover, savingsAccountOpened,
   } = useAppData();
   const { emotion } = useMascotEmotion(pet);
   const petName = user.petName || 'صقر';
   const [showBalance, setShowBalance] = useState(true);
-
+  const [planOpen, setPlanOpen] = useState(false);
+  
   const promptSave = () => {
     const amountStr = window.prompt('كم تبغى توفر؟ (ر.س)', String(SAVE_PRESETS[1]));
     if (!amountStr) return;
@@ -51,6 +57,27 @@ export default function HomeView() {
     if (!amt || amt <= 0) return;
     runAction(() => api.save(amt));
   };
+
+  const [notifications, setNotifications] = useState([]);
+  useEffect(() => {
+      const interval = setInterval(() => {
+          async function loadNotifications() {
+          try {
+            const response = await api.getNotifications();
+            setNotifications(response.notifications ?? []);
+          } catch (error) {
+            console.error("Failed to load notifications:", error);
+          }
+        }
+        loadNotifications();
+      }, 2000); // Check every 2 seconds
+
+      return () => clearInterval(interval);
+  }, []);
+  
+  // The savings account is the gate: the pet + budget only appear once it's
+  // activated (the user applies a plan). Before that, Home shows the CTA only.
+  const accountOpen = savingsAccountOpened;
 
   return (
     <div className={`bg-ink h-full flex flex-col font-sans text-cream transition-all duration-300 ${isShaking ? 'animate-screen-shake' : ''}`} dir="rtl">
@@ -60,23 +87,27 @@ export default function HomeView() {
       <div className="px-5 pt-5 pb-2 flex justify-between items-center z-10">
         <div className="flex items-center gap-4 text-cream/90">
           <span className="border border-white/15 rounded-xl p-1.5"><Sun size={18} strokeWidth={1.8} /></span>
-          <Edit3 size={20} strokeWidth={1.8} />
+          <button onClick={() => api.addNotification({title: "WOOHOOOO", message: "YOOO", type: "No"})}>
+            <Edit3 size={20} strokeWidth={1.8} />
+          </button>
           <div className="relative">
-            <button onClick={() => setActiveView('notifications')} className="text-cream/60">
+            <button onClick={() => setActiveView('notifications')} className="text-cream/60 translate-y-1">
               <Bell size={20} strokeWidth={1.8} />
             </button>
-            <span className="absolute -top-0.5 -left-0.5 bg-coral-deep w-2 h-2 rounded-full"></span>
+            {notifications.some((n) => !n.read) && <span className="absolute -top-0.9 -left-0.5 bg-coral-deep w-2 h-2 rounded-full"></span>}
+            
           </div>
-          <span className="w-4 h-6 rounded-md bg-coral inline-block" title="alinma"></span>
         </div>
         <div className="flex items-center gap-3">
           <div className="text-left">
             <p className="font-black text-cream text-lg leading-tight">{user.name}</p>
-            <p className="text-[11px] text-violet font-bold">✦ {game.nxp_balance} NXP</p>
+            {accountOpen && <p className="text-[11px] text-violet font-bold">✦ {game.nxp_balance} NXP</p>}
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center font-black text-cream text-lg">
-            {game.streak.current}
-          </div>
+          {accountOpen && (
+            <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center font-black text-cream text-lg">
+              {game.streak.current}
+            </div>
+          )}
         </div>
       </div>
 
@@ -103,26 +134,48 @@ export default function HomeView() {
           </div>
         </div>
 
-        {/* Featured product banner — نامو gets the flagship treatment */}
-        <div className="bg-ink-card rounded-3xl p-5 relative overflow-hidden">
-          <div className="flex items-center gap-3">
-            <div className="flex-1">
-              <p className="text-coral text-xs font-black mb-1">جديد نامو</p>
-              <h3 className="text-2xl font-black text-white leading-snug">{petName} — مرافق مالي يحس فيك</h3>
-              <p className="text-sm text-cream/60 font-medium mt-1.5">يفرح لما توفر، ويتعب لما تسرف — وينمو معك.</p>
-              <button
-                onClick={() => setActiveView('pet')}
-                className="mt-4 bg-white text-ink font-black text-sm px-5 py-2.5 rounded-2xl flex items-center gap-1 active:scale-95 transition-transform"
-              >
-                اكتشف {petName}
-                <ChevronLeft size={16} />
-              </button>
+        {/* Activation CTA — until the savings account is opened, this is the
+            single entry point. Opening it (applying a plan) reveals the pet
+            and the budget board below. */}
+        {!accountOpen && (
+          <button
+            onClick={() => setPlanOpen(true)}
+            className="w-full bg-gradient-to-l from-coral/20 to-ink-card border border-coral/40 rounded-3xl p-4 flex items-center gap-4 text-right active:scale-[0.99] transition-transform"
+          >
+            <div className="bg-coral text-ink p-3.5 rounded-2xl flex-shrink-0">
+              <Sparkles size={22} strokeWidth={1.9} />
             </div>
-            <div className="w-24 flex-shrink-0 flex items-center justify-center">
-              <Mascot emotion={emotion} stage={game.stage} equipped={game.equipped} size={96} track={false} />
+            <div className="flex-1">
+              <p className="text-[11px] text-coral font-black">ابدأ من هنا</p>
+              <p className="font-black text-white">فعّل حساب التوفير وخطّط ادخارك</p>
+              <p className="text-[11px] text-cream/50 font-bold mt-0.5">خطة ذكية حسب دخلك — وبعدها يظهر مرافقك وميزانيتك</p>
+            </div>
+            <ChevronLeft size={18} className="text-cream/40 flex-shrink-0" />
+          </button>
+        )}
+
+        {/* Featured product banner — نامو (pet). Gated behind the account. */}
+        {accountOpen && (
+          <div className="bg-ink-card rounded-3xl p-5 relative overflow-hidden">
+            <div className="flex items-center gap-3">
+              <div className="flex-1">
+                <p className="text-coral text-xs font-black mb-1">جديد نامو</p>
+                <h3 className="text-2xl font-black text-white leading-snug">{petName} — مرافق مالي يحس فيك</h3>
+                <p className="text-sm text-cream/60 font-medium mt-1.5">يفرح لما توفر، ويتعب لما تسرف — وينمو معك.</p>
+                <button
+                  onClick={() => setActiveView('pet')}
+                  className="mt-4 bg-white text-ink font-black text-sm px-5 py-2.5 rounded-2xl flex items-center gap-1 active:scale-95 transition-transform"
+                >
+                  اكتشف {petName}
+                  <ChevronLeft size={16} />
+                </button>
+              </div>
+              <div className="w-24 flex-shrink-0 flex items-center justify-center">
+                <Mascot emotion={emotion} stage={game.stage} equipped={game.equipped} size={96} track={false} />
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Quick actions — coral squircles, navy icons (real dark-mode style) */}
         <div className="grid grid-cols-4 gap-3">
@@ -136,29 +189,35 @@ export default function HomeView() {
           ))}
         </div>
 
-        {/* Suggested template — the save action, styled like the mockup */}
-        <button
-          disabled={isSubmitting}
-          onClick={promptSave}
-          className="w-full bg-ink-soft rounded-3xl p-4 flex items-center gap-4 text-right active:scale-[0.99] transition-transform disabled:opacity-50"
-        >
-          <div className="bg-coral-tile text-ink p-3.5 rounded-2xl flex-shrink-0">
-            <Zap size={22} strokeWidth={1.9} />
-          </div>
-          <div className="flex-1">
-            <p className="text-[11px] text-cream/50 font-bold">قالب مقترح لك</p>
-            <p className="font-black text-white">وفّر الآن — أطعم {petName} 🪙</p>
-            <p className="text-[11px] text-cream/50 font-bold mt-0.5">قالب معتمد • تحت تحكمك الكامل</p>
-          </div>
-          <ChevronLeft size={18} className="text-cream/40 flex-shrink-0" />
-        </button>
+        {/* Category budgets + auto-rollover — only after activation */}
+        {accountOpen && (
+          <BudgetOverview budgets={budgets} budgetPeriod={budgetPeriod} projectedRollover={projectedRollover} />
+        )}
+
+        {/* Suggested template — the save action (feeds the pet) */}
+        {accountOpen && (
+          <button
+            disabled={isSubmitting}
+            onClick={promptSave}
+            className="w-full bg-ink-soft rounded-3xl p-4 flex items-center gap-4 text-right active:scale-[0.99] transition-transform disabled:opacity-50"
+          >
+            <div className="bg-coral-tile text-ink p-3.5 rounded-2xl flex-shrink-0">
+              <Zap size={22} strokeWidth={1.9} />
+            </div>
+            <div className="flex-1">
+              <p className="text-[11px] text-cream/50 font-bold">قالب مقترح لك</p>
+              <p className="font-black text-white">وفّر الآن — أطعم {petName} 🪙</p>
+              <p className="text-[11px] text-cream/50 font-bold mt-0.5">قالب معتمد • تحت تحكمك الكامل</p>
+            </div>
+            <ChevronLeft size={18} className="text-cream/40 flex-shrink-0" />
+          </button>
+        )}
 
         {/* Income-relative NXP receipt — proof on screen that the reward
             scales with % of income (or the "back to your best" zero case). */}
-        <SaveRewardTag reward={game.lastSaveReward} />
+        {accountOpen && <SaveRewardTag reward={game.lastSaveReward} />}
 
-        {/* Family Goal — nav card into the dedicated tab, same button
-            language as the "Suggested template" save action above. */}
+        {/* Family Goal — nav card into the dedicated tab (always available) */}
         <button
           onClick={() => setActiveView('family')}
           className="w-full bg-ink-soft rounded-3xl p-4 flex items-center gap-4 text-right active:scale-[0.99] transition-transform"
@@ -174,31 +233,33 @@ export default function HomeView() {
           <ChevronLeft size={18} className="text-cream/40 flex-shrink-0" />
         </button>
 
-        {/* Companion status — live health/goal at a glance */}
-        <div
-          onClick={() => setActiveView('pet')}
-          className={`rounded-3xl p-4 cursor-pointer transition-all ${isSick ? 'bg-red-950/60 border border-red-500/30' : 'bg-ink-card'}`}
-        >
-          <div className="flex items-center gap-3 mb-3">
-            <StreakFlame streak={game.streak} />
-            <div className="flex items-center gap-1 text-xs font-bold mr-auto">
-              <HeartPulse size={13} className={isSick ? 'text-red-400' : isTired ? 'text-orange-400' : 'text-emerald-400'} />
-              <span className={isSick ? 'text-red-400' : isTired ? 'text-orange-400' : 'text-emerald-400'}>{pet.health}%</span>
+        {/* Companion status — pet health/goal at a glance (gated) */}
+        {accountOpen && (
+          <div
+            onClick={() => setActiveView('pet')}
+            className={`rounded-3xl p-4 cursor-pointer transition-all ${isSick ? 'bg-red-950/60 border border-red-500/30' : 'bg-ink-card'}`}
+          >
+            <div className="flex items-center gap-3 mb-3">
+              <StreakFlame streak={game.streak} />
+              <div className="flex items-center gap-1 text-xs font-bold mr-auto">
+                <HeartPulse size={13} className={isSick ? 'text-red-400' : isTired ? 'text-orange-400' : 'text-emerald-400'} />
+                <span className={isSick ? 'text-red-400' : isTired ? 'text-orange-400' : 'text-emerald-400'}>{pet.health}%</span>
+              </div>
+              <span className="text-xs font-black text-cream/70">الهدف {goalProgress}%</span>
             </div>
-            <span className="text-xs font-black text-cream/70">الهدف {goalProgress}%</span>
+            <p className="text-sm text-cream/70 font-medium mb-3">"{pet.message}"</p>
+            <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
+              <div
+                className={`h-2 rounded-full transition-all duration-1000 ease-out ${isSick ? 'bg-red-400' : 'bg-coral'}`}
+                style={{ width: `${goalProgress}%` }}
+              ></div>
+            </div>
+            <p className="text-[10px] text-cream/40 text-left font-bold mt-1.5">{user.savedAmount.toFixed(0)} / {user.goalAmount.toFixed(0)} ر.س</p>
           </div>
-          <p className="text-sm text-cream/70 font-medium mb-3">"{pet.message}"</p>
-          <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
-            <div
-              className={`h-2 rounded-full transition-all duration-1000 ease-out ${isSick ? 'bg-red-400' : 'bg-coral'}`}
-              style={{ width: `${goalProgress}%` }}
-            ></div>
-          </div>
-          <p className="text-[10px] text-cream/40 text-left font-bold mt-1.5">{user.savedAmount.toFixed(0)} / {user.goalAmount.toFixed(0)} ر.س</p>
-        </div>
+        )}
 
-        {/* Weekly challenge strip */}
-        <ChallengeCard challenge={game.activeChallenge} compact dark />
+        {/* Weekly challenge strip (gated) */}
+        {accountOpen && <ChallengeCard challenge={game.activeChallenge} compact dark />}
 
         {/* Transactions */}
         <div>
@@ -228,6 +289,8 @@ export default function HomeView() {
           </div>
         </div>
       </div>
+
+      {planOpen && <SavingsPlanSheet onClose={() => setPlanOpen(false)} />}
     </div>
   );
 }

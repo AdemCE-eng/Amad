@@ -1,168 +1,126 @@
 import React from 'react';
 import { useAppData } from '../context/AppDataContext';
-import { ACHIEVEMENTS, SHOP_ITEMS } from '../lib/catalog';
 import { cashbackState, CASHBACK_SPONSOR_LABEL } from '../lib/cashback';
-import StreakFlame from '../components/ui/StreakFlame';
-import CoinPill from '../components/ui/CoinPill';
-import ChallengeCard from '../components/ui/ChallengeCard';
-import Mascot from '../components/mascot/Mascot';
-import { api } from '../lib/api';
 
-const MILESTONES = [3, 7, 14];
+const REWARD_TYPES = [
+  { id: 'nxp', label: 'NXP', icon: '🪙', style: 'amber', description: 'عملة افتراضية داخل نامو للإنجازات وإكسسوارات صقر.' },
+  { id: 'akthr', label: 'أكثر / Akthr', icon: '🟢', style: 'emerald', description: 'نقاط ولاء تجريبية مرتبطة بالمكافآت والحملات.' },
+  { id: 'cashback', label: 'كاش باك', icon: '💳', style: 'sky', description: 'مكافآت كاش باك تجريبية تمولها حملات التجار.' },
+];
 
-// المكافآت — streak hero, weekly challenge, achievements grid, and the
-// accessory shop (cosmetics render instantly on the mascot). Dark ink theme.
+const BALANCE_STYLES = {
+  amber: 'bg-amber-400/10 border-amber-400/25 text-amber-300',
+  emerald: 'bg-emerald-400/10 border-emerald-400/25 text-emerald-300',
+  sky: 'bg-sky-400/10 border-sky-400/25 text-sky-300',
+};
+
+// المكافآت is the value ledger: three distinct balances, their meaning,
+// family reward activity, and campaign-funded cashback milestones.
 export default function RewardsView() {
-  const { user, game, akthrPoints, isSubmitting, runAction, restartOnboarding, restarting } = useAppData();
+  const {
+    user, game, family, akthrPoints,
+    restartDemo, restarting,
+  } = useAppData();
   if (!game) return null;
-  const { streak, nxp_balance, achievements, activeChallenge, inventory, equipped } = game;
+
   const cashback = cashbackState(user, game);
+  const balances = {
+    nxp: String(game.nxp_balance ?? 0),
+    akthr: String(akthrPoints),
+    cashback: `${cashback.total} ر.س`,
+  };
+  const familyRewards = Object.values(family?.rewards || {}).sort((a, b) => (b.at || 0) - (a.at || 0));
 
   return (
-    <div className="bg-ink h-full overflow-y-auto font-sans pb-24 text-cream" dir="rtl">
-      <div className="px-5 pt-5 pb-3 flex justify-between items-center">
+    <div className="bg-ink h-full overflow-y-auto overflow-x-hidden font-sans pb-28 text-cream" dir="rtl">
+      <div className="px-5 pt-5 pb-3">
         <h1 className="text-2xl font-black text-cream">المكافآت</h1>
-        <CoinPill coins={nxp_balance} />
+        <p className="text-xs text-cream/50 font-bold mt-1">أرصدة وقيمة مكتسبة — منفصلة وواضحة</p>
       </div>
 
       <div className="px-4 space-y-5">
-        {/* Three separate reward balances — never merged, three visual identities */}
-        <div className="grid grid-cols-3 gap-2">
-          <div className="bg-amber-400/10 border border-amber-400/25 rounded-2xl p-2.5 text-center">
-            <p className="text-[10px] font-bold text-amber-200">🪙 NXP</p>
-            <p className="text-lg font-black text-amber-300 leading-tight">{nxp_balance}</p>
-          </div>
-          <div className="bg-emerald-400/10 border border-emerald-400/25 rounded-2xl p-2.5 text-center">
-            <p className="text-[10px] font-bold text-emerald-200">🟢 أكثر</p>
-            <p className="text-lg font-black text-emerald-300 leading-tight">{akthrPoints}</p>
-          </div>
-          <div className="bg-sky-400/10 border border-sky-400/25 rounded-2xl p-2.5 text-center">
-            <p className="text-[10px] font-bold text-sky-200">💳 كاش باك</p>
-            <p className="text-lg font-black text-sky-300 leading-tight">{cashback.total} <span className="text-[10px]">ر.س</span></p>
-          </div>
-        </div>
-        {/* Streak hero */}
-        <div className="bg-ink-card rounded-3xl p-5 text-center">
-          <StreakFlame streak={streak} size="lg" />
-          <p className="text-xs text-cream/50 mt-3 font-medium">
-            {streak.status === 'frozen'
-              ? 'درع الحماية حفظ سلسلتك اليوم — الغلطة تعدي ❄️'
-              : 'أيام متتالية داخل الميزانية — كل يوم +10 🪙'}
-          </p>
-          {/* milestone track */}
-          <div className="flex items-center justify-between mt-5 px-2">
-            {MILESTONES.map((m, i) => (
-              <React.Fragment key={m}>
-                {i > 0 && <div className={`flex-1 h-1 rounded mx-1 ${streak.current >= m ? 'bg-orange-400' : 'bg-white/10'}`} />}
-                <div className={`flex flex-col items-center gap-1 ${streak.current >= m ? '' : 'opacity-40'}`}>
-                  <span className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-black ${streak.current >= m ? 'bg-orange-400/20 text-orange-300' : 'bg-white/5 text-cream/60'}`}>
-                    {m}
-                  </span>
-                  <span className="text-[9px] font-bold text-cream/50">+{{ 3: 30, 7: 70, 14: 150 }[m]} 🪙</span>
-                </div>
-              </React.Fragment>
-            ))}
-          </div>
-          <p className="text-[10px] text-cream/60 mt-3">أفضل سلسلة: {streak.best} يوم · دروع الحماية: {streak.freezesLeft} ❄️</p>
-        </div>
-
-        {/* Weekly challenge */}
-        <ChallengeCard challenge={activeChallenge} />
-
-        {/* Achievements */}
-        <div>
-          <h3 className="font-black text-cream mb-3 px-1">الإنجازات</h3>
-          <div className="grid grid-cols-3 gap-3">
-            {Object.entries(ACHIEVEMENTS).map(([key, a]) => {
-              const unlocked = Boolean(achievements[key]);
-              return (
-                <div
-                  key={key}
-                  className={`rounded-3xl p-3 text-center ${unlocked ? 'bg-ink-card border border-amber-400/25' : 'bg-ink-card/70 opacity-80 grayscale'}`}
-                >
-                  <span className="text-3xl block">{unlocked ? a.icon : '🔒'}</span>
-                  <p className="text-[10px] font-black text-cream mt-1 leading-tight">{a.title}</p>
-                  {/* reward type explicit on the card — this achievement pays NXP */}
-                  <p className="text-[9px] font-bold text-amber-300 mt-0.5">+{a.coins} NXP 🪙</p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Cashback — third reward type, real-value DEMO rewards. Separate
-            visual identity (sky); never merged with NXP or Akthr. */}
-        <div>
-          <div className="flex items-center justify-between mb-1 px-1">
-            <h3 className="font-black text-cream">كاش باك</h3>
-            <span className="text-[10px] font-bold text-sky-300/90">💳 {cashback.total} ر.س</span>
-          </div>
-          <p className="text-[10px] font-bold text-cream/60 mb-3 px-1">{CASHBACK_SPONSOR_LABEL}</p>
-          <div className="space-y-2">
-            {[...cashback.earned.map((r) => ({ ...r, ok: true })), ...cashback.locked.map((r) => ({ ...r, ok: false }))].map((r) => (
-              <div key={r.id} className={`rounded-2xl p-3 flex items-center gap-3 ${r.ok ? 'bg-sky-400/10 border border-sky-400/25' : 'bg-ink-card/70'}`}>
-                <span className="text-xl">{r.ok ? '💳' : '🔒'}</span>
-                <p className={`flex-1 text-[12px] font-bold ${r.ok ? 'text-cream' : 'text-cream/70'}`}>{r.title}</p>
-                <span className={`text-[12px] font-black ${r.ok ? 'text-sky-300' : 'text-cream/50'}`}>+{r.amount} ر.س كاش باك</span>
+        <section aria-labelledby="reward-balances-title">
+          <h2 id="reward-balances-title" className="sr-only">أرصدة المكافآت</h2>
+          <div className="grid grid-cols-3 gap-2" data-testid="reward-balances">
+            {REWARD_TYPES.map((type) => (
+              <div key={type.id} className={`border rounded-2xl p-2.5 text-center min-w-0 ${BALANCE_STYLES[type.style]}`}>
+                <p className="text-[10px] font-bold leading-tight break-words">{type.icon} {type.label}</p>
+                <p className="text-lg font-black leading-tight mt-1 break-words">{balances[type.id]}</p>
+                <span className="inline-block mt-1 text-[8px] font-black opacity-70">MOCK</span>
               </div>
             ))}
           </div>
-        </div>
+        </section>
 
-        {/* Shop */}
-        <div>
-          <h3 className="font-black text-cream mb-3 px-1">متجر الإكسسوارات</h3>
+        <section className="bg-ink-card rounded-3xl p-4" aria-labelledby="reward-types-title">
+          <h2 id="reward-types-title" className="font-black text-cream mb-3">ما الفرق بين المكافآت؟</h2>
           <div className="space-y-3">
-            {Object.entries(SHOP_ITEMS).map(([id, item]) => {
-              const owned = Boolean(inventory[id]);
-              const isEquipped = equipped === id;
-              const affordable = nxp_balance >= item.price;
-              return (
-                <div key={id} className="bg-ink-card rounded-3xl p-3 flex items-center gap-3">
-                  <div className="w-16 h-16 bg-cream rounded-2xl flex items-center justify-center overflow-hidden">
-                    <Mascot emotion="idle" stage={1} size={58} track={false} equipped={id} />
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-black text-cream text-sm">{item.icon} {item.name}</p>
-                    <p className="text-[11px] font-bold text-amber-300 mt-0.5">{item.price} 🪙</p>
-                  </div>
-                  {owned ? (
-                    <button
-                      disabled={isSubmitting}
-                      onClick={() => runAction(() => api.equipItem(isEquipped ? null : id))}
-                      className={`px-4 py-2 rounded-xl text-xs font-black border ${isEquipped ? 'bg-coral text-ink border-coral' : 'bg-transparent text-coral border-coral/50'}`}
-                    >
-                      {isEquipped ? 'يلبسه ✓' : 'ألبسه'}
-                    </button>
-                  ) : (
-                    <button
-                      disabled={isSubmitting || !affordable}
-                      onClick={() => runAction(() => api.buyItem(id))}
-                      className={`px-4 py-2 rounded-xl text-xs font-black ${affordable ? 'bg-coin text-ink shadow' : 'bg-white/5 text-cream/30'}`}
-                    >
-                      {affordable ? 'اشتره' : 'وفّر له'}
-                    </button>
-                  )}
+            {REWARD_TYPES.map((type) => (
+              <div key={type.id} className="flex items-start gap-3">
+                <span className="text-lg" aria-hidden="true">{type.icon}</span>
+                <div className="min-w-0">
+                  <p className="text-xs font-black text-cream">{type.label}</p>
+                  <p className="text-[11px] text-cream/60 font-medium leading-relaxed">{type.description}</p>
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
-        </div>
+        </section>
 
-        {/* Danger zone — full restart: wipes health/streak/coins AND
-            re-runs onboarding (pick companion, name, goal). For switching
-            between demo audiences/judges. */}
+        <section aria-labelledby="family-rewards-title" data-testid="family-reward-activity">
+          <div className="flex items-center justify-between gap-3 mb-3 px-1">
+            <h2 id="family-rewards-title" className="font-black text-cream">مكافآت العائلة</h2>
+            <span className="text-[9px] font-black text-emerald-300 border border-emerald-400/25 rounded-full px-2 py-1">MOCK أكثر</span>
+          </div>
+          {familyRewards.length > 0 ? (
+            <div className="space-y-2">
+              {familyRewards.map((reward) => (
+                <article key={reward.id} className="bg-emerald-400/10 border border-emerald-400/25 rounded-2xl p-3 flex items-center gap-3 min-w-0">
+                  <span className="text-xl" aria-hidden="true">🎖️</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-black text-cream break-words">مكافأة عائلية إلى {reward.recipientName || 'راشد'}</p>
+                    {reward.message && <p className="text-[10px] text-cream/60 font-medium mt-1 break-words">{reward.message}</p>}
+                  </div>
+                  <span className="text-xs font-black text-emerald-300 whitespace-nowrap">+{reward.amount} أكثر</span>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <div className="bg-ink-card rounded-2xl p-4 text-center text-xs font-bold text-cream/55">
+              لا توجد مكافأة عائلية مستلمة بعد.
+            </div>
+          )}
+        </section>
+
+        <section aria-labelledby="cashback-title" data-testid="cashback-milestones">
+          <div className="flex items-center justify-between gap-3 mb-1 px-1">
+            <h2 id="cashback-title" className="font-black text-cream">مكافآت الكاش باك</h2>
+            <span className="text-[10px] font-bold text-sky-300/90 whitespace-nowrap">💳 {cashback.total} ر.س</span>
+          </div>
+          <p className="text-[10px] font-bold text-cream/60 mb-3 px-1">{CASHBACK_SPONSOR_LABEL} · MOCK</p>
+          <div className="space-y-2">
+            {[...cashback.earned.map((reward) => ({ ...reward, earned: true })), ...cashback.locked.map((reward) => ({ ...reward, earned: false }))].map((reward) => (
+              <div key={reward.id} className={`rounded-2xl p-3 flex items-center gap-3 min-w-0 ${reward.earned ? 'bg-sky-400/10 border border-sky-400/25' : 'bg-ink-card/70'}`}>
+                <span className="text-xl" aria-hidden="true">{reward.earned ? '💳' : '🔒'}</span>
+                <p className={`flex-1 min-w-0 text-[12px] font-bold break-words ${reward.earned ? 'text-cream' : 'text-cream/70'}`}>{reward.title}</p>
+                <span className={`text-[11px] font-black whitespace-nowrap ${reward.earned ? 'text-sky-300' : 'text-cream/50'}`}>+{reward.amount} ر.س</span>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Existing full-demo recovery remains available without changing its behavior. */}
         <div className="pt-2">
           <button
             disabled={restarting}
             onClick={() => {
               if (window.confirm('هذا سيعيد كل شيء من الصفر (الصحة، السلسلة، العملات) ويرجعك لاختيار المرافق والهدف من جديد. متأكد؟')) {
-                restartOnboarding();
+                restartDemo();
               }
             }}
             className="w-full py-3 rounded-3xl font-bold text-sm border border-red-400/30 text-red-400 bg-red-400/10 disabled:opacity-50 active:scale-95 transition-transform"
           >
-            {restarting ? '...جارٍ إعادة البدء' : '🔄 البدء من جديد (اختيار مرافق وهدف)'}
+            {restarting ? '...جارٍ إعادة البدء' : '🔄 إعادة العرض من البداية'}
           </button>
         </div>
       </div>

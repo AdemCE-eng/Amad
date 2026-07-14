@@ -1,0 +1,119 @@
+{
+  "label": "نتائج على بيانات تجريبية من السوق السعودي",
+  "offerModel": [
+    {
+      "feature": "days_until_occasion",
+      "importance": 0.3514
+    },
+    {
+      "feature": "seasonal_focus_match",
+      "importance": 0.2063
+    },
+    {
+      "feature": "campaign_due_ratio",
+      "importance": 0.1539
+    },
+    {
+      "feature": "days_since_last_campaign",
+      "importance": 0.1118
+    },
+    {
+      "feature": "historical_campaign_rate",
+      "importance": 0.0388
+    },
+    {
+      "feature": "near_occasion",
+      "importance": 0.0317
+    },
+    {
+      "feature": "avg_duration_days",
+      "importance": 0.0313
+    },
+    {
+      "feature": "category",
+      "importance": 0.0198
+    },
+    {
+      "feature": "salary_day_proximity",
+      "importance": 0.0161
+    },
+    {
+      "feature": "campaigns_30d",
+      "importance": 0.0128
+    },
+    {
+      "feature": "category_season",
+      "importance": 0.0082
+    },
+    {
+      "feature": "discount_trend",
+      "importance": 0.0067
+    },
+    {
+      "feature": "recent_campaign_rate",
+      "importance": 0.0061
+    },
+    {
+      "feature": "campaigns_90d",
+      "importance": 0.0049
+    }
+  ],
+  "purchaseModel": [
+    {
+      "feature": "expected_purchase_proximity",
+      "importance": 0.3921
+    },
+    {
+      "feature": "purchase_due_ratio",
+      "importance": 0.3256
+    },
+    {
+      "feature": "interval_std_days",
+      "importance": 0.1035
+    },
+    {
+      "feature": "merchant_baseline_popularity_30d",
+      "importance": 0.0944
+    },
+    {
+      "feature": "avg_interval_days",
+      "importance": 0.0435
+    },
+    {
+      "feature": "preferred_weekday",
+      "importance": 0.0142
+    },
+    {
+      "feature": "weekend_preference",
+      "importance": 0.0093
+    },
+    {
+      "feature": "days_since_last_purchase",
+      "importance": 0.0034
+    },
+    {
+      "feature": "merchant_id",
+      "importance": 0.0029
+    },
+    {
+      "feature": "weekday_match_rate",
+      "importance": 0.0024
+    },
+    {
+      "feature": "recency_frequency_interaction",
+      "importance": 0.0024
+    },
+    {
+      "feature": "merchant_spending_share",
+      "importance": 0.0022
+    },
+    {
+      "feature": "weekday_preference_strength",
+      "importance": 0.0021
+    },
+    {
+      "feature": "purchases_7d",
+      "importance": 0.0019
+    }
+  ]
+}

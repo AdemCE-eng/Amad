@@ -183,20 +183,33 @@ router.post("/user/goal", async (req, res, next) => {
 router.post("/reset", async (_req, res, next) => {
   try {
     const fresh = initialState();
+    const family = initialFamilyState();
+    const offers = initialOffersState();
+    const loyalty = initialLoyaltyState();
     await db.ref("/").set({
       user: fresh.user,
       pet: fresh.pet,
       emergencyShield: fresh.emergencyShield,
       game: fresh.game,
-      family: initialFamilyState(),
-      offers: initialOffersState(),
-      loyalty: initialLoyaltyState(),
+      family,
+      offers,
+      loyalty,
       contributionPlan: null,
       notifications: null,
       meta: { lastEvent: "reset" },
       transactions: null,
     });
-    res.json({ ok: true, message: "Demo reset.", ...fresh });
+    res.json({
+      ok: true,
+      message: "Demo reset.",
+      ...fresh,
+      family,
+      offers,
+      loyalty,
+      contributionPlan: null,
+      notifications: null,
+      transactions: null,
+    });
   } catch (e) {
     next(e);
   }

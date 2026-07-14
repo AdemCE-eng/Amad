@@ -5,6 +5,7 @@ import { db } from "../firebase.js";
 import { readState, commit } from "./simulate.js";
 import {
   advanceDay,
+  advanceDays,
   completeChallenge,
   buyItem,
   equipItem,
@@ -20,11 +21,36 @@ import {
 const router = Router();
 
 // POST /api/demo/advance-day — the demo clock. Resolves the streak for the
-// day that just "ended" and starts a fresh one. A week plays out in seconds.
+// day that just "ended", starts a fresh one, and sweeps unspent daily budgets
+// into savings. A week plays out in seconds.
 router.post("/demo/advance-day", async (_req, res, next) => {
   try {
     const state = await readState();
     const out = await commit(advanceDay(state));
+    res.json({ ok: true, ...out });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// POST /api/demo/advance-week — jump 7 demo days; settles daily budgets each
+// day AND the weekly budgets, sweeping every unspent remainder into savings.
+router.post("/demo/advance-week", async (_req, res, next) => {
+  try {
+    const state = await readState();
+    const out = await commit(advanceDays(state, 7));
+    res.json({ ok: true, ...out });
+  } catch (e) {
+    next(e);
+  }
+});
+
+// POST /api/demo/advance-month — jump 30 demo days; settles daily + weekly +
+// monthly budgets across the span.
+router.post("/demo/advance-month", async (_req, res, next) => {
+  try {
+    const state = await readState();
+    const out = await commit(advanceDays(state, 30));
     res.json({ ok: true, ...out });
   } catch (e) {
     next(e);
@@ -121,7 +147,7 @@ router.post("/user/profile", async (req, res, next) => {
 });
 
 router.post("/user/notifications", async (req, res, next) => {
-    try {
+  try {
     const notification = {
       title: req.body.title,
       message: req.body.message,
@@ -133,10 +159,26 @@ router.post("/user/notifications", async (req, res, next) => {
     const ref = db.ref("/user/notifications").push();
     await ref.set(notification);
 
-    res.json({
-      ok: true,
-      notification,
+    res.json({ ok: true, notification });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.post("/user/mark-all-notifications-read", async (_req, res, next) => {
+  try {
+    const snapshot = await db.ref("/user/notifications").get();
+    const notifications = snapshot.val() ?? {};
+
+    const updates = {};
+
+    Object.keys(notifications).forEach((id) => {
+      updates[`${id}/read`] = true;
     });
+
+    await db.ref("/user/notifications").update(updates);
+
+    res.json({ ok: true });
   } catch (e) {
     next(e);
   }
@@ -148,10 +190,7 @@ router.get("/user/notifications", async (_req, res, next) => {
     const data = snapshot.val() ?? {};
     const notifications = Object.values(data);
 
-    res.json({
-      ok: true,
-      notifications: notifications
-    });
+    res.json({ ok: true, notifications });
   } catch (e) {
     next(e);
   }

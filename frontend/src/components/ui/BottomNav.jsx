@@ -4,13 +4,13 @@ import { Home, Trophy, ArrowLeftRight, Grid } from 'lucide-react';
 // Five-tab dark nav mirroring the real Alinma app; صقر sits in the
 // AutoFlow slot with the "جديد" treatment (violet bubble + badge).
 // التحويل / الخدمات are decorative — they exist so the bar reads like the
-// real bank app, not a 3-screen demo.
+// real bank app, not a 3-screen demo. The pet tab is LOCKED until the savings
+// account is activated (petLocked) — the companion only appears after that.
 const TIP_KEY = 'namo_tip_dismissed';
 
-export default function BottomNav({ activeView, setActiveView, petName }) {
+export default function BottomNav({ activeView, setActiveView, petName, petLocked = false }) {
   // "جديد · جرّب صقر" bubble: shows once per device, auto-dismisses after
-  // 3s, manually dismissible, never inside the Pet Room. Sits ABOVE the nav
-  // (-top offset) so it can never overlap the tab bar itself.
+  // 3s, manually dismissible, never inside the Pet Room, never while locked.
   const [tipVisible, setTipVisible] = useState(() => localStorage.getItem(TIP_KEY) !== '1');
   useEffect(() => {
     if (!tipVisible) return;
@@ -31,8 +31,9 @@ export default function BottomNav({ activeView, setActiveView, petName }) {
   ];
   return (
     <nav className="absolute bottom-0 inset-x-0 bg-ink border-t border-white/5 flex justify-around items-stretch z-30 pb-1" dir="rtl">
-      {/* "new feature" bubble above the center tab — once per device only */}
-      {tipVisible && activeView !== 'pet' && (
+      {/* "new feature" bubble above the center tab — once per device, and only
+          once the pet is actually unlocked */}
+      {tipVisible && activeView !== 'pet' && !petLocked && (
         <div className="absolute -top-9 left-1/2 -translate-x-1/2 bg-violet text-white text-[11px] font-black pr-3.5 pl-2 py-1.5 rounded-full whitespace-nowrap shadow-lg flex items-center gap-1.5">
           جديد · جرّب {petName || 'صقر'}
           <button onClick={dismissTip} className="text-white/70 hover:text-white leading-none text-[13px]" aria-label="إغلاق">×</button>
@@ -40,19 +41,21 @@ export default function BottomNav({ activeView, setActiveView, petName }) {
         </div>
       )}
       {tabs.map((t) => {
+        const locked = t.center && petLocked;
+        const disabled = t.dead || locked;
         const active = activeView === t.id;
         return (
           <button
             key={t.id}
-            onClick={() => !t.dead && setActiveView(t.id)}
+            onClick={() => !disabled && setActiveView(t.id)}
             className={`relative flex flex-col items-center gap-1 py-2.5 px-3 transition-colors ${
-              active ? 'text-coral' : t.dead ? 'text-cream/30' : 'text-cream/60'
+              active ? 'text-coral' : disabled ? 'text-cream/30' : 'text-cream/60'
             }`}
           >
             <span className={t.center ? 'relative bg-white/10 rounded-2xl px-2.5 py-1' : ''}>
               {t.icon}
-              {t.center && (
-                <span className="absolute -top-2 -right-3 bg-coral-deep text-white text-[8px] font-black px-1.5 py-0.5 rounded-full">جديد</span>
+              {t.center && locked && (
+                <span className="absolute -top-2 -right-2 bg-white/15 text-cream/70 text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center">🔒</span>
               )}
             </span>
             <span className={`text-[10px] ${active ? 'font-black' : 'font-bold'}`}>{t.label}</span>
