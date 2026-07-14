@@ -120,9 +120,9 @@ function Accessories({ game, isSubmitting, runAction }) {
                 {owned && <p className="text-[9px] text-emerald-300 font-bold mt-1">مملوك {isEquipped ? '· مجهز الآن' : ''}</p>}
               </div>
               {owned ? (
-                <button disabled={isSubmitting} onClick={() => equipItem(id, item, isEquipped)} className={`px-3 py-2 rounded-xl text-xs font-black border shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-coral ${isEquipped ? 'bg-coral text-ink border-coral' : 'bg-transparent text-coral border-coral/50'}`}>{isEquipped ? 'إزالة' : 'تجهيز'}</button>
+                <button data-focus-return-key={`accessory-${id}`} disabled={isSubmitting} onClick={() => equipItem(id, item, isEquipped)} className={`px-3 py-2 rounded-xl text-xs font-black border shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-coral ${isEquipped ? 'bg-coral text-ink border-coral' : 'bg-transparent text-coral border-coral/50'}`}>{isEquipped ? 'إزالة' : 'تجهيز'}</button>
               ) : (
-                <button disabled={isSubmitting || !affordable} onClick={() => runAction(() => api.buyItem(id))} className={`px-3 py-2 rounded-xl text-xs font-black shrink-0 ${affordable ? 'bg-coin text-ink shadow' : 'bg-white/5 text-cream/40'}`}>{affordable ? 'شراء' : 'رصيد غير كافٍ'}</button>
+                <button data-focus-return-key={`accessory-${id}`} disabled={isSubmitting || !affordable} onClick={() => runAction(() => api.buyItem(id))} className={`px-3 py-2 rounded-xl text-xs font-black shrink-0 ${affordable ? 'bg-coin text-ink shadow' : 'bg-white/5 text-cream/40'}`}>{affordable ? 'شراء' : 'رصيد غير كافٍ'}</button>
               )}
             </article>
           );

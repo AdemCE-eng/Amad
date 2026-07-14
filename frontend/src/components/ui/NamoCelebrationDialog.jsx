@@ -16,6 +16,7 @@ export default function NamoCelebrationDialog({
   leaving = false,
   dismissDisabled = false,
   reducedMotion: reducedMotionOverride,
+  returnFocusKey = null,
   testId = 'namo-celebration-overlay',
 }) {
   const systemReducedMotion = useReducedMotion();
@@ -26,11 +27,16 @@ export default function NamoCelebrationDialog({
 
   useEffect(() => {
     const previousFocus = document.activeElement;
+    const returnKey = returnFocusKey || (previousFocus instanceof HTMLElement ? previousFocus.dataset.focusReturnKey : null);
     dialogRef.current?.focus();
     return () => {
-      if (previousFocus instanceof HTMLElement && previousFocus.isConnected) previousFocus.focus();
+      const successor = returnKey
+        ? [...document.querySelectorAll('[data-focus-return-key]')].find((element) => element.dataset.focusReturnKey === returnKey)
+        : null;
+      const target = previousFocus instanceof HTMLElement && previousFocus.isConnected ? previousFocus : successor;
+      if (target instanceof HTMLElement) target.focus();
     };
-  }, []);
+  }, [returnFocusKey]);
 
   const handleKeyDown = (event) => {
     if (event.key === 'Escape' && !dismissDisabled) {

@@ -281,6 +281,7 @@ function RewardOverlay({ event, petName, leaving, onDismiss }) {
       descriptionId="reward-dialog-description"
       onDismiss={onDismiss}
       leaving={leaving}
+      returnFocusKey={event.type === 'shop' ? `accessory-${event.id}` : null}
       testId="reward-celebration-overlay"
     >
       {({ reducedMotion }) => (
