@@ -1,21 +1,22 @@
 import React, { useState } from 'react';
-import { ShieldAlert, HeartPulse } from 'lucide-react';
+import { Check, CircleDot, HeartPulse, LockKeyhole, ShieldAlert, ShoppingBag, Trophy } from 'lucide-react';
 import { useAppData } from '../context/AppDataContext';
 import { api } from '../lib/api';
 import Mascot from '../components/mascot/Mascot';
 import { useMascotEmotion } from '../components/mascot/useMascotEmotion';
-import CoinPill from '../components/ui/CoinPill';
 import SaveRewardTag from '../components/ui/SaveRewardTag';
 import EmergencyWithdrawModal from '../components/ui/EmergencyWithdrawModal';
 import PetProgressionSections from '../components/pet/PetProgressionSections';
-import { STAGE_INFO, SAVE_PRESETS, SHOP_ITEMS } from '../lib/catalog';
+import { SAVE_PRESETS, SHOP_ITEMS } from '../lib/catalog';
+import { buildEvolutionPresentation } from '../lib/petEvolutionPresentation';
 
 const PET_TABS = [
-  { id: 'status', label: 'الحالة' },
-  { id: 'progress', label: 'التحديات والإنجازات' },
-  { id: 'accessories', label: 'الإكسسوارات' },
+  { id: 'status', label: 'الحالة', icon: HeartPulse },
+  { id: 'progress', label: 'التحديات والإنجازات', icon: Trophy },
+  { id: 'accessories', label: 'الإكسسوارات', icon: ShoppingBag },
 ];
 const MOOD_LABEL = { radiant: 'مشرق', happy: 'سعيد', neutral: 'هادئ', tired: 'متعب', sick: 'يحتاج عناية' };
+const SAR_NUMBER = new Intl.NumberFormat('ar-SA', { maximumFractionDigits: 0 });
 
 // The hero screen — YOUR companion, singular and named. Full pupil tracking,
 // tap to squish, accessories on, evolution meter toward the goal. Dark ink.
@@ -29,6 +30,26 @@ export default function PetRoomView() {
   const { emotion, poke } = useMascotEmotion(pet);
   const petName = user.petName || 'صقر';
   const [emergencyOpen, setEmergencyOpen] = useState(false);
+  const evolution = buildEvolutionPresentation({
+    stage: game.stage,
+    goalProgress,
+    savedAmount: user.savedAmount,
+    goalAmount: user.goalAmount,
+  });
+
+  const handleTabKeyDown = (event, currentIndex) => {
+    let nextIndex = currentIndex;
+    if (event.key === 'ArrowLeft') nextIndex = (currentIndex + 1) % PET_TABS.length;
+    else if (event.key === 'ArrowRight') nextIndex = (currentIndex - 1 + PET_TABS.length) % PET_TABS.length;
+    else if (event.key === 'Home') nextIndex = 0;
+    else if (event.key === 'End') nextIndex = PET_TABS.length - 1;
+    else return;
+
+    event.preventDefault();
+    const nextTab = PET_TABS[nextIndex];
+    setPetActiveTab(nextTab.id);
+    requestAnimationFrame(() => document.getElementById(`pet-tab-${nextTab.id}`)?.focus());
+  };
 
   return (
     <div className={`bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] ${
@@ -36,37 +57,56 @@ export default function PetRoomView() {
     } h-full flex flex-col font-sans text-cream transition-colors duration-500`} dir="rtl">
 
       {/* Pet is a primary BottomNav destination, so its header has no nested back control. */}
-      <div className="p-4 flex items-center justify-between gap-3 z-20">
-        <h1 className="font-black text-cream text-lg tracking-wide">غرفة {petName}</h1>
-        <CoinPill coins={game.nxp_balance} />
-      </div>
+      <header className="px-5 pt-4 pb-2 flex items-center justify-between gap-3 z-20" data-testid="pet-product-header">
+        <div className="min-w-0">
+          <h1 className="font-black text-cream text-xl leading-tight">صقر</h1>
+          <p className="text-[11px] text-cream/55 font-bold mt-0.5 truncate">
+            رفيقك المالي <span aria-hidden="true">·</span> مرحلة {evolution.currentStage.name}
+          </p>
+        </div>
+        <div
+          className="shrink-0 inline-flex items-center gap-2 rounded-full bg-amber-400/10 border border-amber-300/25 px-3 py-1.5"
+          aria-label={`رصيد NXP: ${game.nxp_balance}`}
+          data-testid="pet-nxp-balance"
+        >
+          <span className="text-[10px] font-black tracking-wide text-amber-300">NXP</span>
+          <strong className="text-sm font-black text-cream tabular-nums">{game.nxp_balance}</strong>
+        </div>
+      </header>
 
-      <div className="px-4 pb-3 z-20">
-        <div className="grid grid-cols-3 gap-1 bg-white/5 border border-white/5 rounded-2xl p-1" role="tablist" aria-label="أقسام صقر">
-          {PET_TABS.map((tab) => (
+      <div className="px-4 pb-2 z-20">
+        <div className="grid grid-cols-3 gap-1 bg-white/[0.04] border border-white/10 rounded-2xl p-1" role="tablist" aria-label="أقسام صقر">
+          {PET_TABS.map((tab, index) => {
+            const TabIcon = tab.icon;
+            const selected = petActiveTab === tab.id;
+            return (
             <button
               key={tab.id}
               id={`pet-tab-${tab.id}`}
               type="button"
               role="tab"
-              aria-selected={petActiveTab === tab.id}
+              aria-selected={selected}
               aria-controls={`pet-panel-${tab.id}`}
+              tabIndex={selected ? 0 : -1}
               onClick={() => setPetActiveTab(tab.id)}
-              className={`min-h-11 rounded-xl px-1 text-[10px] leading-tight font-black transition-colors ${petActiveTab === tab.id ? 'bg-coral text-ink' : 'text-cream/55 hover:text-cream'}`}
+              onKeyDown={(event) => handleTabKeyDown(event, index)}
+              className={`min-h-10 rounded-xl px-1 py-1 inline-flex items-center justify-center gap-1 text-[9px] leading-[1.05] font-black border transition-colors ${selected ? 'bg-coral/15 border-coral/45 text-coral' : 'border-transparent text-cream/55 hover:text-cream hover:bg-white/5'}`}
             >
-              {tab.label}
+              <TabIcon size={12} strokeWidth={2.5} className="shrink-0" aria-hidden="true" />
+              <span>{tab.label}</span>
             </button>
-          ))}
+            );
+          })}
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col items-center justify-start px-5 pt-3 overflow-y-auto pb-28 z-10">
+      <div className="flex-1 flex flex-col items-center justify-start px-5 pt-1 overflow-y-auto pb-28 z-10">
 
         {petActiveTab === 'status' && (
           <div id="pet-panel-status" role="tabpanel" aria-labelledby="pet-tab-status" className="w-full flex flex-col items-center" data-testid="pet-status-panel">
 
         {/* --- MAIN INTERACTIVE PET AREA --- */}
-        <div className="relative w-64 h-64 mb-6 flex items-center justify-center mt-1">
+        <div className="relative w-64 h-64 mb-5 flex items-center justify-center">
           {/* Background Glow */}
           <div className={`absolute inset-6 rounded-full blur-2xl transition-all duration-1000 ${
             isSick ? 'bg-red-500/30 animate-pulse' :
@@ -97,7 +137,7 @@ export default function PetRoomView() {
         </div>
 
         {/* GenAI Chat Bubble */}
-        <div className="bg-ink-card p-5 rounded-3xl w-full mb-6 relative">
+        <div className="bg-ink-card p-4 rounded-3xl w-full mb-5 relative">
           <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 w-6 h-6 bg-ink-card rotate-45"></div>
           <p className="text-center text-cream leading-relaxed relative z-10 font-bold">
             "{pet.message}"
@@ -109,29 +149,76 @@ export default function PetRoomView() {
           </div>
         </div>
 
-        {/* --- EVOLUTION METER — growth tied to the savings goal --- */}
-        <div className="w-full bg-ink-card rounded-3xl p-5 mb-6">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="font-black text-cream text-sm">نمو {petName}</h3>
-            <span className="text-xs font-bold text-cream/50">{goalProgress}% من الهدف</span>
-          </div>
-          <div className="relative">
-            <div className="w-full bg-white/10 rounded-full h-3 overflow-hidden">
-              <div className="h-3 rounded-full transition-all duration-1000 ease-out bg-gradient-to-l from-coral to-coin" style={{ width: `${goalProgress}%` }}></div>
+        {/* The authoritative stage and goal percentage come from shared app state. */}
+        <section className="w-full bg-ink-card rounded-3xl p-5 mb-6" data-testid="pet-evolution-card" aria-labelledby="pet-evolution-title">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h2 id="pet-evolution-title" className="font-black text-cream text-base">نمو صقر</h2>
+              <p className="text-[10px] text-cream/45 font-bold mt-1">يتطور وفق مدخراتك الشخصية</p>
             </div>
-            <div className="flex justify-between mt-2">
-              {STAGE_INFO.map((s, i) => {
-                const reached = game.stage >= i;
-                return (
-                  <div key={s.name} className={`flex flex-col items-center ${reached ? '' : 'opacity-40 grayscale'}`}>
-                    <span className="text-xl">{s.icon}</span>
-                    <span className="text-[9px] font-bold text-cream/50">{s.name}{i > 0 ? ` · ${s.at}%` : ''}</span>
-                  </div>
-                );
-              })}
+            <span className="rounded-full bg-coral/15 border border-coral/25 text-coral px-3 py-1 text-xs font-black tabular-nums" data-testid="pet-evolution-progress">
+              {evolution.progress}%
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 mt-4">
+            <div className="rounded-2xl bg-white/5 border border-white/5 p-3" data-testid="pet-current-stage">
+              <p className="text-[9px] text-cream/40 font-bold">المرحلة الحالية</p>
+              <p className="font-black text-cream mt-1">{evolution.currentStage.name}</p>
+              <p className="text-[9px] text-cream/45 mt-1">{evolution.progress}% من هدف الادخار الشخصي</p>
+            </div>
+            <div className="rounded-2xl bg-white/5 border border-white/5 p-3" data-testid="pet-next-stage">
+              <p className="text-[9px] text-cream/40 font-bold">المرحلة التالية</p>
+              <p className="font-black text-coral mt-1">{evolution.nextStage?.name || 'اكتمل التطور'}</p>
+              <p className="text-[9px] text-cream/45 mt-1">
+                {evolution.nextStage ? `تبدأ عند ${evolution.nextStage.at}%` : 'وصل صقر إلى مرحلته النهائية'}
+              </p>
             </div>
           </div>
-        </div>
+
+          <div className="relative h-24 mx-8 mt-5" dir="rtl" data-testid="pet-evolution-track" aria-label={`تقدم الادخار الشخصي ${evolution.progress}%`}>
+            <div className="absolute top-4 right-0 left-0 h-2 rounded-full bg-white/10 overflow-hidden">
+              <div
+                className="absolute right-0 top-0 h-full rounded-full bg-gradient-to-l from-coral to-coin transition-[width] duration-1000 motion-reduce:transition-none"
+                style={{ width: `${evolution.progress}%` }}
+                data-testid="pet-evolution-fill"
+              />
+            </div>
+            {evolution.milestones.map((milestone) => {
+              const completed = milestone.state === 'completed';
+              const current = milestone.state === 'current';
+              return (
+                <div
+                  key={milestone.name}
+                  className="absolute top-0 w-16 text-center"
+                  style={{ right: `${milestone.at}%`, transform: 'translateX(50%)' }}
+                  data-stage-state={milestone.state}
+                  data-threshold={milestone.at}
+                >
+                  <span className={`mx-auto w-10 h-10 rounded-full border-2 grid place-items-center shadow-lg ${completed ? 'bg-emerald-400 border-emerald-300 text-ink' : current ? 'bg-coral border-coral text-ink ring-4 ring-coral/15' : 'bg-ink-soft border-white/15 text-cream/35'}`}>
+                    {completed && <Check size={17} strokeWidth={3} aria-label="مكتملة" />}
+                    {current && <CircleDot size={17} strokeWidth={3} aria-label="المرحلة الحالية" />}
+                    {!completed && !current && <LockKeyhole size={14} aria-label="مرحلة مستقبلية" />}
+                  </span>
+                  <span className={`block text-[10px] font-black mt-1 ${current ? 'text-coral' : completed ? 'text-emerald-300' : 'text-cream/40'}`}>{milestone.name}</span>
+                  <span className="block text-[9px] text-cream/40 font-bold">{milestone.at}%</span>
+                  {current && <span className="block text-[8px] text-coral font-black">أنت هنا</span>}
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="rounded-2xl bg-coral/10 border border-coral/20 px-3 py-2.5 mt-2" data-testid="pet-next-milestone-explanation">
+            {evolution.nextStage ? (
+              <p className="text-[11px] text-cream/75 font-bold leading-relaxed">
+                أضف <strong className="text-coral">{SAR_NUMBER.format(evolution.remainingAmount)} ر.س</strong> من مدخراتك الشخصية للوصول إلى مرحلة {evolution.nextStage.name}.
+                <span className="block text-[9px] text-cream/45 mt-0.5">باقي {evolution.remainingPercentage}% من هدفك الشخصي حتى هذا المستوى.</span>
+              </p>
+            ) : (
+              <p className="text-[11px] text-cream/75 font-bold leading-relaxed">وصل صقر إلى مرحلته النهائية؛ واصل الادخار الشخصي لإكمال هدفك.</p>
+            )}
+          </div>
+        </section>
 
         {/* Savings card */}
         <div className="w-full bg-ink-card rounded-3xl p-5 mb-6">

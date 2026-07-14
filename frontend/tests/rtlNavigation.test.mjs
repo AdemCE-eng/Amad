@@ -29,6 +29,7 @@ test('top-level Pet destination does not duplicate BottomNav with a back control
   const petRoom = await read('../src/views/PetRoomView.jsx');
 
   assert.doesNotMatch(petRoom, /ChevronRight|NestedPageHeader|setActiveView/);
-  assert.match(petRoom, /غرفة \{petName\}/);
-  assert.match(petRoom, /<CoinPill coins=\{game\.nxp_balance\}/);
+  assert.match(petRoom, />صقر<\/h1>/);
+  assert.match(petRoom, /data-testid="pet-product-header"/);
+  assert.match(petRoom, /data-testid="pet-nxp-balance"/);
 });

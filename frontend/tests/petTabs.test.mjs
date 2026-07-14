@@ -12,13 +12,43 @@ test('Pet exposes three accessible internal tabs with Status selected by default
 
   assert.match(pet, /role="tablist"/);
   assert.equal([...pet.matchAll(/role="tab"/g)].length, 1, 'tab role should come from the mapped button template');
-  assert.match(pet, /aria-selected=\{petActiveTab === tab\.id\}/);
+  assert.match(pet, /aria-selected=\{selected\}/);
+  assert.match(pet, /tabIndex=\{selected \? 0 : -1\}/);
+  assert.match(pet, /onKeyDown=\{\(event\) => handleTabKeyDown\(event, index\)\}/);
+  assert.match(pet, /ArrowLeft/);
+  assert.match(pet, /ArrowRight/);
+  assert.match(pet, /bg-coral\/15 border-coral\/45 text-coral/);
+  assert.match(pet, /min-h-10/);
   assert.match(pet, /الحالة/);
   assert.match(pet, /التحديات والإنجازات/);
   assert.match(pet, /الإكسسوارات/);
   assert.match(context, /useState\('status'\)/);
   assert.match(context, /setPetActiveTab\('status'\)/);
   assert.match(context, /petActiveTab, setPetActiveTab/);
+});
+
+test('Pet uses a balanced top-level product header with contextual live state', async () => {
+  const pet = await read('../src/views/PetRoomView.jsx');
+
+  assert.match(pet, /data-testid="pet-product-header"/);
+  assert.match(pet, />صقر<\/h1>/);
+  assert.match(pet, /رفيقك المالي/);
+  assert.match(pet, /مرحلة \{evolution\.currentStage\.name\}/);
+  assert.match(pet, /data-testid="pet-nxp-balance"/);
+  assert.match(pet, /\{game\.nxp_balance\}/);
+  assert.doesNotMatch(pet, /CoinPill/);
+  assert.doesNotMatch(pet, /ChevronRight|ChevronLeft/);
+  assert.match(pet, /px-5 pt-4 pb-2 flex items-center justify-between/);
+});
+
+test('Pet tabs use non-emoji icons and equal-width compact layout', async () => {
+  const pet = await read('../src/views/PetRoomView.jsx');
+
+  assert.match(pet, /icon: HeartPulse/);
+  assert.match(pet, /icon: Trophy/);
+  assert.match(pet, /icon: ShoppingBag/);
+  assert.match(pet, /grid grid-cols-3/);
+  assert.match(pet, /<TabIcon size=\{12\}/);
 });
 
 test('Pet tab panels have distinct status, progression, and accessory ownership', async () => {
