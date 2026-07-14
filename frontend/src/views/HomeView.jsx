@@ -80,31 +80,26 @@ export default function HomeView() {
         </section>
 
         {accountOpen && (
-          <section className="bg-gradient-to-l from-coral/15 via-ink-card to-ink-card border border-coral/25 rounded-3xl p-4" data-testid="home-saqr-preview" aria-label="ملخص صقر">
-            <div className="flex items-center gap-4">
-              <div className="w-[92px] h-[92px] shrink-0 rounded-3xl bg-white/5 border border-white/5 grid place-items-center overflow-hidden" aria-hidden="true">
-                <Mascot emotion={emotion} stage={game.stage} equipped={game.equipped} size={84} track={false} />
+          <section className="bg-gradient-to-l from-coral/15 via-ink-card to-ink-card border border-coral/25 rounded-3xl p-3" data-testid="home-saqr-preview" aria-label="ملخص صقر">
+            <div className="flex items-center gap-3">
+              <div className="w-[78px] h-[78px] shrink-0 rounded-2xl bg-white/5 border border-white/5 grid place-items-center overflow-hidden" aria-hidden="true">
+                <Mascot emotion={emotion} stage={game.stage} equipped={game.equipped} size={72} track={false} />
               </div>
               <div className="min-w-0 flex-1">
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <p className="text-[11px] text-coral font-black">رفيقك المالي</p>
-                    <h2 className="font-black text-lg leading-tight">{user.petName || 'صقر'} · {saqrStage}</h2>
-                  </div>
-                  <span className="text-[10px] bg-white/5 border border-white/10 rounded-full px-2.5 py-1 font-bold text-cream/60 whitespace-nowrap">
-                    {game.equipped ? 'إكسسوار مجهّز' : 'جاهز للنمو'}
-                  </span>
+                <div className="flex items-center justify-between gap-2">
+                  <h2 className="font-black text-base leading-tight">{user.petName || 'صقر'} معك · {saqrStage}</h2>
+                  <button type="button" onClick={() => setActiveView('pet')} className="shrink-0 px-2.5 py-1.5 rounded-xl bg-coral text-ink text-[10px] font-black inline-flex items-center gap-1">
+                    افتح صقر <ChevronLeft size={13} />
+                  </button>
                 </div>
-                <p className="text-[11px] text-cream/55 mt-1.5">{saqrStatus}</p>
-                <div className="flex items-center gap-3 mt-2 text-[11px] font-black">
+                <p className="text-[11px] text-cream/55 mt-1">{saqrStatus}</p>
+                <div className="flex items-center gap-2.5 mt-1.5 text-[10px] font-black">
                   <span className="flex items-center gap-1 text-emerald-400"><HeartPulse size={14} /> {pet.health}%</span>
                   <span className="flex items-center gap-1 text-coin"><Flame size={14} /> {game.streak.current} أيام</span>
+                  <span className="text-cream/40 truncate">{game.equipped ? 'إكسسوار مجهّز' : 'جاهز للنمو'}</span>
                 </div>
               </div>
             </div>
-            <button type="button" onClick={() => setActiveView('pet')} className="w-full mt-3 py-2.5 rounded-2xl bg-coral text-ink text-sm font-black flex items-center justify-center gap-1.5">
-              افتح صقر <ChevronLeft size={16} />
-            </button>
           </section>
         )}
 
@@ -114,7 +109,7 @@ export default function HomeView() {
             <span className="flex-1"><small className="block text-coral font-black">ابدأ من هنا</small><strong className="block">فعّل حساب التوفير وخطّط ادخارك</strong><small className="block text-cream/50 mt-1">خطة ميزانية وهدف ادخار يناسبان دخلك.</small></span>
             <ChevronLeft size={18} className="text-cream/40" />
           </button>
-        ) : <BudgetOverview budgets={budgets} budgetPeriod={budgetPeriod} projectedRollover={projectedRollover} />}
+        ) : <BudgetOverview budgets={budgets} budgetPeriod={budgetPeriod} projectedRollover={projectedRollover} onOpenDetails={() => setActiveView('budget-details')} />}
 
         <button onClick={() => setActiveView('family')} className="w-full bg-ink-card rounded-3xl p-4 text-right" data-testid="home-family-preview">
           <div className="flex items-center justify-between"><span className="flex items-center gap-2 text-xs text-coral font-black"><Users size={16} /> هدف العائلة</span><ChevronLeft size={17} className="text-cream/40" /></div>

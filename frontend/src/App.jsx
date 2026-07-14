@@ -8,6 +8,7 @@ import NotificationsView from './views/NotificationsView';
 import FamilyGoalView from './views/FamilyGoalView';
 import OpportunitiesView from './views/OpportunitiesView';
 import TransactionsView from './views/TransactionsView';
+import BudgetDetailsView from './views/BudgetDetailsView';
 import MascotLab from './views/MascotLab';
 import BottomNav from './components/ui/BottomNav';
 import CelebrationOverlay from './components/ui/CelebrationOverlay';
@@ -72,8 +73,9 @@ function AppShell() {
                 {activeView === 'family' && <FamilyGoalView />}
                 {activeView === 'opportunities' && <OpportunitiesView />}
                 {activeView === 'transactions' && <TransactionsView />}
+                {activeView === 'budget-details' && <BudgetDetailsView />}
                 {activeView === 'notifications' && <NotificationsView setActiveView={setActiveView} />}
-                {!['notifications', 'transactions'].includes(activeView) && (
+                {!['notifications', 'transactions', 'budget-details'].includes(activeView) && (
                   <BottomNav activeView={activeView} setActiveView={setActiveView} petName={user?.petName} pet={pet} game={game} petLocked={!savingsAccountOpened} />
                 )}
                 <RewardNotice />
