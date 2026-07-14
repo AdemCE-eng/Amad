@@ -172,3 +172,15 @@ body {
   pointer-events: none;
   animation: reviveRing 0.9s ease-out forwards;
 }
+
+/* Every shared Namo celebration crossfades instead of animating internals
+   when the operating system requests reduced motion. */
+@media (prefers-reduced-motion: reduce) {
+  .namo-celebration-dialog *,
+  .namo-celebration-dialog *::before,
+  .namo-celebration-dialog *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

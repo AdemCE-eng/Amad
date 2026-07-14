@@ -196,6 +196,7 @@ router.post("/reset", async (_req, res, next) => {
       loyalty,
       contributionPlan: null,
       notifications: null,
+      userNotifications: null,
       meta: { lastEvent: "reset" },
       transactions: null,
     });
@@ -208,6 +209,7 @@ router.post("/reset", async (_req, res, next) => {
       loyalty,
       contributionPlan: null,
       notifications: null,
+      userNotifications: null,
       transactions: null,
     });
   } catch (e) {

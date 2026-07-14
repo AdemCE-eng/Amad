@@ -16,6 +16,15 @@ export const SHOP_ITEMS = {
   falcon_hood: { name: 'تاج ذهبي', price: 150, icon: '👑' },
 };
 
+// Mirrors backend/src/logic/gameEngine.js so celebration copy is resolved from
+// the real event id instead of being hard-coded for one demo challenge.
+export const CHALLENGES = {
+  less_coffee: { title: 'قهوة أقل هذا الأسبوع', reward: 50, icon: '☕' },
+  no_delivery: { title: 'أسبوع بلا توصيل', reward: 40, icon: '🛵' },
+  save_thrice: { title: 'وفّر ثلاث مرات', reward: 60, icon: '💰' },
+  budget_days: { title: 'خمسة أيام منضبطة', reward: 70, icon: '📅' },
+};
+
 export const STAGE_INFO = [
   { name: 'بيضة', icon: '🥚', at: 0 },
   { name: 'فرخ', icon: '🐤', at: 30 },

@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import { useAppData } from '../../context/AppDataContext';
-import { burst } from '../../lib/confetti';
 
 // Parent-reward notification for the ACTIVE role. Watches
 // /notifications/{activeRole}/parentReward and celebrates once per event
@@ -21,7 +20,6 @@ export default function RewardNotice() {
     if (notice.at <= seen) return;
     localStorage.setItem(seenKey, String(notice.at));
     setVisible(true);
-    burst();
     clearTimeout(timer.current);
     timer.current = setTimeout(() => setVisible(false), 5000);
     return () => clearTimeout(timer.current);

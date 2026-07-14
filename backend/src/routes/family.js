@@ -13,6 +13,7 @@ import {
   validateParentReward,
 } from "../logic/familyEngine.js";
 import { generatePetMessage } from "../ai/gemini.js";
+import { buildNotification } from "../logic/notificationEngine.js";
 
 const router = Router();
 
@@ -120,6 +121,18 @@ router.post("/family/reward", async (req, res, next) => {
 
     const notifTitle = "مكافأة من ولي الأمر 🎖️";
     const notifBody = reward.message || `${reward.senderName} كافأك بـ ${amount} نقطة أكثر`;
+    const notification = buildNotification({
+      id: reward.id,
+      recipientId: reward.recipientId,
+      type: "parent_reward",
+      title: notifTitle,
+      body: notifBody,
+      timestamp: reward.at,
+      relatedEntityId: reward.id,
+      senderId: reward.senderId,
+      rewardType: "akthr",
+      rewardAmount: amount,
+    });
 
     // Single atomic multi-location update.
     await db.ref("/").update({
@@ -134,18 +147,8 @@ router.post("/family/reward", async (req, res, next) => {
         at: reward.at,
         source: "MOCK akthr",
       },
-      // Same event, in the shape/location the Notifications tab actually reads
-      // (GET /api/user/notifications → /user/notifications). Without this the
-      // tab is permanently empty: nothing else ever writes a real notification.
-      // Keyed by reward.id, so the endpoint's idempotency holds here too.
-      [`/user/notifications/${reward.id}`]: {
-        id: reward.id,
-        title: notifTitle,
-        message: notifBody,
-        type: "reward",
-        read: false,
-        createdAt: reward.at,
-      },
+      // Stable recipient-scoped record used by the realtime notification UI.
+      [`/userNotifications/${reward.recipientId}/${reward.id}`]: notification,
       "/pet": pet,
       [`/transactions/${txnKey}`]: {
         type: "reward",

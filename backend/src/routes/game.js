@@ -17,6 +17,13 @@ import {
   SHOP_ITEMS,
   ACHIEVEMENTS,
 } from "../logic/gameEngine.js";
+import { buildNotification } from "../logic/notificationEngine.js";
+import {
+  markNotificationsReadForRecipient,
+  notificationPath,
+  readNotificationsForRecipient,
+  recipientFromRequest,
+} from "../services/notificationService.js";
 
 const router = Router();
 
@@ -148,15 +155,16 @@ router.post("/user/profile", async (req, res, next) => {
 
 router.post("/user/notifications", async (req, res, next) => {
   try {
-    const notification = {
+    const recipientId = recipientFromRequest(req);
+    if (!recipientId) return res.status(400).json({ ok: false, error: "invalid_recipient" });
+    const ref = db.ref(notificationPath(recipientId)).push();
+    const notification = buildNotification({
+      id: ref.key,
+      recipientId,
+      type: req.body.type || "general",
       title: req.body.title,
-      message: req.body.message,
-      type: req.body.type,
-      read: false,
-      createdAt: Date.now(),
-    };
-
-    const ref = db.ref("/user/notifications").push();
+      body: req.body.body || req.body.message,
+    });
     await ref.set(notification);
 
     res.json({ ok: true, notification });
@@ -165,32 +173,23 @@ router.post("/user/notifications", async (req, res, next) => {
   }
 });
 
-router.post("/user/mark-all-notifications-read", async (_req, res, next) => {
+router.post("/user/mark-all-notifications-read", async (req, res, next) => {
   try {
-    const snapshot = await db.ref("/user/notifications").get();
-    const notifications = snapshot.val() ?? {};
-
-    const updates = {};
-
-    Object.keys(notifications).forEach((id) => {
-      updates[`${id}/read`] = true;
-    });
-
-    await db.ref("/user/notifications").update(updates);
-
-    res.json({ ok: true });
+    const recipientId = recipientFromRequest(req);
+    if (!recipientId) return res.status(400).json({ ok: false, error: "invalid_recipient" });
+    const marked = await markNotificationsReadForRecipient(recipientId);
+    res.json({ ok: true, recipientId, marked });
   } catch (e) {
     next(e);
   }
 });
 
-router.get("/user/notifications", async (_req, res, next) => {
+router.get("/user/notifications", async (req, res, next) => {
   try {
-    const snapshot = await db.ref("/user/notifications").get();
-    const data = snapshot.val() ?? {};
-    const notifications = Object.values(data);
-
-    res.json({ ok: true, notifications });
+    const recipientId = recipientFromRequest(req);
+    if (!recipientId) return res.status(400).json({ ok: false, error: "invalid_recipient" });
+    const notifications = await readNotificationsForRecipient(recipientId);
+    res.json({ ok: true, recipientId, notifications });
   } catch (e) {
     next(e);
   }

@@ -19,6 +19,7 @@ test('full reset clears every Namo journey key without touching unrelated storag
     namo_active_role: 'ahmed',
     namo_offers_revealed: '1',
     namo_reward_seen_rashid: '123',
+    namo_celebration_ack_rashid: 'evolution:stage_1:123',
     namo_tip_dismissed: '1',
     unrelated_preference: 'keep',
   });
@@ -29,6 +30,7 @@ test('full reset clears every Namo journey key without touching unrelated storag
   assert.equal(storage.getItem('namo_active_role'), null);
   assert.equal(storage.getItem('namo_offers_revealed'), null);
   assert.equal(storage.getItem('namo_reward_seen_rashid'), null);
+  assert.equal(storage.getItem('namo_celebration_ack_rashid'), null);
   assert.equal(storage.getItem('namo_tip_dismissed'), null);
   assert.equal(storage.getItem('unrelated_preference'), 'keep');
   assert.equal(CANONICAL_DEMO_ROLE, 'rashid');

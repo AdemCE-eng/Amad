@@ -1,11 +1,11 @@
 import React from 'react';
 import { useAppData } from '../context/AppDataContext';
-import { cashbackState, CASHBACK_SPONSOR_LABEL } from '../lib/cashback';
+import { cashbackState } from '../lib/cashback';
 
 const REWARD_TYPES = [
-  { id: 'nxp', label: 'NXP', icon: '🪙', style: 'amber', description: 'عملة افتراضية داخل نامو للإنجازات وإكسسوارات صقر.' },
-  { id: 'akthr', label: 'أكثر / Akthr', icon: '🟢', style: 'emerald', description: 'نقاط ولاء تجريبية مرتبطة بالمكافآت والحملات.' },
-  { id: 'cashback', label: 'كاش باك', icon: '💳', style: 'sky', description: 'مكافآت كاش باك تجريبية تمولها حملات التجار.' },
+  { id: 'nxp', label: 'NXP', icon: '🪙', style: 'amber', description: 'عملة نامو للإنجازات وإكسسوارات صقر.' },
+  { id: 'akthr', label: 'أكثر / Akthr', icon: '🟢', style: 'emerald', description: 'نقاط ولاء مرتبطة بالمكافآت والعروض.' },
+  { id: 'cashback', label: 'كاش باك', icon: '💳', style: 'sky', description: 'مكافآت كاش باك من العروض المؤهلة.' },
 ];
 
 const BALANCE_STYLES = {
@@ -46,7 +46,6 @@ export default function RewardsView() {
               <div key={type.id} className={`border rounded-2xl p-2.5 text-center min-w-0 ${BALANCE_STYLES[type.style]}`}>
                 <p className="text-[10px] font-bold leading-tight break-words">{type.icon} {type.label}</p>
                 <p className="text-lg font-black leading-tight mt-1 break-words">{balances[type.id]}</p>
-                <span className="inline-block mt-1 text-[8px] font-black opacity-70">MOCK</span>
               </div>
             ))}
           </div>
@@ -70,7 +69,7 @@ export default function RewardsView() {
         <section aria-labelledby="family-rewards-title" data-testid="family-reward-activity">
           <div className="flex items-center justify-between gap-3 mb-3 px-1">
             <h2 id="family-rewards-title" className="font-black text-cream">مكافآت العائلة</h2>
-            <span className="text-[9px] font-black text-emerald-300 border border-emerald-400/25 rounded-full px-2 py-1">MOCK أكثر</span>
+            <span className="text-[9px] font-black text-emerald-300 border border-emerald-400/25 rounded-full px-2 py-1">نقاط أكثر</span>
           </div>
           {familyRewards.length > 0 ? (
             <div className="space-y-2">
@@ -97,7 +96,7 @@ export default function RewardsView() {
             <h2 id="cashback-title" className="font-black text-cream">مكافآت الكاش باك</h2>
             <span className="text-[10px] font-bold text-sky-300/90 whitespace-nowrap">💳 {cashback.total} ر.س</span>
           </div>
-          <p className="text-[10px] font-bold text-cream/60 mb-3 px-1">{CASHBACK_SPONSOR_LABEL} · MOCK</p>
+          <p className="text-[10px] font-bold text-cream/60 mb-3 px-1">مكافآت مرتبطة بالعروض المؤهلة</p>
           <div className="space-y-2">
             {[...cashback.earned.map((reward) => ({ ...reward, earned: true })), ...cashback.locked.map((reward) => ({ ...reward, earned: false }))].map((reward) => (
               <div key={reward.id} className={`rounded-2xl p-3 flex items-center gap-3 min-w-0 ${reward.earned ? 'bg-sky-400/10 border border-sky-400/25' : 'bg-ink-card/70'}`}>

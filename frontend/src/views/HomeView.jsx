@@ -1,294 +1,139 @@
-import React, { useState, useEffect} from 'react';
+import React, { useState } from 'react';
 import {
-  Bell, Sun, Edit3, Eye, EyeOff, ShoppingCart, HeartPulse, ArrowLeftRight,
-  Wallet, PiggyBank, ShieldAlert, Receipt, Smartphone, Car, Zap, ChevronLeft,
-  Users, Sparkles,
+  ArrowLeftRight, Bell, Car, ChevronLeft, Eye, EyeOff, Flame,
+  HeartPulse, Receipt, Smartphone, Sparkles, TrendingUp, Users,
 } from 'lucide-react';
 import { useAppData } from '../context/AppDataContext';
-import { api } from '../lib/api';
 import Mascot from '../components/mascot/Mascot';
 import { useMascotEmotion } from '../components/mascot/useMascotEmotion';
-import StreakFlame from '../components/ui/StreakFlame';
-import ChallengeCard from '../components/ui/ChallengeCard';
-import CountUp from '../components/ui/CountUp';
 import BudgetOverview from '../components/ui/BudgetOverview';
+import CountUp from '../components/ui/CountUp';
 import SavingsPlanSheet from '../components/ui/SavingsPlanSheet';
-import SaveRewardTag from '../components/ui/SaveRewardTag';
-import { SAVE_PRESETS } from '../lib/catalog';
-import { time } from 'motion/react';
+import TransactionRow from '../components/ui/TransactionRow';
+import { STAGE_INFO } from '../lib/catalog';
 
-const TX_LABELS = {
-  purchase: { icon: ShoppingCart, sign: '-' },
-  salary: { icon: Wallet, sign: '+' },
-  save: { icon: PiggyBank, sign: '-' },
-  emergency: { icon: ShieldAlert, sign: '-' },
-};
-
-// Same four tiles as the real app's home
 const QUICK_ACTIONS = [
   { label: 'دفع الفواتير', icon: Receipt },
-  { label: 'الحوالات السريعة', icon: ArrowLeftRight },
+  { label: 'التحويلات السريعة', icon: ArrowLeftRight },
   { label: 'شحن الجوال', icon: Smartphone },
   { label: 'المخالفات المرورية', icon: Car },
 ];
 
-function formatDate(ts) {
-  if (!ts) return '';
-  return new Date(ts).toLocaleString('ar-SA', { dateStyle: 'medium', timeStyle: 'short' });
-}
-
 export default function HomeView() {
   const {
-    user, pet, game, transactions, family,
-    isSick, isTired, goalProgress,
-    isShaking, flashColor, setActiveView,
-    isSubmitting, runAction,
+    user, pet, game, transactions, family, opportunityResult,
+    isShaking, flashColor, setActiveView, unreadNotificationCount,
     budgets, budgetPeriod, projectedRollover, savingsAccountOpened,
   } = useAppData();
   const { emotion } = useMascotEmotion(pet);
-  const petName = user.petName || 'صقر';
   const [showBalance, setShowBalance] = useState(true);
   const [planOpen, setPlanOpen] = useState(false);
-  
-  const promptSave = () => {
-    const amountStr = window.prompt('كم تبغى توفر؟ (ر.س)', String(SAVE_PRESETS[1]));
-    if (!amountStr) return;
-    const amt = parseFloat(amountStr);
-    if (!amt || amt <= 0) return;
-    runAction(() => api.save(amt));
-  };
-
-  const [notifications, setNotifications] = useState([]);
-  useEffect(() => {
-      const interval = setInterval(() => {
-          async function loadNotifications() {
-          try {
-            const response = await api.getNotifications();
-            setNotifications(response.notifications ?? []);
-          } catch (error) {
-            console.error("Failed to load notifications:", error);
-          }
-        }
-        loadNotifications();
-      }, 2000); // Check every 2 seconds
-
-      return () => clearInterval(interval);
-  }, []);
-  
-  // The savings account is the gate: the pet + budget only appear once it's
-  // activated (the user applies a plan). Before that, Home shows the CTA only.
   const accountOpen = savingsAccountOpened;
+  const latestTransactions = [...transactions].sort((a, b) => b.timestamp - a.timestamp).slice(0, 4);
+  const familyProgress = family?.goalAmount > 0 ? Math.min(100, Math.round((family.savedAmount / family.goalAmount) * 100)) : 0;
+  const rashidContribution = family?.members?.rashid?.contributed ?? 0;
+  const topOpportunity = opportunityResult?.recommendations?.[0] || null;
+  const saqrStage = STAGE_INFO[game.stage]?.name || `المرحلة ${game.stage + 1}`;
+  const saqrStatus = pet.health < 45
+    ? 'يحتاج إلى عناية مالية اليوم'
+    : game.streak.current > 0
+      ? `سلسلتك مستمرة منذ ${game.streak.current} أيام`
+      : 'مبسوط بالتزامك المالي اليوم';
 
   return (
-    <div className={`bg-ink h-full flex flex-col font-sans text-cream transition-all duration-300 ${isShaking ? 'animate-screen-shake' : ''}`} dir="rtl">
-      {flashColor && <div className="absolute inset-0 z-50 pointer-events-none transition-colors duration-300" style={{ backgroundColor: flashColor }}></div>}
+    <div className={`bg-ink h-full flex flex-col font-sans text-cream transition-all ${isShaking ? 'animate-screen-shake' : ''}`} dir="rtl">
+      {flashColor && <div className="absolute inset-0 z-50 pointer-events-none" style={{ backgroundColor: flashColor }} />}
 
-      {/* Header — dark Alinma: avatar + name right, line icons left */}
-      <div className="px-5 pt-5 pb-2 flex justify-between items-center z-10">
-        <div className="flex items-center gap-4 text-cream/90">
-          <span className="border border-white/15 rounded-xl p-1.5"><Sun size={18} strokeWidth={1.8} /></span>
-          <button onClick={() => api.addNotification({title: "WOOHOOOO", message: "YOOO", type: "No"})}>
-            <Edit3 size={20} strokeWidth={1.8} />
-          </button>
+      <header className="px-5 pt-4 pb-3 flex items-center justify-between z-10" data-testid="namo-home-header">
+        <div className="flex items-center gap-3 min-w-0">
+          <span className="w-11 h-11 rounded-2xl bg-gradient-to-br from-coral to-coral-deep text-ink grid place-items-center font-black text-lg shrink-0">{user.name?.trim()?.[0] || 'ر'}</span>
+          <div className="min-w-0"><p className="font-black text-lg truncate">هلا، {user.name}</p><p className="text-[11px] text-cream/50 font-bold">المستوى {game.streak.current}</p></div>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="bg-violet/15 border border-violet/25 text-violet rounded-full px-3 py-2 text-[11px] font-black whitespace-nowrap">NXP {game.nxp_balance}</span>
           <div className="relative">
-            <button onClick={() => setActiveView('notifications')} className="text-cream/60 translate-y-1">
-              <Bell size={20} strokeWidth={1.8} />
+            <button aria-label="الإشعارات" onClick={() => setActiveView('notifications')} className="w-10 h-10 rounded-xl border border-white/10 grid place-items-center text-cream/75">
+              <Bell size={19} strokeWidth={1.8} />
             </button>
-            {notifications.some((n) => !n.read) && <span className="absolute -top-0.9 -left-0.5 bg-coral-deep w-2 h-2 rounded-full"></span>}
-            
+            {unreadNotificationCount > 0 && <span className="absolute top-1 left-1 bg-coral-deep w-2.5 h-2.5 rounded-full ring-2 ring-ink" />}
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="text-left">
-            <p className="font-black text-cream text-lg leading-tight">{user.name}</p>
-            {accountOpen && <p className="text-[11px] text-violet font-bold">✦ {game.nxp_balance} NXP</p>}
-          </div>
-          {accountOpen && (
-            <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center font-black text-cream text-lg">
-              {game.streak.current}
-            </div>
-          )}
-        </div>
-      </div>
+      </header>
 
-      <div className="px-5 space-y-5 flex-1 overflow-y-auto pb-28 z-10">
-        {/* Balance — flat, centered, maskable like the real app */}
-        <div className="text-center pt-2 pb-1">
-          <p className="text-sm text-cream/50 font-bold mb-2">حساب جاري 1000 •••</p>
-          <div className="flex items-center justify-center gap-3">
-            <button onClick={() => setShowBalance((v) => !v)} className="text-cream/60">
-              {showBalance ? <Eye size={20} /> : <EyeOff size={20} />}
-            </button>
-            {showBalance ? (
-              <h2 className="text-4xl font-black text-cream tracking-tight">
-                <CountUp value={user.balance} /> <span className="text-base font-bold text-cream/40">ر.س</span>
-              </h2>
-            ) : (
-              <h2 className="text-4xl font-black text-cream tracking-widest">••••••••</h2>
-            )}
+      <main className="px-5 space-y-5 flex-1 overflow-y-auto pb-28 z-10">
+        <section className="bg-gradient-to-l from-ink-card to-ink-soft border border-white/5 rounded-3xl p-5" aria-label="الحساب الجاري">
+          <div className="flex items-center justify-between"><div><p className="text-xs text-cream/45 font-bold">الحساب الجاري</p><p className="text-[11px] text-cream/35 mt-1" dir="ltr">SA•• •••• •••• 1000</p></div><span className="text-[10px] bg-white/5 px-3 py-1 rounded-full text-cream/60 font-bold">جاري</span></div>
+          <div className="flex items-center gap-3 mt-5">
+            <button aria-label={showBalance ? 'إخفاء الرصيد' : 'إظهار الرصيد'} onClick={() => setShowBalance((value) => !value)} className="w-9 h-9 rounded-xl bg-white/5 grid place-items-center text-cream/60">{showBalance ? <Eye size={18} /> : <EyeOff size={18} />}</button>
+            {showBalance ? <h2 className="text-3xl font-black"><CountUp value={user.balance} /> <span className="text-sm text-cream/40">ر.س</span></h2> : <h2 className="text-3xl font-black tracking-widest">••••••••</h2>}
           </div>
-          <span className="inline-block mt-3 bg-ink-soft px-6 py-1.5 rounded-full text-sm font-bold text-cream/90">جاري</span>
-          <div className="flex justify-center gap-1.5 mt-4">
-            <span className="w-6 h-1.5 rounded-full bg-coral"></span>
-            <span className="w-1.5 h-1.5 rounded-full bg-white/20"></span>
-          </div>
-        </div>
+          <div className="flex justify-center gap-1.5 mt-5"><span className="w-6 h-1.5 rounded-full bg-coral" /><span className="w-1.5 h-1.5 rounded-full bg-white/20" /></div>
+        </section>
 
-        {/* Activation CTA — until the savings account is opened, this is the
-            single entry point. Opening it (applying a plan) reveals the pet
-            and the budget board below. */}
-        {!accountOpen && (
-          <button
-            onClick={() => setPlanOpen(true)}
-            className="w-full bg-gradient-to-l from-coral/20 to-ink-card border border-coral/40 rounded-3xl p-4 flex items-center gap-4 text-right active:scale-[0.99] transition-transform"
-          >
-            <div className="bg-coral text-ink p-3.5 rounded-2xl flex-shrink-0">
-              <Sparkles size={22} strokeWidth={1.9} />
-            </div>
-            <div className="flex-1">
-              <p className="text-[11px] text-coral font-black">ابدأ من هنا</p>
-              <p className="font-black text-white">فعّل حساب التوفير وخطّط ادخارك</p>
-              <p className="text-[11px] text-cream/50 font-bold mt-0.5">خطة ذكية حسب دخلك — وبعدها يظهر مرافقك وميزانيتك</p>
-            </div>
-            <ChevronLeft size={18} className="text-cream/40 flex-shrink-0" />
-          </button>
-        )}
-
-        {/* Featured product banner — نامو (pet). Gated behind the account. */}
-        {accountOpen && (
-          <div className="bg-ink-card rounded-3xl p-5 relative overflow-hidden">
-            <div className="flex items-center gap-3">
-              <div className="flex-1">
-                <p className="text-coral text-xs font-black mb-1">جديد نامو</p>
-                <h3 className="text-2xl font-black text-white leading-snug">{petName} — مرافق مالي يحس فيك</h3>
-                <p className="text-sm text-cream/60 font-medium mt-1.5">يفرح لما توفر، ويتعب لما تسرف — وينمو معك.</p>
-                <button
-                  onClick={() => setActiveView('pet')}
-                  className="mt-4 bg-white text-ink font-black text-sm px-5 py-2.5 rounded-2xl flex items-center gap-1 active:scale-95 transition-transform"
-                >
-                  اكتشف {petName}
-                  <ChevronLeft size={16} />
-                </button>
-              </div>
-              <div className="w-24 flex-shrink-0 flex items-center justify-center">
-                <Mascot emotion={emotion} stage={game.stage} equipped={game.equipped} size={96} track={false} />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Quick actions — coral squircles, navy icons (real dark-mode style) */}
-        <div className="grid grid-cols-4 gap-3">
+        <section className="grid grid-cols-4 gap-2" aria-label="الخدمات المصرفية السريعة">
           {QUICK_ACTIONS.map(({ label, icon: Icon }) => (
-            <div key={label} className="flex flex-col items-center gap-2">
-              <div className="bg-coral-tile text-ink p-4 rounded-2xl">
-                <Icon size={20} strokeWidth={1.9} />
-              </div>
-              <span className="text-[11px] text-cream/90 font-bold text-center leading-tight">{label}</span>
-            </div>
+            <button key={label} type="button" className="min-w-0 flex flex-col items-center gap-2">
+              <span className="w-12 h-12 bg-coral-tile text-ink rounded-2xl grid place-items-center"><Icon size={20} strokeWidth={1.9} /></span>
+              <span className="text-[10px] text-cream/85 font-bold text-center leading-tight">{label}</span>
+            </button>
           ))}
-        </div>
+        </section>
 
-        {/* Category budgets + auto-rollover — only after activation */}
         {accountOpen && (
-          <BudgetOverview budgets={budgets} budgetPeriod={budgetPeriod} projectedRollover={projectedRollover} />
+          <section className="bg-gradient-to-l from-coral/15 via-ink-card to-ink-card border border-coral/25 rounded-3xl p-3" data-testid="home-saqr-preview" aria-label="ملخص صقر">
+            <div className="flex items-center gap-3">
+              <div className="w-[78px] h-[78px] shrink-0 rounded-2xl bg-white/5 border border-white/5 grid place-items-center overflow-hidden" aria-hidden="true">
+                <Mascot emotion={emotion} stage={game.stage} equipped={game.equipped} size={72} track={false} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center justify-between gap-2">
+                  <h2 className="font-black text-base leading-tight">{user.petName || 'صقر'} معك · {saqrStage}</h2>
+                  <button type="button" onClick={() => setActiveView('pet')} className="shrink-0 px-2.5 py-1.5 rounded-xl bg-coral text-ink text-[10px] font-black inline-flex items-center gap-1">
+                    افتح صقر <ChevronLeft size={13} />
+                  </button>
+                </div>
+                <p className="text-[11px] text-cream/55 mt-1">{saqrStatus}</p>
+                <div className="flex items-center gap-2.5 mt-1.5 text-[10px] font-black">
+                  <span className="flex items-center gap-1 text-emerald-400"><HeartPulse size={14} /> {pet.health}%</span>
+                  <span className="flex items-center gap-1 text-coin"><Flame size={14} /> {game.streak.current} أيام</span>
+                  <span className="text-cream/40 truncate">{game.equipped ? 'إكسسوار مجهّز' : 'جاهز للنمو'}</span>
+                </div>
+              </div>
+            </div>
+          </section>
         )}
 
-        {/* Suggested template — the save action (feeds the pet) */}
-        {accountOpen && (
-          <button
-            disabled={isSubmitting}
-            onClick={promptSave}
-            className="w-full bg-ink-soft rounded-3xl p-4 flex items-center gap-4 text-right active:scale-[0.99] transition-transform disabled:opacity-50"
-          >
-            <div className="bg-coral-tile text-ink p-3.5 rounded-2xl flex-shrink-0">
-              <Zap size={22} strokeWidth={1.9} />
-            </div>
-            <div className="flex-1">
-              <p className="text-[11px] text-cream/50 font-bold">قالب مقترح لك</p>
-              <p className="font-black text-white">وفّر الآن — أطعم {petName} 🪙</p>
-              <p className="text-[11px] text-cream/50 font-bold mt-0.5">قالب معتمد • تحت تحكمك الكامل</p>
-            </div>
-            <ChevronLeft size={18} className="text-cream/40 flex-shrink-0" />
+        {!accountOpen ? (
+          <button onClick={() => setPlanOpen(true)} className="w-full bg-gradient-to-l from-coral/20 to-ink-card border border-coral/35 rounded-3xl p-4 flex items-center gap-4 text-right" data-testid="home-setup-card">
+            <span className="bg-coral text-ink p-3.5 rounded-2xl"><Sparkles size={21} /></span>
+            <span className="flex-1"><small className="block text-coral font-black">ابدأ من هنا</small><strong className="block">فعّل حساب التوفير وخطّط ادخارك</strong><small className="block text-cream/50 mt-1">خطة ميزانية وهدف ادخار يناسبان دخلك.</small></span>
+            <ChevronLeft size={18} className="text-cream/40" />
           </button>
-        )}
+        ) : <BudgetOverview budgets={budgets} budgetPeriod={budgetPeriod} projectedRollover={projectedRollover} onOpenDetails={() => setActiveView('budget-details')} />}
 
-        {/* Income-relative NXP receipt — proof on screen that the reward
-            scales with % of income (or the "back to your best" zero case). */}
-        {accountOpen && <SaveRewardTag reward={game.lastSaveReward} />}
-
-        {/* Family Goal — nav card into the dedicated tab (always available) */}
-        <button
-          onClick={() => setActiveView('family')}
-          className="w-full bg-ink-soft rounded-3xl p-4 flex items-center gap-4 text-right active:scale-[0.99] transition-transform"
-        >
-          <div className="bg-coral-tile text-ink p-3.5 rounded-2xl flex-shrink-0">
-            <Users size={22} strokeWidth={1.9} />
-          </div>
-          <div className="flex-1">
-            <p className="text-[11px] text-cream/50 font-bold">الهدف العائلي</p>
-            <p className="font-black text-white">{family?.goalTitle || 'رحلة العائلة'}</p>
-            <p className="text-[11px] text-cream/50 font-bold mt-0.5">{family?.savedAmount ?? 0} / {family?.goalAmount ?? 0} ر.س</p>
-          </div>
-          <ChevronLeft size={18} className="text-cream/40 flex-shrink-0" />
+        <button onClick={() => setActiveView('family')} className="w-full bg-ink-card rounded-3xl p-4 text-right" data-testid="home-family-preview">
+          <div className="flex items-center justify-between"><span className="flex items-center gap-2 text-xs text-coral font-black"><Users size={16} /> هدف العائلة</span><ChevronLeft size={17} className="text-cream/40" /></div>
+          <p className="font-black mt-2">{family?.goalTitle || 'رحلة العائلة'}</p>
+          <div className="h-1.5 bg-white/10 rounded-full overflow-hidden mt-3"><span className="block h-full bg-coral rounded-full" style={{ width: `${familyProgress}%` }} /></div>
+          <div className="flex justify-between mt-2 text-[11px] font-bold"><span className="text-cream/55">{family?.savedAmount ?? 0} / {family?.goalAmount ?? 0} ر.س</span><span className="text-violet">مساهمة راشد {rashidContribution} ر.س</span></div>
         </button>
 
-        {/* Companion status — pet health/goal at a glance (gated) */}
-        {accountOpen && (
-          <div
-            onClick={() => setActiveView('pet')}
-            className={`rounded-3xl p-4 cursor-pointer transition-all ${isSick ? 'bg-red-950/60 border border-red-500/30' : 'bg-ink-card'}`}
-          >
-            <div className="flex items-center gap-3 mb-3">
-              <StreakFlame streak={game.streak} />
-              <div className="flex items-center gap-1 text-xs font-bold mr-auto">
-                <HeartPulse size={13} className={isSick ? 'text-red-400' : isTired ? 'text-orange-400' : 'text-emerald-400'} />
-                <span className={isSick ? 'text-red-400' : isTired ? 'text-orange-400' : 'text-emerald-400'}>{pet.health}%</span>
-              </div>
-              <span className="text-xs font-black text-cream/70">الهدف {goalProgress}%</span>
-            </div>
-            <p className="text-sm text-cream/70 font-medium mb-3">"{pet.message}"</p>
-            <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
-              <div
-                className={`h-2 rounded-full transition-all duration-1000 ease-out ${isSick ? 'bg-red-400' : 'bg-coral'}`}
-                style={{ width: `${goalProgress}%` }}
-              ></div>
-            </div>
-            <p className="text-[10px] text-cream/40 text-left font-bold mt-1.5">{user.savedAmount.toFixed(0)} / {user.goalAmount.toFixed(0)} ر.س</p>
-          </div>
-        )}
+        <button onClick={() => setActiveView('opportunities')} className="w-full bg-ink-card rounded-3xl p-4 text-right" data-testid="home-opportunity-preview">
+          <div className="flex items-center justify-between"><span className="flex items-center gap-2 text-xs text-violet font-black"><TrendingUp size={16} /> فرص التوفير</span><ChevronLeft size={17} className="text-cream/40" /></div>
+          {topOpportunity ? (
+            <div className="mt-2"><div className="flex justify-between gap-3"><strong>{topOpportunity.merchantNameAr}</strong><span className="text-coral font-black">{Math.round(topOpportunity.offerProbability * 100)}٪</span></div><p className="text-[11px] text-cream/50 mt-1">توفير محتمل {topOpportunity.estimatedSavingSar} ر.س</p><span className="inline-block text-xs text-coral font-black mt-3">عرض كل الفرص</span></div>
+          ) : (
+            <div className="mt-2"><strong>اكتشف فرص التوفير</strong><p className="text-[11px] text-cream/50 mt-1">حلّل مشترياتك للعثور على فرص مناسبة لميزانيتك.</p></div>
+          )}
+        </button>
 
-        {/* Weekly challenge strip (gated) */}
-        {accountOpen && <ChallengeCard challenge={game.activeChallenge} compact dark />}
-
-        {/* Transactions */}
-        <div>
-          <h3 className="font-black text-cream mb-3 px-1">أحدث العمليات</h3>
+        <section data-testid="home-transactions">
+          <div className="flex items-center justify-between mb-3 px-1"><h2 className="font-black">أحدث العمليات</h2>{transactions.length > 4 && <button onClick={() => setActiveView('transactions')} className="text-xs text-coral font-black">عرض كل العمليات</button>}</div>
           <div className="bg-ink-card rounded-3xl divide-y divide-white/5">
-            {transactions.length === 0 && (
-              <p className="p-4 text-sm text-cream/40 text-center">لا توجد عمليات بعد</p>
-            )}
-            {transactions.map((tx) => {
-              const meta = TX_LABELS[tx.type] || TX_LABELS.purchase;
-              const Icon = meta.icon;
-              return (
-                <div key={tx.id} className="p-4 flex justify-between items-center">
-                  <div className="flex items-center gap-3">
-                    <div className={`p-3 rounded-2xl bg-white/5 ${tx.type === 'emergency' ? 'text-red-400' : tx.type === 'salary' ? 'text-emerald-400' : 'text-coral'}`}>
-                      <Icon size={20} strokeWidth={1.8} />
-                    </div>
-                    <div>
-                      <p className="font-bold text-cream text-sm">{tx.label}</p>
-                      <p className="text-[11px] text-cream/40 mt-0.5">{formatDate(tx.timestamp)}</p>
-                    </div>
-                  </div>
-                  <p className={`font-bold text-sm ${meta.sign === '+' ? 'text-emerald-400' : 'text-cream'}`}>{meta.sign}{Number(tx.amount).toFixed(2)}</p>
-                </div>
-              );
-            })}
+            {latestTransactions.length === 0 ? <p className="p-5 text-sm text-cream/40 text-center">لا توجد عمليات بعد</p> : latestTransactions.map((transaction) => <TransactionRow key={transaction.id} transaction={transaction} />)}
           </div>
-        </div>
-      </div>
+        </section>
+      </main>
 
       {planOpen && <SavingsPlanSheet onClose={() => setPlanOpen(false)} />}
     </div>

@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { X, Sparkles, TrendingUp, Check, ChevronLeft } from 'lucide-react';
 import { useAppData } from '../../context/AppDataContext';
 import { api } from '../../lib/api';
-import { burst } from '../../lib/confetti';
 import Mascot from '../mascot/Mascot';
 
 // Activation flow, three linked steps:
@@ -58,10 +57,7 @@ export default function SavingsPlanSheet({ onClose }) {
     runAction(async () => {
       await api.applyPlan({ monthlyIncome: incomeNum, budgets, monthlyTarget: target, goalAmount: goal });
       await api.setProfile({ petName: petName.trim() || 'صقر', petType, goalAmount: goal });
-    }).then(() => {
-      burst();
-      onClose();
-    });
+    }).then(onClose);
   };
 
   const DOTS = ['income', 'plan', 'pet'];
