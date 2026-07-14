@@ -6,16 +6,21 @@ import assert from "node:assert/strict";
 
 const B = process.env.API_BASE || "http://localhost:3000";
 
-async function api(method, path, body) {
+async function api(method, path, body, recipientId) {
   const res = await fetch(`${B}${path}`, {
     method,
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...(recipientId ? { "X-Namo-Demo-User": recipientId } : {}),
+    },
     body: body ? JSON.stringify(body) : undefined,
   });
   return { status: res.status, data: await res.json() };
 }
 const get = (p) => api("GET", p);
 const post = (p, b) => api("POST", p, b);
+const getFor = (p, recipientId) => api("GET", p, undefined, recipientId);
+const postFor = (p, b, recipientId) => api("POST", p, b, recipientId);
 
 before(async () => {
   try {
@@ -98,6 +103,11 @@ test("P0 scenario: reset → plan → predict → wait → settle → reward", a
   fam = (await get("/api/family/state")).data;
   assert.equal(fam.family.savedAmount, 3615);
   assert.equal(fam.loyalty.nxp, 70);
+  let rashidNotifications = (await getFor("/api/user/notifications", "rashid")).data.notifications;
+  const settlementNotifications = rashidNotifications.filter((item) => item.type === "offer_settlement");
+  assert.equal(settlementNotifications.length, 1);
+  assert.equal(settlementNotifications[0].recipientId, "rashid");
+  assert.equal(settlementNotifications[0].savingAmountSar, 15);
 
   // 7. Parent reward — Ahmed → Rashid, Akthr 120 → 145.
   const rewardBody = {
@@ -128,6 +138,8 @@ test("P0 scenario: reset → plan → predict → wait → settle → reward", a
   assert.equal(dup.data.error, "duplicate_reward");
   fam = (await get("/api/family/state")).data;
   assert.equal(fam.loyalty.akthrPoints, 145); // unchanged
+  rashidNotifications = (await getFor("/api/user/notifications", "rashid")).data.notifications;
+  assert.equal(rashidNotifications.filter((item) => item.type === "parent_reward").length, 1);
 
   // Reward error paths.
   assert.equal((await post("/api/family/reward", { ...rewardBody, recipientId: "ghost" })).data.error, "unknown_recipient");
@@ -167,6 +179,26 @@ test("reset restores the exact deterministic initial state", async () => {
   assert.deepEqual(reset.offers.predicted, {});
   assert.deepEqual(reset.offers.decisions, {});
   assert.equal(reset.notifications, null);
+});
+
+test("notifications are recipient-aware and mark-all is isolated", async () => {
+  await post("/api/reset");
+  assert.deepEqual((await getFor("/api/user/notifications", "rashid")).data.notifications, []);
+  assert.equal((await postFor("/api/user/mark-all-notifications-read", null, "rashid")).data.marked, 0);
+
+  await postFor("/api/user/notifications", { title: "لراشد", body: "خاص", type: "general" }, "rashid");
+  await postFor("/api/user/notifications", { title: "لأحمد", body: "خاص", type: "general" }, "ahmed");
+  assert.equal((await getFor("/api/user/notifications", "rashid")).data.notifications.length, 1);
+  assert.equal((await getFor("/api/user/notifications", "ahmed")).data.notifications.length, 1);
+
+  await postFor("/api/user/mark-all-notifications-read", null, "rashid");
+  assert.equal((await getFor("/api/user/notifications", "rashid")).data.notifications[0].read, true);
+  assert.equal((await getFor("/api/user/notifications", "ahmed")).data.notifications[0].read, false);
+  assert.equal((await getFor("/api/user/notifications", "ghost")).status, 400);
+
+  const reset = (await post("/api/reset")).data;
+  assert.equal(reset.userNotifications, null);
+  assert.deepEqual((await getFor("/api/user/notifications", "rashid")).data.notifications, []);
 });
 
 test("reset and rerun produces the identical canonical recommendation", async () => {

@@ -12,6 +12,7 @@ import { initialOffersState, decideOffer, settleOffer } from "../logic/offerEngi
 import { applyFamilyContribution, familyProgressPct } from "../logic/familyEngine.js";
 import { applyCheer } from "../logic/petEngine.js";
 import { generatePetMessage } from "../ai/gemini.js";
+import { buildNotification } from "../logic/notificationEngine.js";
 
 const router = Router();
 
@@ -82,7 +83,20 @@ router.post("/offers/settle", async (req, res, next) => {
     });
     const game = { ...state.game, nxp_balance: (state.game.nxp_balance ?? 0) + outcome.nxpReward };
     const { text: message } = await generatePetMessage(state._aiContext);
-    const pet = { ...state.pet, message, updatedAt: Date.now() };
+    const settledAt = Date.now();
+    const pet = { ...state.pet, message, updatedAt: settledAt };
+    const notificationId = `offer_settlement_${req.body.offerId}`;
+    const notification = buildNotification({
+      id: notificationId,
+      recipientId: memberId,
+      type: "offer_settlement",
+      title: `وصل عرض ${outcome.merchant}`,
+      body: "ظهر العرض المتوقع وتمت إضافة التوفير إلى هدف العائلة.",
+      timestamp: settledAt,
+      relatedEntityId: req.body.offerId,
+      merchant: outcome.merchant,
+      savingAmountSar: outcome.saving,
+    });
 
     const txnKey = db.ref("/transactions").push().key;
     await db.ref("/").update({
@@ -91,12 +105,13 @@ router.post("/offers/settle", async (req, res, next) => {
       "/pet": pet,
       "/game": game,
       "/meta": { lastEvent: "offer-settled" },
+      [`/userNotifications/${memberId}/${notificationId}`]: notification,
       [`/transactions/${txnKey}`]: {
         type: "save",
         amount: outcome.saving,
         category: "family-goal",
         label: `توفير ذكي — ${outcome.merchant}`,
-        timestamp: Date.now(),
+        timestamp: settledAt,
       },
     });
 

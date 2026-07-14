@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useBackendData } from '../lib/useBackendData';
 import { api } from '../lib/api';
 import { CANONICAL_DEMO_ROLE, clearDemoBrowserState } from '../lib/demoReset';
+import { useUserNotifications } from '../lib/useUserNotifications';
 
 // Demo-only role switch (no auth, no permissions) — which family member the
 // UI is "acting as". Persisted so a refresh keeps the same role.
@@ -22,9 +23,7 @@ export function AppDataProvider({ children }) {
   const [activeView, setActiveView] = useState('home');
   const [activeRole, setActiveRoleState] = useState(() => {
     const stored = localStorage.getItem(ROLE_KEY);
-    // Only rashid/ahmed are valid; anything else (incl. stale pre-migration
-    // values) maps to the child role.
-    return stored === 'ahmed' ? 'ahmed' : CANONICAL_DEMO_ROLE;
+    return ['rashid', 'ahmed', 'sarah'].includes(stored) ? stored : CANONICAL_DEMO_ROLE;
   });
   const setActiveRole = (role) => {
     localStorage.setItem(ROLE_KEY, role);
@@ -35,6 +34,7 @@ export function AppDataProvider({ children }) {
   const [flashColor, setFlashColor] = useState(null);
   const [actionError, setActionError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const notificationState = useUserNotifications(activeRole);
 
   // Screen-shake on health loss / green flash on heal, reacting to backend
   // pushes rather than local actions (a purchase from the cheat controller
@@ -136,6 +136,7 @@ export function AppDataProvider({ children }) {
     restartDemo, restarting, demoResetVersion,
     activeView, setActiveView,
     activeRole, setActiveRole,
+    ...notificationState,
     nxp, akthrPoints,
     isPetted, handlePetInteraction,
     isShaking, flashColor,

@@ -1,9 +1,13 @@
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
 
-async function post(path, body) {
+function demoHeaders(recipientId) {
+  return recipientId ? { 'X-Namo-Demo-User': recipientId } : {};
+}
+
+async function post(path, body, recipientId) {
   const res = await fetch(`${API_BASE}${path}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...demoHeaders(recipientId) },
     body: JSON.stringify(body ?? {}),
   });
   const data = await res.json().catch(() => ({}));
@@ -13,8 +17,8 @@ async function post(path, body) {
   return data;
 }
 
-async function get(path) {
-  const res = await fetch(`${API_BASE}${path}`);
+async function get(path, recipientId) {
+  const res = await fetch(`${API_BASE}${path}`, { headers: demoHeaders(recipientId) });
   const data = await res.json().catch(() => ({}));
   if (!res.ok || data.ok === false) {
     throw new Error(data.error || 'request_failed');
@@ -43,9 +47,9 @@ export const api = {
   openSavings: () => post('/api/savings/open'),
 
   // ── Notifications
-  getNotifications: () => get('/api/user/notifications'),
-  addNotification: (notification) => post('/api/user/notifications', notification),
-  markAllNotificationsRead: () => post('/api/user/mark-all-notifications-read'),
+  getNotifications: (recipientId) => get('/api/user/notifications', recipientId),
+  addNotification: (notification, recipientId) => post('/api/user/notifications', notification, recipientId),
+  markAllNotificationsRead: (recipientId) => post('/api/user/mark-all-notifications-read', null, recipientId),
 
   // ── Phase 2A: family goal + explainable contribution plan ──
   familyState: () => get('/api/family/state'),
