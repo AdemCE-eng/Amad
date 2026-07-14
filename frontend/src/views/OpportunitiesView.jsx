@@ -12,7 +12,7 @@ export const ANALYSIS_STEPS = [
   'نقارن فرص التوفير بميزانيتك',
   'نرتب أفضل الفرص لك',
 ];
-export const ANALYSIS_MIN_MS = 4800;
+export const ANALYSIS_MIN_MS = 6500;
 
 function actionLabel(action) {
   if (action === 'wait_for_offer') return 'انتظر العرض المتوقع';
@@ -143,7 +143,13 @@ export default function OpportunitiesView() {
 
         {analysisStep >= 0 && (
           <section className="bg-ink-card rounded-3xl p-5" aria-busy="true">
-            <StagedProgress steps={ANALYSIS_STEPS} activeIndex={analysisStep} testId="analysis-progress" />
+            <StagedProgress
+              steps={ANALYSIS_STEPS}
+              activeIndex={analysisStep}
+              testId="analysis-progress"
+              showStageCount
+              supportingText="نحلل بياناتك ونقارن الفرص المتاحة"
+            />
             <button type="button" disabled className="mt-4 w-full bg-coral/40 text-cream/60 font-black py-2.5 rounded-2xl cursor-wait">جارٍ تحليل الفرص…</button>
           </section>
         )}

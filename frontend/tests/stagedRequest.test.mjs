@@ -27,10 +27,10 @@ test('a slow request holds on the final visual stage until its response arrives'
   const pending = runStagedRequest({
     request: () => new Promise((resolve) => { resolveRequest = resolve; }),
     stages: ['one', 'two', 'three', 'four', 'five'],
-    minimumMs: 4800,
+    minimumMs: 6500,
     onStage: (index) => seen.push(index),
     sleep: async () => {},
-    now: () => 4800,
+    now: () => 6500,
   }).then((value) => { settled = true; return value; });
 
   for (let index = 0; index < 12; index += 1) await Promise.resolve();
@@ -38,6 +38,30 @@ test('a slow request holds on the final visual stage until its response arrives'
   assert.equal(settled, false);
   resolveRequest({ ok: true });
   assert.deepEqual(await pending, { ok: true });
+});
+
+test('five opportunity stages start at stage one and span the 6.5 second presentation', async () => {
+  let clock = 0;
+  const events = [];
+  const result = await runStagedRequest({
+    request: () => { events.push(`request:${clock}`); return { source: 'live' }; },
+    stages: ['one', 'two', 'three', 'four', 'five'],
+    minimumMs: 6500,
+    onStage: (index) => events.push(`stage:${index}:${clock}`),
+    sleep: async (milliseconds) => { clock += milliseconds; },
+    now: () => clock,
+  });
+
+  assert.deepEqual(events, [
+    'stage:0:0',
+    'request:0',
+    'stage:1:1300',
+    'stage:2:2600',
+    'stage:3:3900',
+    'stage:4:5200',
+  ]);
+  assert.equal(clock, 6500);
+  assert.equal(result.source, 'live');
 });
 
 test('request failure rejects without revealing a stale result', async () => {

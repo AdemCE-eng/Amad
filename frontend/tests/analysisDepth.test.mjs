@@ -23,7 +23,7 @@ test('family contribution calculation stages a fresh immediate backend request',
   assert.match(family, /إعادة حساب الخطة/);
 });
 
-test('opportunity analysis uses five stages and waits 4.8 seconds around the live request', async () => {
+test('opportunity analysis uses five stages and waits 6.5 seconds around the live request', async () => {
   const opportunities = await read('../src/views/OpportunitiesView.jsx');
 
   for (const stage of [
@@ -33,11 +33,13 @@ test('opportunity analysis uses five stages and waits 4.8 seconds around the liv
     'نقارن فرص التوفير بميزانيتك',
     'نرتب أفضل الفرص لك',
   ]) assert.match(opportunities, new RegExp(stage));
-  assert.match(opportunities, /ANALYSIS_MIN_MS = 4800/);
+  assert.match(opportunities, /ANALYSIS_MIN_MS = 6500/);
   assert.match(opportunities, /request: \(\) => api\.personalizedRecommendations\('rashid'\)/);
   assert.match(opportunities, /if \(running\.current\) return/);
   assert.match(opportunities, /setOpportunityResult\(null\)/);
   assert.match(opportunities, /setExpanded\(false\)/);
+  assert.match(opportunities, /showStageCount/);
+  assert.match(opportunities, /نحلل بياناتك ونقارن الفرص المتاحة/);
   assert.match(opportunities, /إعادة المحاولة/);
   assert.doesNotMatch(opportunities, /recommendationResult\.source|fallbackReason|data-testid="recommendation-source"/);
 });
@@ -48,6 +50,8 @@ test('shared staged progress is perceivable without depending on animation', asy
   assert.match(progress, /aria-live="polite"/);
   assert.match(progress, /role="progressbar"/);
   assert.match(progress, /aria-valuenow=\{progress\}/);
+  assert.match(progress, /aria-label="التقدم الكلي"/);
+  assert.match(progress, /\{activeIndex \+ 1\} من \{steps\.length\}/);
   assert.match(progress, /motion-reduce:animate-none/);
   assert.match(progress, /motion-reduce:transition-none/);
 });
