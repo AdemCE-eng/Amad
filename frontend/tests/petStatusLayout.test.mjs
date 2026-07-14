@@ -4,19 +4,17 @@ import { readFile } from 'node:fs/promises';
 
 const read = (relativePath) => readFile(new URL(relativePath, import.meta.url), 'utf8');
 
-test('Pet Status prioritizes the live savings action before evolution and secondary details', async () => {
+test('Pet Status prioritizes the live savings action before compact evolution and secondary controls', async () => {
   const pet = await read('../src/views/PetRoomView.jsx');
   const message = pet.indexOf('data-testid="pet-status-message"');
   const savings = pet.indexOf('data-testid="pet-savings-summary"');
   const evolution = pet.indexOf('data-testid="pet-evolution-card"');
-  const details = pet.indexOf('data-testid="pet-secondary-details"');
   const streak = pet.indexOf('<PetProgressionSections section="status"');
 
   assert.ok(message > 0);
   assert.ok(message < savings, 'the concise message should lead into savings');
   assert.ok(savings < evolution, 'savings must appear before evolution');
-  assert.ok(evolution < details, 'secondary metadata follows the primary financial cards');
-  assert.ok(details < streak, 'streak and emergency controls remain secondary');
+  assert.ok(evolution < streak, 'streak and emergency controls remain secondary');
 });
 
 test('savings summary uses live values, progress semantics, and existing save actions', async () => {
@@ -31,23 +29,36 @@ test('savings summary uses live values, progress semantics, and existing save ac
   assert.match(pet, /aria-valuenow=\{goalProgress\}/);
   assert.match(pet, /style=\{\{ width: `\$\{goalProgress\}%` \}\}/);
   assert.match(pet, /SAVE_PRESETS\.map\(\(amount\)/);
+  assert.match(pet, /rememberCelebrationReturnFocus\(`pet-save-\$\{amount\}`\)/);
   assert.match(pet, /runAction\(\(\) => api\.save\(amount\)\)/);
+  assert.match(pet, /data-focus-return-key=\{`pet-save-\$\{amount\}`\}/);
   assert.match(pet, /disabled=\{isSubmitting\}/);
 });
 
-test('message is concise and live metadata is collapsed behind an accessible disclosure', async () => {
+test('status details disclosure and its obsolete state are completely removed', async () => {
   const pet = await read('../src/views/PetRoomView.jsx');
   const messageStart = pet.indexOf('data-testid="pet-status-message"');
   const savingsStart = pet.indexOf('data-testid="pet-savings-summary"');
   const messageMarkup = pet.slice(messageStart, savingsStart);
 
   assert.match(messageMarkup, /\{pet\.message\}/);
-  assert.doesNotMatch(messageMarkup, /grid-cols-3|المزاج|الحماية|الإكسسوار/);
-  assert.match(pet, /const \[detailsOpen, setDetailsOpen\] = useState\(false\)/);
-  assert.match(pet, /aria-expanded=\{detailsOpen\}/);
-  assert.match(pet, /aria-controls="pet-secondary-details-content"/);
-  assert.match(pet, /detailsOpen && \(/);
-  assert.match(pet, /MOOD_LABEL\[pet\.mood\]/);
-  assert.match(pet, /emergencyShield\.usesRemaining/);
-  assert.match(pet, /SHOP_ITEMS\[game\.equipped\]/);
+  assert.doesNotMatch(pet, /تفاصيل الحالة|detailsOpen|setDetailsOpen|pet-secondary-details|ChevronDown|MOOD_LABEL|SHOP_ITEMS/);
+});
+
+test('financial progress and Saqr growth use distinct visual and semantic structures', async () => {
+  const pet = await read('../src/views/PetRoomView.jsx');
+  const savingsStart = pet.indexOf('data-testid="pet-savings-summary"');
+  const evolutionStart = pet.indexOf('data-testid="pet-evolution-card"');
+  const statusControlsStart = pet.indexOf('<PetProgressionSections section="status"');
+  const savingsMarkup = pet.slice(savingsStart, evolutionStart);
+  const evolutionMarkup = pet.slice(evolutionStart, statusControlsStart);
+
+  assert.match(savingsMarkup, /role="progressbar"/);
+  assert.match(savingsMarkup, /data-testid="pet-savings-progress"/);
+  assert.match(savingsMarkup, /style=\{\{ width: `\$\{goalProgress\}%` \}\}/);
+  assert.match(evolutionMarkup, /<ol/);
+  assert.match(evolutionMarkup, /data-testid="pet-evolution-stage-rail"/);
+  assert.match(evolutionMarkup, /data-stage-state=\{milestone\.state\}/);
+  assert.match(evolutionMarkup, /data-threshold=\{milestone\.at\}/);
+  assert.doesNotMatch(evolutionMarkup, /role="progressbar"|pet-evolution-fill|style=\{\{ width:/);
 });

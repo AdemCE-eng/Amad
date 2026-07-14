@@ -44,7 +44,7 @@ test('family contribution values cannot alter personal evolution presentation', 
   assert.deepEqual(afterFamilyContribution, before);
 });
 
-test('compact evolution card renders live stages, progress, remaining amount, and thresholds', async () => {
+test('compact evolution card renders live stages, remaining amount, and a milestone rail', async () => {
   const pet = await read('../src/views/PetRoomView.jsx');
 
   assert.match(pet, /data-testid="pet-evolution-card"/);
@@ -52,13 +52,14 @@ test('compact evolution card renders live stages, progress, remaining amount, an
   assert.match(pet, /data-testid="pet-next-stage"/);
   assert.match(pet, /data-testid="pet-evolution-progress"/);
   assert.match(pet, /SAR_NUMBER\.format\(evolution\.remainingAmount\)/);
-  assert.match(pet, /data-testid="pet-evolution-milestones"/);
+  assert.match(pet, /data-testid="pet-evolution-stage-rail"/);
   assert.match(pet, /data-stage-state=\{milestone\.state\}/);
   assert.match(pet, /data-threshold=\{milestone\.at\}/);
   assert.match(pet, /grid grid-cols-3 gap-2/);
-  assert.match(pet, /h-1\.5 rounded-full/);
-  assert.match(pet, /من هدف الادخار الشخصي/);
-  assert.doesNotMatch(pet, /المرحلة الحالية|المرحلة التالية/);
+  assert.match(pet, /aria-label="مراحل تطور صقر"/);
+  assert.match(pet, /\{evolution\.currentIndex \+ 1\}\/\{evolution\.milestones\.length\}/);
+  assert.doesNotMatch(pet, /pet-evolution-fill|pet-evolution-track/);
+  assert.match(pet, /aria-label="المرحلة الحالية والتالية"/);
   assert.doesNotMatch(pet, /Lock|CircleDot/);
   assert.doesNotMatch(pet, /h-24|grid-cols-2/);
 });

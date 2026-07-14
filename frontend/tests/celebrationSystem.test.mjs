@@ -31,7 +31,7 @@ test('all meaningful rewards share the dark Namo dialog while equip changes stay
 
   assert.match(overlay, /<NamoCelebrationDialog/);
   assert.match(overlay, /variant=\{presentation\.variant\}/);
-  assert.match(overlay, /returnFocusKey=\{event\.type === 'shop' \? `accessory-\$\{event\.id\}` : null\}/);
+  assert.match(overlay, /returnFocusKey=\{event\.returnFocusKey \|\| \(event\.type === 'shop' \? `accessory-\$\{event\.id\}` : null\)\}/);
   assert.match(overlay, /if \(activeRole !== 'rashid'\)/);
   assert.match(overlay, /queue\.current = \[\]/);
   assert.match(dialog, /bg-ink-card/);

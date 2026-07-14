@@ -4,13 +4,17 @@ import { motion, useReducedMotion } from 'motion/react';
 import Mascot from '../mascot/Mascot';
 import NamoCelebrationDialog from './NamoCelebrationDialog';
 import { STAGE_INFO } from '../../lib/catalog';
-import { evaluateCelebrationCursor } from '../../lib/celebrationTrigger';
+import {
+  acknowledgeCelebration,
+  consumeCelebrationReturnFocus,
+  evaluateCelebrationCursor,
+  readCelebrationAcknowledgement,
+} from '../../lib/celebrationTrigger';
 import { buildCelebrationPresentation } from '../../lib/celebrationPresentation';
 import {
   EVOLUTION_EXIT_MS,
-  EVOLUTION_HOLD_MS,
+  EVOLUTION_CONFIRM_READY_MS,
   EVOLUTION_PARTICLES,
-  EVOLUTION_TOTAL_MS,
 } from '../../lib/evolutionMotion';
 
 const EXIT_MS = { evolution: EVOLUTION_EXIT_MS, default: 260 };
@@ -52,13 +56,33 @@ export default function CelebrationOverlay({ game, petName, activeRole = 'rashid
       activeType.current = null;
       setCurrent(null);
       setLeaving(false);
+      seenCursor.current = null;
+      return;
     }
+    const storage = typeof window === 'undefined' ? null : window.localStorage;
+    const acknowledgedCursor = readCelebrationAcknowledgement(storage, activeRole);
     const decision = evaluateCelebrationCursor(seenCursor.current, celebration, {
-      eligible: activeRole === 'rashid',
+      eligible: true,
+      acknowledgedCursor,
     });
     seenCursor.current = decision.nextCursor;
+    if (decision.nextAt <= 0) {
+      clearTimers();
+      queue.current = [];
+      playing.current = false;
+      dismissing.current = false;
+      activeType.current = null;
+      setCurrent(null);
+      setLeaving(false);
+      return;
+    }
     if (!decision.shouldQueue) return;
-    queue.current.push({ ...celebration, stage: game.stage });
+    const focusedElement = document.activeElement;
+    const rememberedReturnFocusKey = consumeCelebrationReturnFocus();
+    const returnFocusKey = (focusedElement instanceof HTMLElement
+      ? focusedElement.dataset.focusReturnKey || null
+      : null) || rememberedReturnFocusKey;
+    queue.current.push({ ...celebration, stage: game.stage, returnFocusKey });
     pump();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [game?.lastCelebration?.at, game?.lastCelebration?.type, game?.lastCelebration?.id, activeRole]);
@@ -78,6 +102,13 @@ export default function CelebrationOverlay({ game, petName, activeRole = 'rashid
     }, exitMs);
   };
 
+  const confirmCurrent = () => {
+    if (!current || activeRole !== 'rashid') return;
+    const storage = typeof window === 'undefined' ? null : window.localStorage;
+    acknowledgeCelebration(storage, current, activeRole);
+    finishCurrent();
+  };
+
   const pump = () => {
     if (playing.current || !queue.current.length) return;
     playing.current = true;
@@ -86,17 +117,14 @@ export default function CelebrationOverlay({ game, petName, activeRole = 'rashid
     activeType.current = event.type;
     setLeaving(false);
     setCurrent(event);
-    // Evolution is concise and auto-dismisses; other meaningful rewards wait
-    // for the explicit accessible action so their actual outcome is readable.
-    if (event.type === 'evolution') schedule(finishCurrent, EVOLUTION_HOLD_MS);
   };
 
   if (!current) return null;
 
   return createPortal(
     current.type === 'evolution'
-      ? <EvolutionOverlay event={current} petName={petName} leaving={leaving} onDismiss={finishCurrent} />
-      : <RewardOverlay event={current} petName={petName} leaving={leaving} onDismiss={finishCurrent} />,
+      ? <EvolutionOverlay event={current} petName={petName} leaving={leaving} onDismiss={confirmCurrent} />
+      : <RewardOverlay event={current} petName={petName} leaving={leaving} onDismiss={confirmCurrent} />,
     document.body
   );
 }
@@ -109,7 +137,7 @@ function EvolutionOverlay({ event, petName, leaving, onDismiss }) {
   const isHatch = previousStage === 0 && event.stage === 1;
 
   useEffect(() => {
-    const timer = setTimeout(() => setCanDismiss(true), reducedMotion ? 0 : 1350);
+    const timer = setTimeout(() => setCanDismiss(true), reducedMotion ? 0 : EVOLUTION_CONFIRM_READY_MS);
     return () => clearTimeout(timer);
   }, [reducedMotion]);
 
@@ -122,6 +150,7 @@ function EvolutionOverlay({ event, petName, leaving, onDismiss }) {
       leaving={leaving}
       dismissDisabled={!canDismiss}
       reducedMotion={reducedMotion}
+      returnFocusKey={event.returnFocusKey}
       testId="evolution-overlay"
     >
       {({ reducedMotion: shouldReduce }) => (
@@ -166,11 +195,11 @@ function EvolutionOverlay({ event, petName, leaving, onDismiss }) {
             type="button"
             disabled={!canDismiss}
             onClick={onDismiss}
+            aria-label="تأكيد اكتمال تطور صقر والمتابعة"
             className="mt-3 min-w-24 rounded-xl border border-coral/30 bg-coral/10 px-5 py-2 text-xs font-black text-coral transition-colors hover:bg-coral/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-coral disabled:opacity-35"
           >
-            رائع
+            رائع، نكمل
           </button>
-          <span className="sr-only" data-total-duration={EVOLUTION_TOTAL_MS} />
         </>
       )}
     </NamoCelebrationDialog>
@@ -281,7 +310,7 @@ function RewardOverlay({ event, petName, leaving, onDismiss }) {
       descriptionId="reward-dialog-description"
       onDismiss={onDismiss}
       leaving={leaving}
-      returnFocusKey={event.type === 'shop' ? `accessory-${event.id}` : null}
+      returnFocusKey={event.returnFocusKey || (event.type === 'shop' ? `accessory-${event.id}` : null)}
       testId="reward-celebration-overlay"
     >
       {({ reducedMotion }) => (

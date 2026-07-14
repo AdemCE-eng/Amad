@@ -1,6 +1,7 @@
-export const EVOLUTION_HOLD_MS = 2250;
+// The button becomes available after the one-shot transition has settled.
+// This timer never dismisses or acknowledges the dialog.
+export const EVOLUTION_CONFIRM_READY_MS = 1650;
 export const EVOLUTION_EXIT_MS = 250;
-export const EVOLUTION_TOTAL_MS = EVOLUTION_HOLD_MS + EVOLUTION_EXIT_MS;
 
 // Fixed once in source: 12 particles, all inside a 210 x 180 px envelope
 // around the mascot. Evolution never uses a full-screen confetti canvas.

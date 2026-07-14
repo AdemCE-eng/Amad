@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, ChevronDown, HeartPulse, ShieldAlert, ShoppingBag, Trophy } from 'lucide-react';
+import { ArrowLeft, HeartPulse, ShieldAlert, ShoppingBag, Trophy } from 'lucide-react';
 import { useAppData } from '../context/AppDataContext';
 import { api } from '../lib/api';
 import Mascot from '../components/mascot/Mascot';
@@ -7,15 +7,15 @@ import { useMascotEmotion } from '../components/mascot/useMascotEmotion';
 import SaveRewardTag from '../components/ui/SaveRewardTag';
 import EmergencyWithdrawModal from '../components/ui/EmergencyWithdrawModal';
 import PetProgressionSections from '../components/pet/PetProgressionSections';
-import { SAVE_PRESETS, SHOP_ITEMS } from '../lib/catalog';
+import { SAVE_PRESETS } from '../lib/catalog';
 import { buildEvolutionPresentation } from '../lib/petEvolutionPresentation';
+import { rememberCelebrationReturnFocus } from '../lib/celebrationTrigger';
 
 const PET_TABS = [
   { id: 'status', label: 'الحالة', icon: HeartPulse },
   { id: 'progress', label: 'التحديات والإنجازات', icon: Trophy },
   { id: 'accessories', label: 'الإكسسوارات', icon: ShoppingBag },
 ];
-const MOOD_LABEL = { radiant: 'مشرق', happy: 'سعيد', neutral: 'هادئ', tired: 'متعب', sick: 'يحتاج عناية' };
 const SAR_NUMBER = new Intl.NumberFormat('ar-SA', { maximumFractionDigits: 0 });
 
 // The hero screen — YOUR companion, singular and named. Full pupil tracking,
@@ -29,7 +29,6 @@ export default function PetRoomView() {
   } = useAppData();
   const { emotion, poke } = useMascotEmotion(pet);
   const [emergencyOpen, setEmergencyOpen] = useState(false);
-  const [detailsOpen, setDetailsOpen] = useState(false);
   const evolution = buildEvolutionPresentation({
     stage: game.stage,
     goalProgress,
@@ -183,7 +182,11 @@ export default function PetRoomView() {
                 key={amount}
                 type="button"
                 disabled={isSubmitting}
-                onClick={() => runAction(() => api.save(amount))}
+                onClick={() => {
+                  rememberCelebrationReturnFocus(`pet-save-${amount}`);
+                  runAction(() => api.save(amount));
+                }}
+                data-focus-return-key={`pet-save-${amount}`}
                 className="rounded-xl bg-coral-tile py-2 text-xs font-black text-ink transition-transform active:scale-95 disabled:opacity-50"
               >
                 +{amount}
@@ -193,70 +196,51 @@ export default function PetRoomView() {
           <SaveRewardTag reward={game.lastSaveReward} compact />
         </section>
 
-        {/* The authoritative stage and goal percentage come from shared app state. */}
-        <section className="w-full bg-ink-card rounded-3xl px-4 py-3.5 mb-5" data-testid="pet-evolution-card" aria-labelledby="pet-evolution-title">
-          <div className="flex items-center justify-between gap-3">
-            <h2 id="pet-evolution-title" className="font-black text-cream text-sm">نمو صقر</h2>
-            <span className="text-xs font-black text-coral tabular-nums" data-testid="pet-evolution-progress">{evolution.progress}%</span>
-          </div>
-
-          <div className="flex items-center justify-between gap-3 mt-1.5">
-            <div className="inline-flex items-center gap-1.5 text-xs font-black">
-              <span className="text-cream" data-testid="pet-current-stage">{evolution.currentStage.name}</span>
-              {evolution.nextStage && <ArrowLeft size={13} className="text-cream/35" aria-hidden="true" />}
-              <span className="text-coral" data-testid="pet-next-stage">{evolution.nextStage?.name || 'اكتمل التطور'}</span>
+        {/* Growth uses a stage rail so it cannot be mistaken for the financial progress bar. */}
+        <section className="w-full bg-ink-card rounded-3xl px-4 py-3 mb-4" data-testid="pet-evolution-card" aria-labelledby="pet-evolution-title">
+          <div className="flex items-center justify-between gap-2">
+            <div>
+              <p className="text-[9px] font-bold text-cream/40">مراحل النمو</p>
+              <h2 id="pet-evolution-title" className="font-black text-cream text-sm">تطور صقر</h2>
             </div>
-            <span className="text-[9px] text-cream/40 font-bold">من هدف الادخار الشخصي</span>
+            <div className="inline-flex min-w-0 items-center gap-1.5 rounded-xl bg-white/[0.035] px-2.5 py-1.5 text-[10px] font-black" aria-label="المرحلة الحالية والتالية">
+              <span className="text-cream" data-testid="pet-current-stage">{evolution.currentStage.name}</span>
+              {evolution.nextStage && <ArrowLeft size={11} className="shrink-0 text-cream/35" aria-hidden="true" />}
+              <span className="text-coral" data-testid="pet-next-stage">{evolution.nextStage?.name || 'اكتمل التطور'}</span>
+              <span className="text-cream/30" aria-hidden="true">•</span>
+              <span className="tabular-nums text-cream/45" data-testid="pet-evolution-progress">
+                {evolution.currentIndex + 1}/{evolution.milestones.length}
+              </span>
+            </div>
           </div>
 
-          <div className="h-1.5 rounded-full bg-white/10 overflow-hidden mt-2" dir="rtl" data-testid="pet-evolution-track" aria-label={`تقدم الادخار الشخصي ${evolution.progress}%`}>
-            <div
-              className="h-full rounded-full bg-gradient-to-l from-coral to-coin transition-[width] duration-700 motion-reduce:transition-none mr-0"
-              style={{ width: `${evolution.progress}%` }}
-              data-testid="pet-evolution-fill"
-            />
-          </div>
-
-          <p className="text-[10px] text-cream/65 font-bold leading-relaxed mt-2" data-testid="pet-next-milestone-explanation">
-            {evolution.nextStage
-              ? <>باقي <strong className="text-coral">{SAR_NUMBER.format(evolution.remainingAmount)} ر.س</strong> للوصول إلى مرحلة {evolution.nextStage.name}.</>
-              : 'وصل صقر إلى مرحلته النهائية؛ واصل الادخار الشخصي لإكمال هدفك.'}
-          </p>
-
-          <div className="grid grid-cols-3 gap-2 mt-2.5 pt-2 border-t border-white/5" dir="rtl" data-testid="pet-evolution-milestones">
+          <ol
+            className="relative mt-2.5 grid grid-cols-3 gap-2 before:absolute before:right-[16.66%] before:left-[16.66%] before:top-2.5 before:h-px before:bg-white/10"
+            dir="rtl"
+            aria-label="مراحل تطور صقر"
+            data-testid="pet-evolution-stage-rail"
+          >
             {evolution.milestones.map((milestone) => (
-              <div
+              <li
                 key={milestone.name}
-                className={`flex items-center justify-center gap-1.5 min-w-0 ${milestone.state === 'current' ? 'text-coral' : milestone.state === 'completed' ? 'text-emerald-300' : 'text-cream/35'}`}
+                className={`relative z-10 flex min-w-0 flex-col items-center text-center ${milestone.state === 'current' ? 'text-coral' : milestone.state === 'completed' ? 'text-emerald-300' : 'text-cream/35'}`}
                 data-stage-state={milestone.state}
                 data-threshold={milestone.at}
               >
-                <span className={`w-2 h-2 rounded-full shrink-0 ${milestone.state === 'current' ? 'bg-coral ring-2 ring-coral/20' : milestone.state === 'completed' ? 'bg-emerald-400' : 'bg-white/15'}`} aria-hidden="true" />
-                <span className="text-[9px] font-black truncate">{milestone.name}</span>
+                <span className={`grid h-5 w-5 place-items-center rounded-full border-2 bg-ink-card ${milestone.state === 'current' ? 'border-coral shadow-[0_0_0_4px_rgba(233,124,97,0.12)]' : milestone.state === 'completed' ? 'border-emerald-400' : 'border-white/15'}`} aria-hidden="true">
+                  <span className={`h-1.5 w-1.5 rounded-full ${milestone.state === 'current' ? 'bg-coral' : milestone.state === 'completed' ? 'bg-emerald-400' : 'bg-white/15'}`} />
+                </span>
+                <span className="mt-1.5 max-w-full truncate text-[9px] font-black">{milestone.name}</span>
                 <span className="text-[8px] font-bold opacity-70">{milestone.at}%</span>
-              </div>
+              </li>
             ))}
-          </div>
-        </section>
+          </ol>
 
-        <section className="w-full mb-3" data-testid="pet-secondary-details">
-          <button
-            type="button"
-            aria-expanded={detailsOpen}
-            aria-controls="pet-secondary-details-content"
-            onClick={() => setDetailsOpen((open) => !open)}
-            className="flex w-full items-center justify-between rounded-2xl border border-white/10 bg-white/[0.04] px-3.5 py-2.5 text-xs font-black text-cream/70 transition-colors hover:bg-white/[0.07] focus-visible:outline focus-visible:outline-2 focus-visible:outline-coral"
-          >
-            <span>تفاصيل الحالة</span>
-            <ChevronDown size={15} className={`text-coral transition-transform motion-reduce:transition-none ${detailsOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
-          </button>
-          {detailsOpen && (
-            <div id="pet-secondary-details-content" className="mt-2 grid grid-cols-3 gap-2 rounded-2xl bg-ink-card px-3 py-2.5 text-center" data-testid="pet-secondary-details-content">
-              <div><span className="block text-[8px] font-bold text-cream/40">المزاج</span><strong className="text-[10px]">{MOOD_LABEL[pet.mood] || pet.mood}</strong></div>
-              <div><span className="block text-[8px] font-bold text-cream/40">الحماية</span><strong className="text-[10px]">{emergencyShield.usesRemaining} درع</strong></div>
-              <div><span className="block text-[8px] font-bold text-cream/40">الإكسسوار</span><strong className="text-[10px]">{SHOP_ITEMS[game.equipped]?.name || 'بدون'}</strong></div>
-            </div>
-          )}
+          <p className="mt-2 rounded-xl border border-white/5 bg-black/10 px-2.5 py-1.5 text-[10px] font-bold leading-relaxed text-cream/65" data-testid="pet-next-milestone-explanation">
+            {evolution.nextStage
+              ? <>باقي <strong className="text-coral">{SAR_NUMBER.format(evolution.remainingAmount)} ر.س</strong> لانتقال صقر إلى مرحلة {evolution.nextStage.name}.</>
+              : 'وصل صقر إلى مرحلته النهائية؛ واصل الادخار الشخصي لإكمال هدفك.'}
+          </p>
         </section>
 
         <PetProgressionSections section="status" game={game} isSubmitting={isSubmitting} runAction={runAction} />
