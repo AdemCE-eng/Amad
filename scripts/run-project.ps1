@@ -8,6 +8,7 @@ $ScriptDir = if ($PSScriptRoot) { $PSScriptRoot } else { Split-Path -Parent $MyI
 $Root = Split-Path -Parent $ScriptDir
 $BackendDir = Join-Path $Root 'backend'
 $FrontendDir = Join-Path $Root 'frontend'
+$MlDir = Join-Path $Root 'ml-service'
 $FirebaseConfigPath = Join-Path $Root '.firebase.launcher.json'
 $JavaDir = 'C:\Program Files\Eclipse Adoptium\jre-21.0.11.10-hotspot\bin'
 
@@ -101,7 +102,55 @@ function Get-LaunchPorts {
     EmulatorLogging = Get-AvailablePort 4500 $reserved
     Backend = Get-AvailablePort 3000 $reserved
     Frontend = Get-AvailablePort 5173 $reserved
+    Ml = Get-AvailablePort 8001 $reserved
   }
+}
+
+function Set-DotEnvValue {
+  param([string]$Path, [string]$Name, [string]$Value)
+  $lines = if (Test-Path -LiteralPath $Path) { @(Get-Content -LiteralPath $Path) } else { @() }
+  $replacement = "$Name=$Value"
+  $found = $false
+  $updated = foreach ($line in $lines) {
+    if ($line -match "^$([regex]::Escape($Name))=") {
+      $found = $true
+      $replacement
+    } else {
+      $line
+    }
+  }
+  if (-not $found) { $updated += $replacement }
+  $updated | Set-Content -LiteralPath $Path -Encoding UTF8
+}
+
+function Get-MlPython {
+  return Join-Path $MlDir '.venv\Scripts\python.exe'
+}
+
+function Test-MlArtifacts {
+  return (Test-Path -LiteralPath (Join-Path $MlDir 'artifacts\models\offer_model.joblib')) -and
+    (Test-Path -LiteralPath (Join-Path $MlDir 'artifacts\models\purchase_model.joblib'))
+}
+
+function Test-MlRuntime {
+  param([string]$Python)
+  if (-not (Test-Path -LiteralPath $Python)) { return $false }
+  & $Python -c "import fastapi, uvicorn, pandas, sklearn, catboost, joblib" 2>$null
+  return $LASTEXITCODE -eq 0
+}
+
+function Wait-MlHealth {
+  param([string]$Url, [int]$TimeoutSeconds)
+  $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+  while ((Get-Date) -lt $deadline) {
+    try {
+      $health = Invoke-RestMethod -Uri "$Url/health" -TimeoutSec 2
+      if ($health.ok -and $health.ready) { return $true }
+    } catch {
+      Start-Sleep -Milliseconds 500
+    }
+  }
+  return $false
 }
 
 function Wait-TcpPort {
@@ -225,6 +274,9 @@ function Assert-ProjectShape {
   if (-not (Test-Path -LiteralPath (Join-Path $FrontendDir 'package.json'))) {
     throw 'Missing frontend\package.json.'
   }
+  if (-not (Test-Path -LiteralPath (Join-Path $MlDir 'requirements.txt'))) {
+    throw 'Missing ml-service\requirements.txt.'
+  }
 }
 
 function Run-Check {
@@ -241,7 +293,10 @@ function Run-Check {
 
   $ports = Get-LaunchPorts
   Write-Host "[OK] Launcher check passed."
-  Write-Host "[OK] Available ports: backend=$($ports.Backend), frontend=$($ports.Frontend), firebase-db=$($ports.Database), firebase-ui=$($ports.EmulatorUi)"
+  $mlPython = Get-MlPython
+  $mlState = if ((Test-MlArtifacts) -and (Test-MlRuntime $mlPython)) { 'ready' } else { 'setup required or artifacts missing' }
+  Write-Host "[OK] Available ports: backend=$($ports.Backend), frontend=$($ports.Frontend), firebase-db=$($ports.Database), firebase-ui=$($ports.EmulatorUi), ml=$($ports.Ml)"
+  Write-Host "[OK] ML prerequisites: $mlState"
 }
 
 function Start-Project {
@@ -265,11 +320,13 @@ function Start-Project {
   $backendUrl = "http://127.0.0.1:$($ports.Backend)/"
   $frontendUrl = "http://127.0.0.1:$($ports.Frontend)/"
   $emulatorUiUrl = "http://localhost:$($ports.EmulatorUi)"
+  $mlUrl = "http://127.0.0.1:$($ports.Ml)"
 
   Write-Host "[PORTS] Firebase DB: $($ports.Database)"
   Write-Host "[PORTS] Firebase UI: $($ports.EmulatorUi)"
   Write-Host "[PORTS] Backend + Cheat Controller: $($ports.Backend)"
   Write-Host "[PORTS] React frontend: $($ports.Frontend)"
+  Write-Host "[PORTS] FastAPI ML: $($ports.Ml)"
 
   $backendEnv = Join-Path $BackendDir '.env'
   $backendEnvExample = Join-Path $BackendDir '.env.example'
@@ -277,6 +334,9 @@ function Start-Project {
     Write-Step 'Creating backend\.env from backend\.env.example...'
     Copy-Item -LiteralPath $backendEnvExample -Destination $backendEnv
   }
+  Set-DotEnvValue $backendEnv 'USE_ML_SERVICE' 'true'
+  Set-DotEnvValue $backendEnv 'ML_SERVICE_URL' $mlUrl
+  Set-DotEnvValue $backendEnv 'ML_SERVICE_TIMEOUT_MS' '1500'
 
   if (-not (Test-Path -LiteralPath (Join-Path $BackendDir 'node_modules'))) {
     Write-Step 'Installing backend dependencies...'
@@ -313,10 +373,44 @@ function Start-Project {
     }
   }
 
+  $mlPython = Get-MlPython
+  $mlOnline = $false
+  if (-not (Test-MlArtifacts)) {
+    Write-Warn 'ML model artifacts are missing; the launcher will use deterministic fallback without retraining.'
+  } else {
+    if (-not (Test-Path -LiteralPath $mlPython)) {
+      if (Test-Command 'python') {
+        Write-Step 'Creating the optional ML virtual environment...'
+        & python -m venv (Join-Path $MlDir '.venv')
+      } else {
+        Write-Warn 'Python is unavailable; the core application will continue with deterministic fallback.'
+      }
+    }
+    if ((Test-Path -LiteralPath $mlPython) -and -not (Test-MlRuntime $mlPython)) {
+      Write-Step 'Installing normal ML runtime dependencies (PyTorch is not included)...'
+      & $mlPython -m pip install -r (Join-Path $MlDir 'requirements.txt')
+    }
+    if (Test-MlRuntime $mlPython) {
+      Write-Step "Starting FastAPI ML service on $mlUrl..."
+      Start-CmdWindow 'Namo FastAPI ML Service' $MlDir @(
+        "`"$mlPython`" -m uvicorn app.main:app --host 127.0.0.1 --port $($ports.Ml)"
+      )
+      $mlOnline = Wait-MlHealth $mlUrl 60
+    }
+  }
+  if ($mlOnline) {
+    Write-Host 'ML service ready — live recommendations enabled' -ForegroundColor Green
+  } else {
+    Write-Host 'ML service unavailable — deterministic fallback enabled' -ForegroundColor Yellow
+  }
+
   Write-Step "Starting backend and Cheat Controller on $backendUrl..."
   Start-CmdWindow 'Amad Backend + Cheat Controller' $BackendDir @(
     "set `"PORT=$($ports.Backend)`"",
     "set `"FIREBASE_DATABASE_EMULATOR_HOST=$emulatorHost`"",
+    'set "USE_ML_SERVICE=true"',
+    "set `"ML_SERVICE_URL=$mlUrl`"",
+    'set "ML_SERVICE_TIMEOUT_MS=1500"',
     'npm run dev'
   )
 
@@ -340,10 +434,11 @@ function Start-Project {
   Start-Process $frontendUrl
 
   Write-Host ''
-  Write-Host 'Done. Keep the three service windows open while using the demo.'
+  Write-Host 'Done. Keep the service windows open while using the demo.'
   Write-Host "Cheat Controller: $backendUrl"
   Write-Host "React app:        $frontendUrl"
   Write-Host "Firebase UI:      $emulatorUiUrl"
+  Write-Host "FastAPI health:   $mlUrl/health"
   Write-Host ''
   Read-Host 'Press Enter to close this launcher window'
 }
