@@ -174,6 +174,10 @@ Detailed engineering, evaluation, and model information remains in the supportin
 - [Technical visual guide](visual-design/README.md)
 - [AI results showcase](ml-results-showcase/README.md)
 
+## Live demo links
+- [Front page](https://nadeemfront.onrender.com)
+- [Backend](https://nadeemback.onrender.com)
+
 ## Notes
 
 > Nadeem is a hackathon prototype that uses SYNTHETIC and MOCK data only; it contains and processes no real customer banking data.
