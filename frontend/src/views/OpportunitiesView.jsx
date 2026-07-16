@@ -4,6 +4,7 @@ import { useAppData } from '../context/AppDataContext';
 import { api } from '../lib/api';
 import { runStagedRequest } from '../lib/stagedRequest';
 import StagedProgress from '../components/ui/StagedProgress';
+import Mascot from '../components/mascot/Mascot';
 
 export const ANALYSIS_STEPS = [
   'نقرأ أنماط مشترياتك',
@@ -72,7 +73,7 @@ function OpportunityCard({ opportunity, featured, activeRole, isSubmitting, runA
 
 export default function OpportunitiesView() {
   const {
-    opportunityResult, setOpportunityResult, offers, activeRole,
+    opportunityResult, setOpportunityResult, offers, activeRole, user, game,
     savingsAccountOpened, setActiveView, runAction, isSubmitting,
   } = useAppData();
   const [analysisStep, setAnalysisStep] = useState(-1);
@@ -80,6 +81,9 @@ export default function OpportunitiesView() {
   const [expanded, setExpanded] = useState(false);
   const running = useRef(false);
   const runId = useRef(0);
+  const petName = user?.petName || 'صقر';
+  const petStage = game?.stage ?? 0;
+  const petEquipped = game?.equipped ?? null;
 
   useEffect(() => () => { runId.current += 1; running.current = false; }, []);
 
@@ -136,6 +140,31 @@ export default function OpportunitiesView() {
       </header>
 
       <div className="px-5 pb-28 space-y-5">
+        <section
+          className="bg-gradient-to-l from-violet/15 to-ink-card border border-violet/20 rounded-3xl px-4 py-3 flex items-center gap-3"
+          data-testid="opportunity-pet-guide"
+          aria-label={`${petName} يساعدك في تحليل فرص التوفير`}
+        >
+          <div className="w-20 h-20 rounded-2xl bg-cream/95 grid place-items-center shrink-0 overflow-hidden">
+            <Mascot
+              emotion={analysisStep >= 0 ? 'thinking' : opportunityResult ? 'happy' : 'idle'}
+              stage={petStage}
+              equipped={petEquipped}
+              size={76}
+              track={analysisStep < 0}
+            />
+          </div>
+          <div className="min-w-0">
+            <p className="text-[10px] text-violet font-black">مساعد التوقع</p>
+            <h2 className="font-black text-sm mt-0.5">
+              {analysisStep >= 0 ? `${petName} يفكر الآن…` : opportunityResult ? `${petName} وجد فرصًا مناسبة` : `${petName} جاهز للتحليل`}
+            </h2>
+            <p className="text-[10px] text-cream/50 font-bold leading-relaxed mt-1">
+              {analysisStep >= 0 ? 'يقارن مشترياتك بالمواسم وحملات التجار.' : opportunityResult ? `تم ترتيب ${opportunities.length} فرص حسب احتمالية التوفير.` : 'ابدأ التحليل ليبحث لك عن أفضل فرص المبيعات القادمة.'}
+            </p>
+          </div>
+        </section>
+
         {!opportunityResult && analysisStep === -1 && !analysisError && (
           <section className="bg-gradient-to-l from-coral/15 to-ink-card border border-coral/25 rounded-3xl p-6 text-center">
             <Sparkles size={30} className="mx-auto text-coral mb-3" />

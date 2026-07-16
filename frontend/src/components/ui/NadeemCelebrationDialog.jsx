@@ -7,7 +7,7 @@ const BORDER_CLASS = {
   emerald: 'border-emerald-300/35',
 };
 
-export default function NamoCelebrationDialog({
+export default function NadeemCelebrationDialog({
   children,
   variant,
   titleId,
@@ -17,7 +17,7 @@ export default function NamoCelebrationDialog({
   dismissDisabled = false,
   reducedMotion: reducedMotionOverride,
   returnFocusKey = null,
-  testId = 'namo-celebration-overlay',
+  testId = 'nadeem-celebration-overlay',
 }) {
   const systemReducedMotion = useReducedMotion();
   const reducedMotion = reducedMotionOverride ?? systemReducedMotion;
@@ -75,7 +75,7 @@ export default function NamoCelebrationDialog({
       transition={{ duration: reducedMotion ? 0.1 : 0.24 }}
       data-testid={testId}
     >
-      <div className="absolute inset-0 bg-black/55 backdrop-blur-[2px]" data-testid="namo-celebration-backdrop" />
+      <div className="absolute inset-0 bg-black/55 backdrop-blur-[2px]" data-testid="nadeem-celebration-backdrop" />
       <motion.section
         ref={dialogRef}
         role="dialog"
@@ -86,8 +86,8 @@ export default function NamoCelebrationDialog({
         dir="rtl"
         onKeyDown={handleKeyDown}
         data-celebration-variant={variant}
-        data-testid="namo-celebration-dialog"
-        className={`namo-celebration-dialog relative w-full max-w-[310px] overflow-hidden rounded-3xl border ${BORDER_CLASS[accent]} bg-ink-card px-5 py-4 text-center text-cream shadow-[0_24px_70px_rgba(0,0,0,0.65)] outline-none focus-visible:ring-2 focus-visible:ring-coral/60`}
+        data-testid="nadeem-celebration-dialog"
+        className={`nadeem-celebration-dialog relative w-full max-w-[310px] overflow-hidden rounded-3xl border ${BORDER_CLASS[accent]} bg-ink-card px-5 py-4 text-center text-cream shadow-[0_24px_70px_rgba(0,0,0,0.65)] outline-none focus-visible:ring-2 focus-visible:ring-coral/60`}
         initial={reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.94, y: 14 }}
         animate={reducedMotion ? { opacity: 1 } : { opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: reducedMotion ? 0.14 : 0.36, ease: [0.22, 1, 0.36, 1] }}

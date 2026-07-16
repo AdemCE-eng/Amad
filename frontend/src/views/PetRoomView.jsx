@@ -21,6 +21,8 @@ const SAR_NUMBER = new Intl.NumberFormat('ar-SA', { maximumFractionDigits: 0 });
 // The hero screen — YOUR companion, singular and named. Full pupil tracking,
 // tap to squish, accessories on, evolution meter toward the goal. Dark ink.
 export default function PetRoomView() {
+  const { user: petOwner } = useAppData();
+  const petDisplayName = petOwner?.petName || 'صقر';
   const {
     user, pet, game, emergencyShield,
     isSick, isHappy, goalProgress,
@@ -69,7 +71,7 @@ export default function PetRoomView() {
       {/* Pet is a primary BottomNav destination, so its header has no nested back control. */}
       <header className="h-12 px-5 flex items-center justify-between gap-3 z-20" data-testid="pet-product-header">
         <div className="min-w-0 flex items-center gap-2">
-          <h1 className="font-black text-cream text-lg leading-none">صقر</h1>
+              <h1 className="font-black text-cream text-lg leading-none">{petDisplayName}</h1>
           <span className="text-[9px] font-black text-coral bg-coral/10 border border-coral/20 rounded-full px-2 py-1" data-testid="pet-header-stage">
             {evolution.currentStage.name}
           </span>
@@ -85,7 +87,7 @@ export default function PetRoomView() {
       </header>
 
       <div className="px-4 pb-1 z-20">
-        <div className="h-9 grid grid-cols-3 gap-0.5 bg-white/[0.04] border border-white/10 rounded-xl p-0.5" role="tablist" aria-label="أقسام صقر">
+        <div className="h-9 grid grid-cols-3 gap-0.5 bg-white/[0.04] border border-white/10 rounded-xl p-0.5" role="tablist" aria-label={`أقسام ${petDisplayName}`}>
           {PET_TABS.map((tab, index) => {
             const TabIcon = tab.icon;
             const selected = petActiveTab === tab.id;
@@ -183,7 +185,7 @@ export default function PetRoomView() {
             <div className="h-full rounded-full bg-gradient-to-l from-emerald-400 to-coral transition-[width] duration-700 motion-reduce:transition-none" style={{ width: `${goalProgress}%` }} />
           </div>
           <div className="mt-1.5 flex items-center justify-between gap-3 text-[9px] font-bold text-cream/45">
-            <span>كل توفير يقرّبك من هدفك ويطوّر صقر</span>
+            <span>كل توفير يقرّبك من هدفك ويطوّر {petDisplayName}</span>
             <span className="shrink-0 tabular-nums">{goalProgress}%</span>
           </div>
 
@@ -231,7 +233,7 @@ export default function PetRoomView() {
           <div className="flex items-center justify-between gap-2">
             <div>
               <p className="text-[9px] font-bold text-cream/40">مراحل النمو</p>
-              <h2 id="pet-evolution-title" className="font-black text-cream text-sm">تطور صقر</h2>
+              <h2 id="pet-evolution-title" className="font-black text-cream text-sm">تطور {petDisplayName}</h2>
             </div>
             <div className="inline-flex min-w-0 items-center gap-1.5 rounded-xl bg-white/[0.035] px-2.5 py-1.5 text-[10px] font-black" aria-label="المرحلة الحالية والتالية">
               <span className="text-cream" data-testid="pet-current-stage">{evolution.currentStage.name}</span>
@@ -247,7 +249,7 @@ export default function PetRoomView() {
           <ol
             className="relative mt-2.5 grid grid-cols-3 gap-2 before:absolute before:right-[16.66%] before:left-[16.66%] before:top-2.5 before:h-px before:bg-white/10"
             dir="rtl"
-            aria-label="مراحل تطور صقر"
+            aria-label={`مراحل تطور ${petDisplayName}`}
             data-testid="pet-evolution-stage-rail"
           >
             {evolution.milestones.map((milestone) => (
@@ -268,12 +270,12 @@ export default function PetRoomView() {
 
           <p className="mt-2 rounded-xl border border-white/5 bg-black/10 px-2.5 py-1.5 text-[10px] font-bold leading-relaxed text-cream/65" data-testid="pet-next-milestone-explanation">
             {evolution.nextStage
-              ? <>باقي <strong className="text-coral">{SAR_NUMBER.format(evolution.remainingAmount)} ر.س</strong> لانتقال صقر إلى مرحلة {evolution.nextStage.name}.</>
-              : 'وصل صقر إلى مرحلته النهائية؛ واصل الادخار الشخصي لإكمال هدفك.'}
+              ? <>باقي <strong className="text-coral">{SAR_NUMBER.format(evolution.remainingAmount)} ر.س</strong> لانتقال {petDisplayName} إلى مرحلة {evolution.nextStage.name}.</>
+              : <>وصل {petDisplayName} إلى مرحلته النهائية؛ واصل الادخار الشخصي لإكمال هدفك.</>}
           </p>
         </section>
 
-        <PetProgressionSections section="status" game={game} isSubmitting={isSubmitting} runAction={runAction} />
+        <PetProgressionSections section="status" game={game} isSubmitting={isSubmitting} runAction={runAction} petName={petDisplayName} />
 
         {/* Emergency Shield */}
         <button
@@ -290,18 +292,19 @@ export default function PetRoomView() {
 
         {petActiveTab === 'progress' && (
           <div id="pet-panel-progress" role="tabpanel" aria-labelledby="pet-tab-progress" className="w-full" data-testid="pet-progress-panel">
-            <PetProgressionSections section="progress" game={game} isSubmitting={isSubmitting} runAction={runAction} />
+            <PetProgressionSections section="progress" game={game} isSubmitting={isSubmitting} runAction={runAction} petName={petDisplayName} />
           </div>
         )}
 
         {petActiveTab === 'accessories' && (
           <div id="pet-panel-accessories" role="tabpanel" aria-labelledby="pet-tab-accessories" className="w-full" data-testid="pet-accessories-panel">
-            <PetProgressionSections section="accessories" game={game} isSubmitting={isSubmitting} runAction={runAction} />
+            <PetProgressionSections section="accessories" game={game} isSubmitting={isSubmitting} runAction={runAction} petName={petDisplayName} />
           </div>
         )}
       </div>
 
       <EmergencyWithdrawModal
+        petName={petDisplayName}
         open={emergencyOpen}
         onClose={() => setEmergencyOpen(false)}
         onConfirm={async (amt, label) => {

@@ -28,13 +28,13 @@ async def lifespan(_app):
     yield
 
 
-app = FastAPI(title="Namo Personalized Promotion Prediction", version="1.0.0", lifespan=lifespan)
+app = FastAPI(title="Nadeem Personalized Promotion Prediction", version="1.0.0", lifespan=lifespan)
 
 
 @app.get("/health")
 def health():
     models = model_metadata()
-    return {"ok": True, "service": "namo-ml", "ready": bool(STATE), "models": models, "dataLabel": DATA_LABEL}
+    return {"ok": True, "service": "nadeem-ml", "ready": bool(STATE), "models": models, "dataLabel": DATA_LABEL}
 
 
 def model_metadata():

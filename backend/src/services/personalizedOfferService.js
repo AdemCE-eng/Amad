@@ -10,13 +10,16 @@ const CANONICAL_FALLBACK_PROBABILITY = 0.72;
 const FROZEN_FALLBACK_PURCHASE_PROBABILITIES = Object.freeze({
   "هاف مليون": 0.827,
   "جرير": 0.6538,
+  "إكسترا": 0.6924,
+  "نون": 0.7412,
+  "فوكس سينما": 0.6187,
 });
 
 function deterministicFallback(userId, reason, now = Date.now()) {
   const recommendations = Object.values(buildPredictedOffers(now))
     .filter((offer) => !ESSENTIAL_CATEGORIES.has(offer.category))
     .sort((a, b) => b.probability - a.probability || a.id.localeCompare(b.id))
-    .slice(0, 3)
+    .slice(0, 5)
     .map((offer) => ({
       userId,
       merchantId: offer.id,
@@ -34,7 +37,7 @@ function deterministicFallback(userId, reason, now = Date.now()) {
       action: "wait_for_offer",
       explanation: offer.basis,
       reasons: [offer.basis],
-      disclaimer: "توقع تجريبي غير مضمون — تعذر استخدام نموذج التخصيص، فعُرض مسار نامو الثابت.",
+      disclaimer: "توقع تجريبي غير مضمون — تعذر استخدام نموذج التخصيص، فعُرض مسار نديم الثابت.",
       dataLabel: "MOCK / SYNTHETIC DEMO DATA — SAUDI MARKET · deterministic fallback",
     }));
   return { ok: true, userId, recommendations, source: "deterministic-fallback", fallbackReason: reason, models: null };

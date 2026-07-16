@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, useReducedMotion } from 'motion/react';
 import Mascot from '../mascot/Mascot';
-import NamoCelebrationDialog from './NamoCelebrationDialog';
+import NadeemCelebrationDialog from './NadeemCelebrationDialog';
 import { STAGE_INFO } from '../../lib/catalog';
 import {
   acknowledgeCelebration,
@@ -142,7 +142,7 @@ function EvolutionOverlay({ event, petName, leaving, onDismiss }) {
   }, [reducedMotion]);
 
   return (
-    <NamoCelebrationDialog
+    <NadeemCelebrationDialog
       variant="evolution"
       titleId="evolution-dialog-title"
       descriptionId="evolution-dialog-description"
@@ -187,7 +187,7 @@ function EvolutionOverlay({ event, petName, leaving, onDismiss }) {
             <p id="evolution-dialog-title" className="text-[11px] font-black text-coral">تطور {petName || 'صقر'}!</p>
             <h2 className="mt-0.5 text-xl font-black text-cream">{EVOLUTION_RESULT[event.stage] || `صار ${info.name}`}</h2>
             <p id="evolution-dialog-description" className="mt-1 text-[11px] font-medium text-cream/60">
-              {isHatch ? 'مدخراتك كبرت، وصقر كبر معك.' : 'واصلت الادخار، وصقر وصل إلى مرحلته الأقوى.'}
+              {isHatch ? <>مدخراتك كبرت، و{petName || 'صقر'} كبر معك.</> : <>واصلت الادخار، و{petName || 'صقر'} وصل إلى مرحلته الأقوى.</>}
             </p>
           </motion.div>
 
@@ -195,14 +195,14 @@ function EvolutionOverlay({ event, petName, leaving, onDismiss }) {
             type="button"
             disabled={!canDismiss}
             onClick={onDismiss}
-            aria-label="تأكيد اكتمال تطور صقر والمتابعة"
+            aria-label={`تأكيد اكتمال تطور ${petName || 'صقر'} والمتابعة`}
             className="mt-3 min-w-24 rounded-xl border border-coral/30 bg-coral/10 px-5 py-2 text-xs font-black text-coral transition-colors hover:bg-coral/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-coral disabled:opacity-35"
           >
             رائع، نكمل
           </button>
         </>
       )}
-    </NamoCelebrationDialog>
+    </NadeemCelebrationDialog>
   );
 }
 
@@ -304,7 +304,7 @@ function AdultEvolutionMotion({ event, previousStage, reducedMotion }) {
 function RewardOverlay({ event, petName, leaving, onDismiss }) {
   const presentation = buildCelebrationPresentation(event, petName);
   return (
-    <NamoCelebrationDialog
+    <NadeemCelebrationDialog
       variant={presentation.variant}
       titleId="reward-dialog-title"
       descriptionId="reward-dialog-description"
@@ -338,7 +338,7 @@ function RewardOverlay({ event, petName, leaving, onDismiss }) {
           </button>
         </>
       )}
-    </NamoCelebrationDialog>
+    </NadeemCelebrationDialog>
   );
 }
 

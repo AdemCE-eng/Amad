@@ -3,9 +3,9 @@ import { Home, Trophy, Users, TrendingUp } from 'lucide-react';
 import Mascot from '../mascot/Mascot';
 import { useMascotEmotion } from '../mascot/useMascotEmotion';
 
-// Final five-destination Namo navigation. صقر remains the emphasized center
+// Final five-destination Nadeem navigation. صقر remains the emphasized center
 // destination and stays locked until the savings plan is activated.
-const TIP_KEY = 'namo_tip_dismissed';
+const TIP_KEY = 'nadeem_tip_dismissed';
 
 export default function BottomNav({ activeView, setActiveView, petName, pet, game, petLocked = false }) {
   const { emotion } = useMascotEmotion(pet);

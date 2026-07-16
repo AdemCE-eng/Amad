@@ -11,7 +11,7 @@ export default function RewardNotice() {
   const { notifications, activeRole } = useAppData();
   const notice = notifications?.[activeRole]?.parentReward || null;
   const [visible, setVisible] = useState(false);
-  const seenKey = `namo_reward_seen_${activeRole}`;
+  const seenKey = `nadeem_reward_seen_${activeRole}`;
   const timer = useRef(null);
 
   useEffect(() => {

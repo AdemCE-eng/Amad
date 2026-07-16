@@ -6,7 +6,7 @@ const read = (relativePath) => readFile(new URL(relativePath, import.meta.url), 
 
 test('Home owns the product header, previews, and four recent transactions', async () => {
   const home = await read('../src/views/HomeView.jsx');
-  assert.match(home, /data-testid="namo-home-header"/);
+  assert.match(home, /data-testid="nadeem-home-header"/);
   assert.match(home, /unreadNotificationCount > 0/);
   assert.match(home, /data-testid="home-family-preview"/);
   assert.match(home, /setActiveView\('family'\)/);

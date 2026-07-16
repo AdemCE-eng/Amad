@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title description">
-  <title id="title">Namo system architecture</title>
-  <desc id="description">Three product innovations flow into the Namo customer experience, then through Namo Core Services to the Financial Platform and AI Recommendation Engine. The recommendation returns through Core Services to the customer.</desc>
+  <title id="title">Nadeem system architecture</title>
+  <desc id="description">Three product innovations flow into the Nadeem customer experience, then through Nadeem Core Services to the Financial Platform and AI Recommendation Engine. The recommendation returns through Core Services to the customer.</desc>
   <defs>
     <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#f8fbff"/>
@@ -57,7 +57,7 @@
   <rect width="1600" height="900" rx="34" fill="url(#background)"/>
   <rect x="1" y="1" width="1598" height="898" rx="33" fill="none" stroke="#d9e7f3" stroke-width="2"/>
 
-  <text class="title" x="800" y="58" text-anchor="middle">Namo System Architecture</text>
+  <text class="title" x="800" y="58" text-anchor="middle">Nadeem System Architecture</text>
   <text class="subtitle" x="800" y="89" text-anchor="middle">Three innovations working together to guide better financial decisions</text>
   <text class="eyebrow" x="800" y="124" text-anchor="middle" fill="#627d98">THREE PRODUCT INNOVATIONS</text>
 
@@ -90,7 +90,7 @@
   <g filter="url(#hero-shadow)">
     <rect x="500" y="304" width="600" height="132" rx="30" fill="url(#app)"/>
     <text class="eyebrow on-dark-eyebrow" x="800" y="338" text-anchor="middle">CUSTOMER EXPERIENCE</text>
-    <text class="node-title on-dark-title" x="800" y="378" text-anchor="middle">Namo Customer Application</text>
+    <text class="node-title on-dark-title" x="800" y="378" text-anchor="middle">Nadeem Customer Application</text>
     <text class="node-copy on-dark-copy" x="800" y="408" text-anchor="middle">One experience for saving, guidance, rewards and family goals</text>
   </g>
 
@@ -103,7 +103,7 @@
     <rect x="540" y="504" width="520" height="146" rx="28" fill="url(#core)" stroke="#9fc8ed" stroke-width="2.5"/>
     <rect x="570" y="530" width="128" height="28" rx="14" fill="#e8f3ff"/>
     <text class="eyebrow" x="634" y="549" text-anchor="middle" fill="#2467a9">BUSINESS LOGIC</text>
-    <text class="node-title" x="580" y="593">Namo Core Services</text>
+    <text class="node-title" x="580" y="593">Nadeem Core Services</text>
     <text class="node-copy" x="580" y="623">Financial logic, rewards, family journeys and coordination</text>
   </g>
 

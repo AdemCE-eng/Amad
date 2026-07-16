@@ -1,7 +1,7 @@
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
 
 function demoHeaders(recipientId) {
-  return recipientId ? { 'X-Namo-Demo-User': recipientId } : {};
+  return recipientId ? { 'X-Nadeem-Demo-User': recipientId } : {};
 }
 
 async function post(path, body, recipientId) {

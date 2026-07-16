@@ -21,15 +21,15 @@ test('achievement, challenge, and shop dialogs display the actual catalog outcom
   assert.match(accessory.description, /تم تجهيزها الآن/);
 });
 
-test('all meaningful rewards share the dark Namo dialog while equip changes stay inline', async () => {
+test('all meaningful rewards share the dark Nadeem dialog while equip changes stay inline', async () => {
   const [overlay, dialog, progression, app] = await Promise.all([
     read('../src/components/ui/CelebrationOverlay.jsx'),
-    read('../src/components/ui/NamoCelebrationDialog.jsx'),
+    read('../src/components/ui/NadeemCelebrationDialog.jsx'),
     read('../src/components/pet/PetProgressionSections.jsx'),
     read('../src/App.jsx'),
   ]);
 
-  assert.match(overlay, /<NamoCelebrationDialog/);
+  assert.match(overlay, /<NadeemCelebrationDialog/);
   assert.match(overlay, /variant=\{presentation\.variant\}/);
   assert.match(overlay, /returnFocusKey=\{event\.returnFocusKey \|\| \(event\.type === 'shop' \? `accessory-\$\{event\.id\}` : null\)\}/);
   assert.match(overlay, /if \(activeRole !== 'rashid'\)/);
@@ -42,7 +42,7 @@ test('all meaningful rewards share the dark Namo dialog while equip changes stay
   assert.match(progression, /role="status"/);
   assert.match(progression, /aria-live="polite"/);
   assert.match(progression, /data-testid="accessory-equip-feedback"/);
-  assert.doesNotMatch(progression, /NamoCelebrationDialog|role="dialog"/);
+  assert.doesNotMatch(progression, /NadeemCelebrationDialog|role="dialog"/);
   assert.match(app, /activeRole=\{activeRole\}/);
 });
 

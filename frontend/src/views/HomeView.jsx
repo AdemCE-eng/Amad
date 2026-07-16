@@ -44,10 +44,10 @@ export default function HomeView() {
     <div className={`bg-ink h-full flex flex-col font-sans text-cream transition-all ${isShaking ? 'animate-screen-shake' : ''}`} dir="rtl">
       {flashColor && <div className="absolute inset-0 z-50 pointer-events-none" style={{ backgroundColor: flashColor }} />}
 
-      <header className="px-5 pt-4 pb-3 flex items-center justify-between z-10" data-testid="namo-home-header">
+      <header className="px-5 pt-4 pb-3 flex items-center justify-between z-10" data-testid="nadeem-home-header">
         <div className="flex items-center gap-3 min-w-0">
           <span className="w-11 h-11 rounded-2xl bg-gradient-to-br from-coral to-coral-deep text-ink grid place-items-center font-black text-lg shrink-0">{user.name?.trim()?.[0] || 'ر'}</span>
-          <div className="min-w-0"><p className="font-black text-lg truncate">هلا، {user.name}</p><p className="text-[11px] text-cream/50 font-bold">المستوى {game.streak.current}</p></div>
+          <div className="min-w-0"><p className="font-black text-lg truncate">هلا، {user.name}</p><p className="text-[11px] text-cream/50 font-bold">نديم · المستوى {game.streak.current}</p></div>
         </div>
         <div className="flex items-center gap-2">
           <span className="bg-violet/15 border border-violet/25 text-violet rounded-full px-3 py-2 text-[11px] font-black whitespace-nowrap">NXP {game.nxp_balance}</span>
@@ -80,7 +80,7 @@ export default function HomeView() {
         </section>
 
         {accountOpen && (
-          <section className="bg-gradient-to-l from-coral/15 via-ink-card to-ink-card border border-coral/25 rounded-3xl p-3" data-testid="home-saqr-preview" aria-label="ملخص صقر">
+          <section className="bg-gradient-to-l from-coral/15 via-ink-card to-ink-card border border-coral/25 rounded-3xl p-3" data-testid="home-saqr-preview" aria-label={`ملخص ${user.petName || 'صقر'}`}>
             <div className="flex items-center gap-3">
               <div className="w-[78px] h-[78px] shrink-0 rounded-2xl bg-white/5 border border-white/5 grid place-items-center overflow-hidden" aria-hidden="true">
                 <Mascot emotion={emotion} stage={game.stage} equipped={game.equipped} size={72} track={false} />
@@ -89,7 +89,7 @@ export default function HomeView() {
                 <div className="flex items-center justify-between gap-2">
                   <h2 className="font-black text-base leading-tight">{user.petName || 'صقر'} معك · {saqrStage}</h2>
                   <button type="button" onClick={() => setActiveView('pet')} className="shrink-0 px-2.5 py-1.5 rounded-xl bg-coral text-ink text-[10px] font-black inline-flex items-center gap-1">
-                    افتح صقر <ChevronLeft size={13} />
+                    افتح {user.petName || 'صقر'} <ChevronLeft size={13} />
                   </button>
                 </div>
                 <p className="text-[11px] text-cream/55 mt-1">{saqrStatus}</p>

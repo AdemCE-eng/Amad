@@ -6,6 +6,7 @@ html,
 body,
 #root {
   width: 100%;
+  height: 100%;
   min-height: 100%;
 }
 
@@ -15,9 +16,29 @@ body {
   overflow: hidden;
 }
 
+/* Keep the phone frame outside the intrinsic sizing of each routed view.
+   Switching bottom-nav content must never grow or squeeze the device shell. */
+.app-frame {
+  flex: 0 0 auto;
+  contain: size layout paint;
+}
+
+/* Give the desktop device explicit physical dimensions. Routed content is
+   never allowed to participate in sizing the phone at 100% browser zoom. */
+@media (min-width: 640px) {
+  .app-frame {
+    width: min(45.8182vh, 477.2727px) !important;
+    min-width: min(45.8182vh, 477.2727px) !important;
+    max-width: min(45.8182vh, 477.2727px) !important;
+    height: min(96vh, 1000px) !important;
+    min-height: min(96vh, 1000px) !important;
+    max-height: min(96vh, 1000px) !important;
+    aspect-ratio: 420 / 880;
+  }
+}
+
 /* On a real phone the browser/device already supplies the physical frame.
-   Use the full dynamic viewport and respect notches and the home indicator.
-   The decorative preview frame remains enabled from the `sm` breakpoint. */
+   Use the full dynamic viewport and respect notches and the home indicator. */
 @media (max-width: 639px), (max-height: 639px) and (hover: none) and (pointer: coarse) {
   .app-shell {
     padding: 0;
@@ -139,18 +160,23 @@ body {
 }
 .anim-tear { animation: tearFall 1.3s ease-in infinite; }
 
-@keyframes crumbFall {
-  0% { opacity: 1; transform: translateY(0); }
-  100% { opacity: 0; transform: translateY(18px); }
-}
-.anim-crumb { animation: crumbFall 0.8s ease-in infinite; }
-
 @keyframes zzzFloat {
   0% { opacity: 0; transform: translate(0, 0); }
   30% { opacity: 1; }
   100% { opacity: 0; transform: translate(6px, -14px); }
 }
 .anim-zzz { animation: zzzFloat 2.4s ease-out infinite; }
+
+@keyframes thinkFloat {
+  0%, 100% { opacity: 0.35; transform: translateY(2px) scale(0.82); }
+  45% { opacity: 1; transform: translateY(-4px) scale(1.08); }
+  70% { opacity: 0.75; transform: translateY(-2px) scale(1); }
+}
+.anim-think {
+  animation: thinkFloat 1.5s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
 
 @keyframes spinSlow {
   from { transform: rotate(0deg); }
@@ -204,12 +230,12 @@ body {
   animation: reviveRing 0.9s ease-out forwards;
 }
 
-/* Every shared Namo celebration crossfades instead of animating internals
+/* Every shared Nadeem celebration crossfades instead of animating internals
    when the operating system requests reduced motion. */
 @media (prefers-reduced-motion: reduce) {
-  .namo-celebration-dialog *,
-  .namo-celebration-dialog *::before,
-  .namo-celebration-dialog *::after {
+  .nadeem-celebration-dialog *,
+  .nadeem-celebration-dialog *::before,
+  .nadeem-celebration-dialog *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;

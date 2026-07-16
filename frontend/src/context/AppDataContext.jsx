@@ -6,7 +6,8 @@ import { useUserNotifications } from '../lib/useUserNotifications';
 
 // Demo-only role switch (no auth, no permissions) — which family member the
 // UI is "acting as". Persisted so a refresh keeps the same role.
-const ROLE_KEY = 'namo_active_role';
+const ROLE_KEY = 'nadeem_active_role';
+const LEGACY_ROLE_KEY = 'namo_active_role';
 
 // Single provider for backend state + app-wide interaction state, so views
 // consume `useAppData()` instead of a 20-prop drill. Views stay top-level
@@ -24,11 +25,12 @@ export function AppDataProvider({ children }) {
   const [petActiveTab, setPetActiveTab] = useState('status');
   const [opportunityResult, setOpportunityResult] = useState(null);
   const [activeRole, setActiveRoleState] = useState(() => {
-    const stored = localStorage.getItem(ROLE_KEY);
+    const stored = localStorage.getItem(ROLE_KEY) || localStorage.getItem(LEGACY_ROLE_KEY);
     return ['rashid', 'ahmed', 'sarah'].includes(stored) ? stored : CANONICAL_DEMO_ROLE;
   });
   const setActiveRole = (role) => {
     localStorage.setItem(ROLE_KEY, role);
+    localStorage.removeItem(LEGACY_ROLE_KEY);
     setActiveRoleState(role);
   };
   const [isPetted, setIsPetted] = useState(false);

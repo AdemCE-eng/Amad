@@ -1,4 +1,4 @@
-window.NAMO_RESULTS = {
+window.NADEEM_RESULTS = {
   "metrics": {
     "label": "نتائج على بيانات تجريبية من السوق السعودي",
     "dataLabel": "MOCK / SYNTHETIC DEMO DATA — SAUDI MARKET",

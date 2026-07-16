@@ -7,7 +7,7 @@ import { X, ShieldCheck, HeartPulse, Flame } from 'lucide-react';
 // backend already accepts) — no new field, no contract change.
 const REASONS = ['ظرف صحي', 'إصلاح عاجل', 'التزام أساسي', 'سبب آخر'];
 
-export default function EmergencyWithdrawModal({ open, onClose, onConfirm, balance, shieldsRemaining, isSubmitting }) {
+export default function EmergencyWithdrawModal({ open, onClose, onConfirm, balance, shieldsRemaining, isSubmitting, petName = 'صقر' }) {
   const [amount, setAmount] = useState('200');
   const [reason, setReason] = useState(null);
   const [error, setError] = useState(null);
@@ -86,7 +86,7 @@ export default function EmergencyWithdrawModal({ open, onClose, onConfirm, balan
             </div>
             <p className="font-black text-cream text-lg mb-2">تم السحب بنجاح</p>
             <p className="text-sm text-cream/70 leading-relaxed mb-6">
-              استخدمنا الدرع الطارئ، لذلك لم تتأثر صحة صقر أو سلسلتك الادخارية.
+              استخدمنا الدرع الطارئ، لذلك لم تتأثر صحة {petName} أو سلسلتك الادخارية.
             </p>
             <button
               onClick={onClose}
@@ -143,7 +143,7 @@ export default function EmergencyWithdrawModal({ open, onClose, onConfirm, balan
               <div className="flex items-center gap-2 text-[12px]">
                 <HeartPulse size={14} className={shielded ? 'text-emerald-400' : 'text-red-400'} />
                 <span className={shielded ? 'text-emerald-300 font-bold' : 'text-red-300 font-bold'}>
-                  {shielded ? 'صحة صقر محمية بالكامل' : 'لا يوجد درع متبقٍ — قد تتأثر صحة صقر'}
+                  {shielded ? `صحة ${petName} محمية بالكامل` : `لا يوجد درع متبقٍ — قد تتأثر صحة ${petName}`}
                 </span>
               </div>
               <div className="flex items-center gap-2 text-[12px]">

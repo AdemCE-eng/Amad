@@ -8,7 +8,7 @@ import StreakFlame from '../ui/StreakFlame';
 const MILESTONES = [3, 7, 14];
 const MILESTONE_REWARDS = { 3: 30, 7: 70, 14: 150 };
 
-function StatusProgress({ game }) {
+function StatusProgress({ game, petName }) {
   const { streak } = game;
   return (
     <section className="bg-ink-card rounded-3xl p-5 text-center" data-testid="pet-streak-section">
@@ -16,7 +16,7 @@ function StatusProgress({ game }) {
         <div className="text-right min-w-0">
           <p className="text-[11px] font-black text-coral">سلسلة الادخار</p>
           <p className="text-xs text-cream/50 mt-1 font-medium leading-relaxed">
-            {streak.status === 'frozen' ? 'درع الحماية حفظ سلسلتك اليوم ❄️' : 'استمر داخل الميزانية لتتقدم مع صقر.'}
+            {streak.status === 'frozen' ? 'درع الحماية حفظ سلسلتك اليوم ❄️' : `استمر داخل الميزانية لتتقدم مع ${petName}.`}
           </p>
         </div>
         <StreakFlame streak={streak} size="lg" />
@@ -68,7 +68,7 @@ function ChallengesAndAchievements({ game }) {
   );
 }
 
-function Accessories({ game, isSubmitting, runAction }) {
+function Accessories({ game, isSubmitting, runAction, petName }) {
   const { nxp_balance, inventory, equipped } = game;
   const equippedItem = equipped ? SHOP_ITEMS[equipped] : null;
   const [equipFeedback, setEquipFeedback] = useState('');
@@ -95,7 +95,7 @@ function Accessories({ game, isSubmitting, runAction }) {
         <div className="min-w-0"><p className="text-[10px] text-coral font-black">الإكسسوار المجهّز</p><h2 className="font-black mt-1">{equippedItem?.name || 'بدون إكسسوار'}</h2><p className="text-[10px] text-cream/45 mt-1">يمكنك التجهيز أو الإزالة من العناصر المملوكة.</p></div>
       </div>
       <div className="flex items-end justify-between gap-3 mb-3 px-1">
-        <div><h2 className="font-black text-cream">متجر إكسسوارات صقر</h2><p className="text-[10px] text-cream/50 font-bold mt-1">المملوك والمجهز محفوظان في حسابك.</p></div>
+        <div><h2 className="font-black text-cream">متجر إكسسوارات {petName}</h2><p className="text-[10px] text-cream/50 font-bold mt-1">المملوك والمجهز محفوظان في حسابك.</p></div>
         <span className="text-[11px] font-black text-amber-300 whitespace-nowrap">{nxp_balance} NXP</span>
       </div>
       <p
@@ -132,12 +132,12 @@ function Accessories({ game, isSubmitting, runAction }) {
   );
 }
 
-export default function PetProgressionSections({ section, game, isSubmitting, runAction }) {
+export default function PetProgressionSections({ section, game, isSubmitting, runAction, petName = 'صقر' }) {
   return (
     <div className="w-full mb-6" data-testid="pet-progression-sections">
-      {section === 'status' && <StatusProgress game={game} />}
+      {section === 'status' && <StatusProgress game={game} petName={petName} />}
       {section === 'progress' && <ChallengesAndAchievements game={game} />}
-      {section === 'accessories' && <Accessories game={game} isSubmitting={isSubmitting} runAction={runAction} />}
+      {section === 'accessories' && <Accessories game={game} isSubmitting={isSubmitting} runAction={runAction} petName={petName} />}
     </div>
   );
 }

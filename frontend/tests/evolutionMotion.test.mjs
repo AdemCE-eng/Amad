@@ -93,7 +93,7 @@ test('evolution particles stay local and deterministic while confirmation waits 
 test('hatching is smooth, adult evolution remains separate, and reduced motion is safe', async () => {
   const [overlay, dialog, styles] = await Promise.all([
     read('../src/components/ui/CelebrationOverlay.jsx'),
-    read('../src/components/ui/NamoCelebrationDialog.jsx'),
+    read('../src/components/ui/NadeemCelebrationDialog.jsx'),
     read('../src/index.css'),
   ]);
 
@@ -118,5 +118,5 @@ test('hatching is smooth, adult evolution remains separate, and reduced motion i
   assert.match(dialog, /target instanceof HTMLElement\) target\.focus\(\)/);
   assert.match(dialog, /useReducedMotion\(\)/);
   assert.match(styles, /prefers-reduced-motion: reduce/);
-  assert.match(styles, /\.namo-celebration-dialog \*/);
+  assert.match(styles, /\.nadeem-celebration-dialog \*/);
 });

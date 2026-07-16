@@ -38,3 +38,19 @@ test('center navigation uses the real state-driven Mascot and preserves tab orde
   assert.doesNotMatch(nav, /🐤|🐣|🐥/);
   assert.match(app, /pet=\{pet\} game=\{game\}/);
 });
+
+test('happy Saqr opens and closes its beak without crumb particles', async () => {
+  const [mascot, emotions, styles] = await Promise.all([
+    read('../src/components/mascot/Mascot.jsx'),
+    read('../src/components/mascot/emotions.js'),
+    read('../src/index.css'),
+  ]);
+
+  assert.match(mascot, /HAPPY_BEAK_OPEN/);
+  assert.match(mascot, /HAPPY_BEAK_CLOSED/);
+  assert.match(mascot, /emotion === 'happy'/);
+  assert.match(mascot, /repeat: Infinity/);
+  assert.doesNotMatch(mascot, /crumbs|anim-crumb/);
+  assert.doesNotMatch(emotions, /crumbs/);
+  assert.doesNotMatch(styles, /crumbFall|anim-crumb/);
+});

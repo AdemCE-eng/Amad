@@ -392,7 +392,7 @@ function Start-Project {
     }
     if (Test-MlRuntime $mlPython) {
       Write-Step "Starting FastAPI ML service on $mlUrl..."
-      Start-CmdWindow 'Namo FastAPI ML Service' $MlDir @(
+      Start-CmdWindow 'Nadeem FastAPI ML Service' $MlDir @(
         "`"$mlPython`" -m uvicorn app.main:app --host 127.0.0.1 --port $($ports.Ml)"
       )
       $mlOnline = Wait-MlHealth $mlUrl 60

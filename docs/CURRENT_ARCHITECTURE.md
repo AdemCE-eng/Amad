@@ -2,7 +2,7 @@
 
 ## Runtime topology
 
-نامو is a local-first hackathon demo with four existing pieces:
+Nadeem is a local-first hackathon demo with four existing pieces:
 
 1. `cheat-controller/` is a static operator console served by Express.
 2. `backend/` is an ESM Node/Express service. It owns all calculations, calls Gemini only for mascot wording, and writes complete state changes to Firebase Realtime Database.

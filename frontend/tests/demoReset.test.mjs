@@ -13,25 +13,27 @@ function storageWith(entries) {
   };
 }
 
-test('full reset clears every Namo journey key without touching unrelated storage', () => {
+test('full reset clears every Nadeem journey key and legacy key without touching unrelated storage', () => {
   const storage = storageWith({
     amad_onboarded: '1',
-    namo_active_role: 'ahmed',
-    namo_offers_revealed: '1',
-    namo_reward_seen_rashid: '123',
-    namo_celebration_ack_rashid: 'evolution:stage_1:123',
-    namo_tip_dismissed: '1',
+    nadeem_active_role: 'ahmed',
+    nadeem_offers_revealed: '1',
+    nadeem_reward_seen_rashid: '123',
+    nadeem_celebration_ack_rashid: 'evolution:stage_1:123',
+    nadeem_tip_dismissed: '1',
+    namo_legacy_key: 'remove',
     unrelated_preference: 'keep',
   });
 
   clearDemoBrowserState(storage);
 
   assert.equal(storage.getItem('amad_onboarded'), null);
-  assert.equal(storage.getItem('namo_active_role'), null);
-  assert.equal(storage.getItem('namo_offers_revealed'), null);
-  assert.equal(storage.getItem('namo_reward_seen_rashid'), null);
-  assert.equal(storage.getItem('namo_celebration_ack_rashid'), null);
-  assert.equal(storage.getItem('namo_tip_dismissed'), null);
+  assert.equal(storage.getItem('nadeem_active_role'), null);
+  assert.equal(storage.getItem('nadeem_offers_revealed'), null);
+  assert.equal(storage.getItem('nadeem_reward_seen_rashid'), null);
+  assert.equal(storage.getItem('nadeem_celebration_ack_rashid'), null);
+  assert.equal(storage.getItem('nadeem_tip_dismissed'), null);
+  assert.equal(storage.getItem('namo_legacy_key'), null);
   assert.equal(storage.getItem('unrelated_preference'), 'keep');
   assert.equal(CANONICAL_DEMO_ROLE, 'rashid');
 });

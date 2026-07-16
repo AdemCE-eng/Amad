@@ -61,7 +61,7 @@ def feature_importance(bundle, test):
 
 def sync_showcase(payloads):
     target = ROOT.parent / "ml-results-showcase" / "generated-results.js"
-    target.write_text("window.NAMO_RESULTS = " + json.dumps(payloads, ensure_ascii=False, indent=2) + ";\n", encoding="utf-8")
+    target.write_text("window.NADEEM_RESULTS = " + json.dumps(payloads, ensure_ascii=False, indent=2) + ";\n", encoding="utf-8")
 
 
 def evaluate():

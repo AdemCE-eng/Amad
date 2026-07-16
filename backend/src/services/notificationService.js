@@ -5,14 +5,15 @@ import {
   sortNotifications,
 } from "../logic/notificationEngine.js";
 
-const RECIPIENT_HEADER = "x-namo-demo-user";
+const RECIPIENT_HEADER = "x-nadeem-demo-user";
+const LEGACY_RECIPIENT_HEADER = "x-namo-demo-user";
 
 export function notificationPath(recipientId) {
   return `/userNotifications/${recipientId}`;
 }
 
 export function recipientFromRequest(req) {
-  const raw = req.get(RECIPIENT_HEADER);
+  const raw = req.get(RECIPIENT_HEADER) || req.get(LEGACY_RECIPIENT_HEADER);
   if (!raw) return "rashid";
   return normalizeRecipientId(raw);
 }

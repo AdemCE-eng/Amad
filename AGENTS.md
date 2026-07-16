@@ -1,6 +1,6 @@
 # Repository guardrails
 
-- Product name: نامو
+- Product name: Nadeem / نديم
 - Mascot name: صقر
 - Team identity: Pixel Falcon
 - Demo child identity: راشد / `rashid`

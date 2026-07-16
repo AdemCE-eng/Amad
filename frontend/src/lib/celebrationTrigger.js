@@ -5,7 +5,8 @@ export function celebrationEventKey(celebration) {
   return `${celebration?.type || 'none'}:${celebration?.id || 'none'}:${nextAt}`;
 }
 
-export const CELEBRATION_ACK_PREFIX = 'namo_celebration_ack_';
+export const CELEBRATION_ACK_PREFIX = 'nadeem_celebration_ack_';
+const LEGACY_CELEBRATION_ACK_PREFIX = 'namo_celebration_ack_';
 let pendingReturnFocus = null;
 
 export function rememberCelebrationReturnFocus(key) {
@@ -22,7 +23,8 @@ export function consumeCelebrationReturnFocus(maxAgeMs = 5000) {
 export function readCelebrationAcknowledgement(storage, role = 'rashid') {
   if (!storage) return null;
   try {
-    return storage.getItem(`${CELEBRATION_ACK_PREFIX}${role}`);
+    return storage.getItem(`${CELEBRATION_ACK_PREFIX}${role}`)
+      || storage.getItem(`${LEGACY_CELEBRATION_ACK_PREFIX}${role}`);
   } catch {
     return null;
   }

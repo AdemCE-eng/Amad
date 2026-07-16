@@ -1,1 +1,1 @@
-{"name":"namo-ml-results-showcase","private":true,"type":"module","scripts":{"sync-results":"node sync-results.mjs","serve":"python -m http.server 8090"}}
+{"name":"nadeem-ml-results-showcase","private":true,"type":"module","scripts":{"sync-results":"node sync-results.mjs","serve":"python -m http.server 8090"}}

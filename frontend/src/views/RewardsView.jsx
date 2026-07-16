@@ -3,7 +3,7 @@ import { useAppData } from '../context/AppDataContext';
 import { cashbackState } from '../lib/cashback';
 
 const REWARD_TYPES = [
-  { id: 'nxp', label: 'NXP', icon: '🪙', style: 'violet', description: 'عملة نامو للإنجازات وإكسسوارات صقر.' },
+  { id: 'nxp', label: 'NXP', icon: '🪙', style: 'violet', description: 'عملة نديم للإنجازات وإكسسوارات المرافق.' },
   { id: 'akthr', label: 'أكثر / Akthr', icon: '🟢', style: 'emerald', description: 'نقاط ولاء مرتبطة بالمكافآت والعروض.' },
   { id: 'cashback', label: 'كاش باك', icon: '💳', style: 'sky', description: 'مكافآت كاش باك من العروض المؤهلة.' },
 ];

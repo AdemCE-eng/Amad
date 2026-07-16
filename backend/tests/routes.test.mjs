@@ -11,7 +11,7 @@ async function api(method, path, body, recipientId) {
     method,
     headers: {
       "Content-Type": "application/json",
-      ...(recipientId ? { "X-Namo-Demo-User": recipientId } : {}),
+      ...(recipientId ? { "X-Nadeem-Demo-User": recipientId } : {}),
     },
     body: body ? JSON.stringify(body) : undefined,
   });

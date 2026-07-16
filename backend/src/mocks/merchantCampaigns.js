@@ -12,4 +12,10 @@ export const MOCK_CAMPAIGN_HISTORY = [
   { merchant: "هاف مليون", occasion: "اليوم الوطني السعودي", year: 2025, discountPct: 25, category: "coffee" },
   { merchant: "جرير", occasion: "العودة للمدارس", year: 2024, discountPct: 15, category: "shopping" },
   { merchant: "جرير", occasion: "العودة للمدارس", year: 2025, discountPct: 15, category: "shopping" },
+  { merchant: "إكسترا", occasion: "العودة للمدارس", year: 2024, discountPct: 18, category: "electronics" },
+  { merchant: "إكسترا", occasion: "العودة للمدارس", year: 2025, discountPct: 20, category: "electronics" },
+  { merchant: "نون", occasion: "الجمعة البيضاء", year: 2024, discountPct: 20, category: "shopping" },
+  { merchant: "نون", occasion: "الجمعة البيضاء", year: 2025, discountPct: 25, category: "shopping" },
+  { merchant: "فوكس سينما", occasion: "إجازة عيد الفطر", year: 2024, discountPct: 15, category: "entertainment" },
+  { merchant: "فوكس سينما", occasion: "إجازة عيد الفطر", year: 2025, discountPct: 20, category: "entertainment" },
 ];

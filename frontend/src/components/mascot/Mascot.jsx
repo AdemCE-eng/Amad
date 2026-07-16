@@ -102,6 +102,31 @@ const BODY_LOOP_CLASS = {
   sway: 'anim-sway',
 };
 
+// Happy Saqr chatters between the existing closed and open beak drawings.
+// Crossfading shapes avoids fragile SVG path morphing and works for every stage.
+const HAPPY_BEAK_OPEN = { opacity: [0, 1, 1, 0], scale: [0.9, 1, 1, 0.9] };
+const HAPPY_BEAK_CLOSED = { opacity: [1, 0, 0, 1], scale: 1 };
+const HAPPY_BEAK_TRANSITION = {
+  duration: 0.9,
+  repeat: Infinity,
+  times: [0, 0.2, 0.65, 1],
+  ease: 'easeInOut',
+};
+
+function beakAnimation(emotion, activeMouth, id) {
+  if (emotion === 'happy' && id === 'smileOpen') {
+    return { animate: HAPPY_BEAK_OPEN, transition: HAPPY_BEAK_TRANSITION };
+  }
+  if (emotion === 'happy' && id === 'smileSoft') {
+    return { animate: HAPPY_BEAK_CLOSED, transition: HAPPY_BEAK_TRANSITION };
+  }
+  const visible = activeMouth === id;
+  return {
+    animate: { opacity: visible ? 1 : 0, scale: visible ? 1 : 0.85 },
+    transition: springs.snappy,
+  };
+}
+
 function Eye({ cx, lid, blinking, clipId }) {
   const closed = blinking ? 1 : lid;
   // Clip the eye+highlights with an ellipse that squishes vertically from
@@ -171,21 +196,21 @@ function Effects({ fx }) {
       </g>
     );
   }
-  if (fx === 'crumbs') {
-    return (
-      <g>
-        {[[112, 132], [124, 136], [118, 130]].map(([x, y], i) => (
-          <circle key={i} className="anim-crumb" style={{ animationDelay: `${i * 0.25}s` }} cx={x} cy={y} r="2.5" fill={C.wing} />
-        ))}
-      </g>
-    );
-  }
   if (fx === 'zzz') {
     return (
       <g fill="#90A4AE" fontFamily="sans-serif" fontWeight="900">
         <text className="anim-zzz" x="164" y="58" fontSize="18">z</text>
         <text className="anim-zzz" style={{ animationDelay: '0.6s' }} x="178" y="44" fontSize="13">z</text>
         <text className="anim-zzz" style={{ animationDelay: '1.2s' }} x="189" y="33" fontSize="9">z</text>
+      </g>
+    );
+  }
+  if (fx === 'thinking') {
+    return (
+      <g fill="#B39DDB" fontFamily="sans-serif" fontWeight="900">
+        <circle className="anim-think" cx="166" cy="65" r="5" opacity="0.7" />
+        <circle className="anim-think" style={{ animationDelay: '0.3s' }} cx="180" cy="50" r="8" opacity="0.85" />
+        <text className="anim-think" style={{ animationDelay: '0.6s' }} x="188" y="34" fontSize="25">?</text>
       </g>
     );
   }
@@ -475,15 +500,14 @@ function Mascot({
             ) : (
               <path d="M106,112 Q120,102 134,112 L120,124 Z" fill={P.beakTop} />
             )}
-            {Object.entries(BEAK_VARIANTS).map(([id, node]) => (
-              <Pivot
-                key={id} x={120} y={128}
-                animate={{ opacity: e.mouth === id ? 1 : 0, scale: e.mouth === id ? 1 : 0.85 }}
-                transition={springs.snappy}
-              >
-                {node}
-              </Pivot>
-            ))}
+            {Object.entries(BEAK_VARIANTS).map(([id, node]) => {
+              const animation = beakAnimation(emotion, e.mouth, id);
+              return (
+                <Pivot key={id} x={120} y={128} {...animation}>
+                  {node}
+                </Pivot>
+              );
+            })}
 
             {equipped && <Accessory id={equipped} />}
           </Pivot>

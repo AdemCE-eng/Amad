@@ -68,7 +68,7 @@ This social layer creates accountability and continuity. Families have more reas
 
 ## System Architecture
 
-![Nadeem system architecture](visual-design/assets/svg/namo-system-architecture.svg)
+![Nadeem system architecture](visual-design/assets/svg/nadeem-system-architecture.svg)
 
 The three product innovations come together in one customer experience. Customer actions flow to Nadeem Core Services, which coordinates financial logic, rewards, family journeys, notifications, and business rules. Core Services keeps the Financial Platform synchronized and requests personalized guidance from the AI Recommendation Engine when needed. The engine returns its prediction to Core Services, which turns it into a clear recommendation and delivers it back to the customer.
 
