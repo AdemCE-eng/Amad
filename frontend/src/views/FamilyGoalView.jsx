@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ChevronDown, RefreshCw, Sparkles, Trophy, Users, TrendingUp } from 'lucide-react';
+import { ChevronDown, RefreshCw, Sparkles, Trophy, Users, TrendingUp, PiggyBank } from 'lucide-react';
 import { useAppData } from '../context/AppDataContext';
 import { api } from '../lib/api';
 import { runStagedRequest } from '../lib/stagedRequest';
@@ -32,6 +32,7 @@ export default function FamilyGoalView() {
   } = useAppData();
   const [openDetails, setOpenDetails] = useState(false);
   const [rewardMsg, setRewardMsg] = useState(null);
+  const [saveAmount, setSaveAmount] = useState('');
   const [visiblePlan, setVisiblePlan] = useState(contributionPlan);
   const [planStage, setPlanStage] = useState(-1);
   const [planError, setPlanError] = useState(null);
@@ -102,6 +103,15 @@ export default function FamilyGoalView() {
     }
   };
 
+  const contributeToGoal = async () => {
+    const amount = Number(saveAmount);
+    if (!Number.isFinite(amount) || amount <= 0) return;
+    await runAction(async () => {
+      await api.contribute(activeRole, amount, 'manual');
+      setSaveAmount('');
+    });
+  };
+
   const rewardChild = async (memberId) => {
     setRewardMsg(null);
     try {
@@ -141,6 +151,49 @@ export default function FamilyGoalView() {
           <div className="flex justify-between text-xs font-bold mt-2">
             <span className="text-cream/55">{savedAmount} من {goalAmount} ر.س</span>
             <span className="text-violet">المتبقي {Math.max(0, goalAmount - savedAmount)} ر.س</span>
+          </div>
+        </section>
+
+        <section className="bg-ink-card rounded-3xl p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <PiggyBank size={16} className="text-coral" />
+            <h2 className="font-black">ادّخر للهدف</h2>
+          </div>
+          <p className="text-[11px] text-cream/55 font-bold mb-3">اكتب المبلغ الذي تريد إضافته لهدف العائلة.</p>
+          <div className="flex flex-wrap gap-2 mb-3">
+            {[50, 100, 250].map((preset) => (
+              <button
+                key={preset}
+                type="button"
+                onClick={() => setSaveAmount(String(preset))}
+                className="bg-white/5 border border-white/10 text-cream/80 text-xs font-black px-3 py-1.5 rounded-xl"
+              >
+                {preset} ر.س
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1">
+              <input
+                type="number"
+                inputMode="numeric"
+                min="1"
+                value={saveAmount}
+                onChange={(e) => setSaveAmount(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') contributeToGoal(); }}
+                placeholder="المبلغ"
+                className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pr-4 pl-12 text-cream font-black placeholder:text-cream/30 focus:outline-none focus:border-coral/50"
+              />
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-cream/40 text-xs font-bold">ر.س</span>
+            </div>
+            <button
+              type="button"
+              onClick={contributeToGoal}
+              disabled={isSubmitting || !(Number(saveAmount) > 0)}
+              className="bg-coral text-ink font-black px-5 py-3 rounded-2xl disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
+            >
+              {isSubmitting ? 'جارٍ الإضافة…' : 'أضف'}
+            </button>
           </div>
         </section>
 

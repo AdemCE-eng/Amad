@@ -29,12 +29,23 @@ export default function PetRoomView() {
   } = useAppData();
   const { emotion, poke } = useMascotEmotion(pet);
   const [emergencyOpen, setEmergencyOpen] = useState(false);
+  const [saveInput, setSaveInput] = useState('');
   const evolution = buildEvolutionPresentation({
     stage: game.stage,
     goalProgress,
     savedAmount: user.savedAmount,
     goalAmount: user.goalAmount,
   });
+
+  const submitSave = () => {
+    const amount = Number(saveInput);
+    if (!Number.isFinite(amount) || amount <= 0) return;
+    rememberCelebrationReturnFocus('pet-save-custom');
+    runAction(async () => {
+      await api.save(amount);
+      setSaveInput('');
+    });
+  };
 
   const handleTabKeyDown = (event, currentIndex) => {
     let nextIndex = currentIndex;
@@ -176,22 +187,41 @@ export default function PetRoomView() {
             <span className="shrink-0 tabular-nums">{goalProgress}%</span>
           </div>
 
-          <div className="mt-2.5 grid grid-cols-3 gap-2" aria-label="مبالغ التوفير السريع">
+          <div className="mt-2.5 flex flex-wrap gap-2" aria-label="مبالغ التوفير السريع">
             {SAVE_PRESETS.map((amount) => (
               <button
                 key={amount}
                 type="button"
-                disabled={isSubmitting}
-                onClick={() => {
-                  rememberCelebrationReturnFocus(`pet-save-${amount}`);
-                  runAction(() => api.save(amount));
-                }}
-                data-focus-return-key={`pet-save-${amount}`}
-                className="rounded-xl bg-coral-tile py-2 text-xs font-black text-ink transition-transform active:scale-95 disabled:opacity-50"
+                onClick={() => setSaveInput(String(amount))}
+                className="bg-white/5 border border-white/10 text-cream/80 text-xs font-black px-3 py-1.5 rounded-xl"
               >
-                +{amount}
+                {SAR_NUMBER.format(amount)} ر.س
               </button>
             ))}
+          </div>
+          <div className="mt-2.5 flex items-center gap-2">
+            <div className="relative flex-1">
+              <input
+                type="number"
+                inputMode="numeric"
+                min="1"
+                value={saveInput}
+                onChange={(e) => setSaveInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') submitSave(); }}
+                placeholder="المبلغ"
+                className="w-full bg-white/5 border border-white/10 rounded-2xl py-2.5 pr-4 pl-12 text-cream font-black placeholder:text-cream/30 focus:outline-none focus:border-coral/50"
+              />
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-cream/40 text-xs font-bold">ر.س</span>
+            </div>
+            <button
+              type="button"
+              disabled={isSubmitting || !(Number(saveInput) > 0)}
+              onClick={submitSave}
+              data-focus-return-key="pet-save-custom"
+              className="bg-coral text-ink font-black px-5 py-2.5 rounded-2xl disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
+            >
+              {isSubmitting ? 'جارٍ الإضافة…' : 'أضف'}
+            </button>
           </div>
           <SaveRewardTag reward={game.lastSaveReward} compact />
         </section>
