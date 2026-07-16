@@ -20,6 +20,10 @@ function actionLabel(action) {
   return 'غير مناسب حاليًا';
 }
 
+function formatPurchaseSuitability(value) {
+  return Number.isFinite(value) ? `${Math.round(value * 100)}٪` : 'مناسبة';
+}
+
 function OpportunityCard({ opportunity, featured, activeRole, isSubmitting, runAction }) {
   const status = opportunity.persisted?.status || 'pending';
   return (
@@ -38,7 +42,7 @@ function OpportunityCard({ opportunity, featured, activeRole, isSubmitting, runA
       </div>
 
       <div className="grid grid-cols-3 gap-2 mt-3">
-        <div className="bg-white/5 rounded-xl p-2 text-center"><span className="block text-[9px] text-cream/45">ملاءمة الشراء</span><strong className="text-xs">{Math.round(opportunity.purchaseProbability * 100)}٪</strong></div>
+        <div className="bg-white/5 rounded-xl p-2 text-center"><span className="block text-[9px] text-cream/45">ملاءمة الشراء</span><strong className="text-xs">{formatPurchaseSuitability(opportunity.purchaseProbability)}</strong></div>
         <div className="bg-white/5 rounded-xl p-2 text-center"><span className="block text-[9px] text-cream/45">التوفير</span><strong className="text-xs">{opportunity.estimatedSavingSar} ر.س</strong></div>
         <div className="bg-white/5 rounded-xl p-2 text-center"><span className="block text-[9px] text-cream/45">النافذة</span><strong className="text-xs">{opportunity.windowDays} أيام</strong></div>
       </div>

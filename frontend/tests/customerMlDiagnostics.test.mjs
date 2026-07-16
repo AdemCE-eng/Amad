@@ -14,6 +14,14 @@ test('customer recommendation cards do not render raw ML diagnostics', async () 
   assert.match(source, /opportunityResult\?\.recommendations \|\| \[\]/);
 });
 
+test('fallback recommendations show presentation-safe suitability instead of zero percent', async () => {
+  const source = await readFile(opportunitiesViewPath, 'utf8');
+  assert.match(source, /Number\.isFinite\(value\)/);
+  assert.match(source, /'مناسبة'/);
+  assert.match(source, /formatPurchaseSuitability\(opportunity\.purchaseProbability\)/);
+  assert.doesNotMatch(source, /Math\.round\(opportunity\.purchaseProbability \* 100\)/);
+});
+
 test('recommendation API still carries backend metadata to callers', async () => {
   const source = await readFile(apiPath, 'utf8');
   assert.match(source, /personalizedRecommendations/);

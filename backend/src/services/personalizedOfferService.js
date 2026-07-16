@@ -4,6 +4,13 @@ const ESSENTIAL_CATEGORIES = new Set(["pharmacy", "grocery", "medicine", "emerge
 const USER_ID_PATTERN = /^[a-z0-9_-]{1,64}$/i;
 const CANONICAL_FALLBACK_MERCHANT = "هاف مليون";
 const CANONICAL_FALLBACK_PROBABILITY = 0.72;
+// Frozen outputs from the trained HistGradientBoosting purchase model's
+// MOCK / SYNTHETIC `rashid` fixture. Keep the offline hackathon path numeric,
+// deterministic, and traceable to ml-service/artifacts/recommendation_examples.json.
+const FROZEN_FALLBACK_PURCHASE_PROBABILITIES = Object.freeze({
+  "هاف مليون": 0.827,
+  "جرير": 0.6538,
+});
 
 function deterministicFallback(userId, reason, now = Date.now()) {
   const recommendations = Object.values(buildPredictedOffers(now))
@@ -19,7 +26,7 @@ function deterministicFallback(userId, reason, now = Date.now()) {
       offerProbability: offer.merchant === CANONICAL_FALLBACK_MERCHANT
         ? CANONICAL_FALLBACK_PROBABILITY
         : offer.probability / 100,
-      purchaseProbability: null,
+      purchaseProbability: FROZEN_FALLBACK_PURCHASE_PROBABILITIES[offer.merchant],
       personalizedScore: null,
       windowDays: offer.windowDays,
       estimatedSavingSar: offer.potentialSaving,
@@ -28,7 +35,7 @@ function deterministicFallback(userId, reason, now = Date.now()) {
       explanation: offer.basis,
       reasons: [offer.basis],
       disclaimer: "توقع تجريبي غير مضمون — تعذر استخدام نموذج التخصيص، فعُرض مسار نامو الثابت.",
-      dataLabel: "MOCK deterministic merchant-campaigns",
+      dataLabel: "MOCK / SYNTHETIC DEMO DATA — SAUDI MARKET · deterministic fallback",
     }));
   return { ok: true, userId, recommendations, source: "deterministic-fallback", fallbackReason: reason, models: null };
 }

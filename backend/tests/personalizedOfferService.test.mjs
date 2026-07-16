@@ -89,6 +89,10 @@ test("ML disabled uses the labeled deterministic fallback", async () => {
   assert.equal(result.fallbackReason, "ml_disabled");
   assert.equal(result.recommendations[0].merchantNameAr, "هاف مليون");
   assert.equal(result.recommendations[0].offerProbability, .72);
+  assert.equal(result.recommendations[0].purchaseProbability, .827);
+  assert.equal(result.recommendations.find((item) => item.merchantNameAr === "جرير").purchaseProbability, .6538);
+  assert.ok(result.recommendations.every((item) => Number.isFinite(item.purchaseProbability)));
+  assert.ok(result.recommendations.every((item) => /MOCK.*SYNTHETIC/.test(item.dataLabel)));
   assert.equal(result.recommendations[0].estimatedSavingSar, 15);
   assert.equal(result.recommendations[0].windowDays, 3);
 });
