@@ -64,12 +64,12 @@ export default function PetRoomView() {
           </span>
         </div>
         <div
-          className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-amber-400/10 border border-amber-300/20 px-2.5 py-1"
+          className="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-violet/10 border border-violet/20 px-2.5 py-1"
           aria-label={`رصيد NXP: ${game.nxp_balance}`}
           data-testid="pet-nxp-balance"
         >
-          <strong className="text-xs font-black text-cream tabular-nums">{game.nxp_balance}</strong>
-          <span className="text-[9px] font-black tracking-wide text-amber-300">NXP</span>
+          <strong className="text-xs font-black text-violet tabular-nums">{game.nxp_balance}</strong>
+          <span className="text-[9px] font-black tracking-wide text-violet">NXP</span>
         </div>
       </header>
 

@@ -3,13 +3,13 @@ import { useAppData } from '../context/AppDataContext';
 import { cashbackState } from '../lib/cashback';
 
 const REWARD_TYPES = [
-  { id: 'nxp', label: 'NXP', icon: '🪙', style: 'amber', description: 'عملة نامو للإنجازات وإكسسوارات صقر.' },
+  { id: 'nxp', label: 'NXP', icon: '🪙', style: 'violet', description: 'عملة نامو للإنجازات وإكسسوارات صقر.' },
   { id: 'akthr', label: 'أكثر / Akthr', icon: '🟢', style: 'emerald', description: 'نقاط ولاء مرتبطة بالمكافآت والعروض.' },
   { id: 'cashback', label: 'كاش باك', icon: '💳', style: 'sky', description: 'مكافآت كاش باك من العروض المؤهلة.' },
 ];
 
 const BALANCE_STYLES = {
-  amber: 'bg-amber-400/10 border-amber-400/25 text-amber-300',
+  violet: 'bg-violet/10 border-violet/25 text-violet',
   emerald: 'bg-emerald-400/10 border-emerald-400/25 text-emerald-300',
   sky: 'bg-sky-400/10 border-sky-400/25 text-sky-300',
 };
