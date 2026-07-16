@@ -18,7 +18,7 @@ import RewardNotice from './components/ui/RewardNotice';
 // phone mockups): time on the right in RTL, signal/wifi/battery on the left.
 function StatusBar() {
   return (
-    <div className="relative h-12 flex items-end justify-between px-8 pb-1.5 text-cream z-[60] select-none" dir="ltr">
+    <div className="app-status-bar relative h-12 hidden sm:flex items-end justify-between px-8 pb-1.5 text-cream z-[60] select-none" dir="ltr">
       <span className="text-sm font-bold tracking-wide">9:41</span>
       {/* dynamic island */}
       <div className="absolute top-2 left-1/2 -translate-x-1/2 w-28 h-7 bg-black rounded-full"></div>
@@ -55,14 +55,14 @@ function AppShell() {
   }
 
   return (
-    <div className="app-shell relative min-h-screen bg-[#081521] flex items-center justify-center overflow-hidden font-sans py-6">
+    <div className="app-shell relative min-h-[100dvh] bg-[#081521] flex items-center justify-center overflow-hidden font-sans sm:py-6">
       {/* ambient page glow behind the device */}
       <div className="absolute w-[520px] h-[520px] rounded-full bg-coral/10 blur-[140px] pointer-events-none"></div>
       <div className="absolute w-[720px] h-[720px] rounded-full border border-white/5 pointer-events-none"></div>
 
       {/* iPhone frame: black bezel, rounded screen, dynamic island */}
-      <div className="app-frame relative w-full h-screen sm:h-[min(96vh,1000px)] sm:w-auto sm:aspect-[420/880] bg-black sm:rounded-[3.4rem] sm:p-[10px] shadow-[0_30px_90px_-20px_rgba(0,0,0,0.9)] sm:ring-1 sm:ring-white/15">
-        <div className="relative w-full h-full bg-ink sm:rounded-[2.8rem] overflow-hidden flex flex-col">
+      <div className="app-frame relative w-full h-[100dvh] bg-ink sm:h-[min(96vh,1000px)] sm:w-auto sm:aspect-[420/880] sm:bg-black sm:rounded-[3.4rem] sm:p-[10px] sm:shadow-[0_30px_90px_-20px_rgba(0,0,0,0.9)] sm:ring-1 sm:ring-white/15">
+        <div className="app-screen relative w-full h-full bg-ink sm:rounded-[2.8rem] overflow-hidden flex flex-col">
           <StatusBar />
           {/* app viewport — views fill this, nav anchors to it */}
           <div className="relative flex-1 min-h-0">

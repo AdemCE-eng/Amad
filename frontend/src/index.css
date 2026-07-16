@@ -15,6 +15,37 @@ body {
   overflow: hidden;
 }
 
+/* On a real phone the browser/device already supplies the physical frame.
+   Use the full dynamic viewport and respect notches and the home indicator.
+   The decorative preview frame remains enabled from the `sm` breakpoint. */
+@media (max-width: 639px), (max-height: 639px) and (hover: none) and (pointer: coarse) {
+  .app-shell {
+    padding: 0;
+  }
+
+  .app-frame {
+    width: 100% !important;
+    height: 100dvh !important;
+    aspect-ratio: auto !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    background: #081521 !important;
+    box-shadow: none !important;
+  }
+
+  .app-screen {
+    border-radius: 0 !important;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+  }
+
+  .app-status-bar {
+    display: none !important;
+  }
+}
+
 /* Device-frame layout lives in App.jsx (Tailwind); only the page canvas
    color is global so there is no flash before React mounts. */
 
