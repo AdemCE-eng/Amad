@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🎮 Cheat Controller — المرافق المالي الذكي</title>
+  <style>
+    :root {
+      --alinma: #6b3fa0;      /* Alinma purple */
+      --alinma-dark: #4e2d78;
+      --green: #1faa59;
+      --red: #d64545;
+      --amber: #e0a500;
+      --bg: #f5f3f9;
+      --card: #ffffff;
+      --ink: #2a2340;
+      --teal: #0e9488;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background: var(--bg); color: var(--ink);
+      margin: 0; padding: 24px; min-height: 100vh;
+    }
+    .wrap { max-width: 720px; margin: 0 auto; }
+    h1 { color: var(--alinma-dark); font-size: 1.4rem; margin: 0 0 4px; }
+    .sub { color: #777; font-size: .85rem; margin-bottom: 20px; }
+    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .action { display: flex; gap: 6px; }
+    .amt {
+      width: 88px; flex: none; border: 1px solid #ddd; border-radius: 10px;
+      padding: 0 8px; font-size: .95rem; text-align: center; color: var(--ink);
+    }
+    .amt.pct { width: 56px; }
+    button {
+      border: none; border-radius: 14px; padding: 14px 10px; flex: 1;
+      font-size: .95rem; font-weight: 700; color: #fff; cursor: pointer;
+      transition: transform .06s ease, filter .15s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,.08);
+    }
+    button:active { transform: scale(.97); }
+    button:hover { filter: brightness(1.05); }
+    .salary   { background: var(--green); }
+    .save     { background: var(--teal); }
+    .coffee   { background: var(--alinma); }
+    .big      { background: var(--amber); }
+    .emergency{ background: #2f7fd6; }
+    .time     { background: var(--alinma-dark); }
+    .timewarp { grid-column: 1 / -1; }
+    .reset    { background: var(--red); grid-column: 1 / -1; padding: 18px 16px; }
+    .persona   { background: #5a6acf; }
+
+    /* Section label — same light-theme heading treatment as the page title,
+       just smaller, so groups of controls read as one consistent page. */
+    .sectionTitle { color: var(--alinma-dark); font-size: 1.05rem; font-weight: 800; margin: 4px 0 12px; }
+    .engineStatus {
+      margin-top: 20px; background: var(--card); border-radius: 16px;
+      padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,.06);
+      border: 1px solid #ebe7f2;
+    }
+    .engineHead { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+    .engineTitle { display: flex; align-items: center; gap: 8px; font-weight: 800; color: var(--alinma-dark); }
+    .engineDot { width: 10px; height: 10px; border-radius: 50%; background: #aaa; box-shadow: 0 0 0 4px #eee; }
+    .engineDot.online { background: var(--green); box-shadow: 0 0 0 4px rgba(31,170,89,.13); }
+    .engineDot.fallback { background: var(--amber); box-shadow: 0 0 0 4px rgba(224,165,0,.14); }
+    .statusRefresh { flex: none; padding: 7px 11px; border-radius: 9px; background: #eee8f7; color: var(--alinma-dark); font-size: .76rem; box-shadow: none; }
+    .engineGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .engineMetric { background: #f8f7fb; border-radius: 11px; padding: 9px 10px; min-width: 0; }
+    .engineMetric span { display: block; color: #777; font-size: .7rem; margin-bottom: 3px; }
+    .engineMetric b { display: block; font-size: .82rem; overflow-wrap: anywhere; direction: ltr; text-align: right; }
+    .engineReason { display: none; margin-top: 9px; padding: 8px 10px; border-radius: 10px; background: #fff7df; color: #765600; font-size: .78rem; font-weight: 700; }
+    .status {
+      margin-top: 20px; background: var(--card); border-radius: 16px;
+      padding: 16px; box-shadow: 0 4px 12px rgba(0,0,0,.06);
+    }
+    .row { display: flex; justify-content: space-between; align-items: center; margin: 6px 0; }
+    .bar { height: 14px; border-radius: 8px; background: #eee; overflow: hidden; flex: 1; margin: 0 10px; }
+    .bar > span { display: block; height: 100%; background: var(--green); transition: width .4s ease; }
+    .bubble {
+      background: #f0ebfa; border-radius: 14px; padding: 12px 14px;
+      margin-top: 10px; font-size: 1.05rem; text-align: center; min-height: 24px;
+    }
+    .badge { font-size: .8rem; padding: 3px 10px; border-radius: 999px; background: #eee; }
+    .settings { display: flex; gap: 6px; margin-bottom: 16px; }
+    .settings .amt { width: auto; flex: 1; }
+    .goalset { background: var(--alinma-dark); flex: none; padding: 0 16px; }
+    .errBanner {
+      display: none; margin-top: 10px; background: #fdeaea; color: var(--red);
+      border-radius: 12px; padding: 10px 14px; text-align: center; font-weight: 700;
+    }
+    pre {
+      margin-top: 14px; background: #1e1b2e; color: #c8e6c9; border-radius: 12px;
+      padding: 12px; font-size: .72rem; overflow-x: auto; direction: ltr; max-height: 180px;
+    }
+    .emoji { font-size: 2.4rem; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>🎮 لوحة التحكم السرية — Cheat Controller</h1>
+    <div class="sub">اضغط الأزرار لتحديث Firebase مباشرة — يتفاعل الحيوان الأليف فوراً على شاشة التطبيق.</div>
+
+    <!-- The old "أزرار العرض التقديمي" SRS buttons (FAMILY_CONTRIBUTION,
+         SUKUK_PURCHASE, EARLY_LIQUIDATION, PRIVATE_PET_NUDGE, PREDICTIVE_OFFER,
+         GENERATE_AI_PLAN) are gone: they drove POST /api/game/simulate-trigger,
+         which this merge removed along with its engine functions. The family /
+         offers buttons further down hit the canonical endpoints instead. -->
+
+    <h2 class="sectionTitle">بروفايلات الدخل 💼 — نفس نسبة التوفير = نفس NXP</h2>
+    <div class="actions" style="margin-bottom: 20px">
+      <div class="action">
+        <button class="persona" onclick="setIncomeProfile('student')">👩‍🎓 نورة — طالبة (دخل ٢٬٠٠٠)</button>
+      </div>
+      <div class="action">
+        <button class="persona" onclick="setIncomeProfile('employee')">👨‍💼 آدم — موظف (دخل ٨٬٠٠٠)</button>
+      </div>
+      <div class="action">
+        <button class="persona" onclick="setIncomeProfile('executive')">👔 فيصل — تنفيذي (دخل ٢٥٬٠٠٠)</button>
+      </div>
+    </div>
+
+    <div class="settings">
+      <input class="amt" type="number" id="goalInput" value="5000" min="1" step="100" placeholder="هدف الادخار (ر.س)">
+      <button class="goalset" onclick="setGoal()">🎯 تحديث هدف الادخار</button>
+    </div>
+
+    <div class="actions">
+      <div class="action">
+        <input class="amt" type="number" id="amt-salary" value="8000" min="0" step="50">
+        <input class="amt pct" type="number" id="pct-salary" value="20" min="0" max="100" step="5" title="نسبة الادخار التلقائي %">
+        <button class="salary" onclick="callSalary()">💰 إيداع راتب</button>
+      </div>
+      <div class="action">
+        <input class="amt" type="number" id="amt-save" value="300" min="0" step="50">
+        <button class="save" onclick="callAmt('save', '/api/simulate/save', 'amt-save')">💚 مدخرات فورية</button>
+      </div>
+      <div class="action">
+        <input class="amt" type="number" id="amt-coffee" value="50" min="0" step="10">
+        <button class="coffee" onclick="callAmt('coffee', '/api/simulate/purchase', 'amt-coffee')">☕ شراء قهوة</button>
+      </div>
+      <div class="action">
+        <input class="amt" type="number" id="amt-big" value="2500" min="0" step="100">
+        <button class="big" onclick="callAmt('big', '/api/simulate/purchase', 'amt-big')">🛍️ شراء كبير</button>
+      </div>
+      <div style="grid-column:1/-1; font-weight:700; color:var(--alinma-dark); margin:10px 0 -2px;">🧾 مشتريات حسب الفئة (تتبّع الميزانية والتدوير)</div>
+      <div class="action">
+        <input class="amt" type="number" id="amt-cat-coffee" value="12" min="0" step="1">
+        <button class="coffee" onclick="callCategory('coffee','قهوة يومية','amt-cat-coffee')">☕ قهوة يومية</button>
+      </div>
+      <div class="action">
+        <input class="amt" type="number" id="amt-cat-gas" value="25" min="0" step="1">
+        <button class="coffee" onclick="callCategory('gas','وقود','amt-cat-gas')">⛽ وقود</button>
+      </div>
+      <div class="action">
+        <input class="amt" type="number" id="amt-cat-groceries" value="150" min="0" step="1">
+        <button class="coffee" onclick="callCategory('groceries','بقالة','amt-cat-groceries')">🛒 بقالة</button>
+      </div>
+      <div class="action">
+        <input class="amt" type="number" id="amt-cat-dining" value="90" min="0" step="1">
+        <button class="coffee" onclick="callCategory('dining','مطعم','amt-cat-dining')">🍽️ مطاعم</button>
+      </div>
+      <div class="action">
+        <input class="amt" type="number" id="amt-cat-entertainment" value="50" min="0" step="1">
+        <button class="coffee" onclick="callCategory('entertainment','ترفيه','amt-cat-entertainment')">🎬 ترفيه</button>
+      </div>
+      <div class="action">
+        <input class="amt" type="number" id="amt-cat-subscriptions" value="40" min="0" step="1">
+        <button class="coffee" onclick="callCategory('subscriptions','اشتراك','amt-cat-subscriptions')">📱 اشتراكات</button>
+      </div>
+      <div class="action">
+        <input class="amt" type="number" id="amt-emergency" value="1500" min="0" step="100">
+        <button class="emergency" onclick="callAmt('emergency', '/api/simulate/emergency', 'amt-emergency')">🛡️ درع الطوارئ</button>
+      </div>
+      <!-- Time machine: advance the demo clock. Each jump settles the budgets
+           whose period closes (daily / weekly / monthly) into savings. -->
+      <div class="action timewarp">
+        <button class="time" onclick="call('/api/demo/advance-day', {})">🌅 يوم</button>
+        <button class="time" onclick="call('/api/demo/advance-week', {})">📆 أسبوع</button>
+        <button class="time" onclick="call('/api/demo/advance-month', {})">🗓️ شهر</button>
+      </div>
+      <div class="action">
+        <input class="amt" type="number" id="planIncome" value="8000" min="0" step="500" title="الدخل الشهري">
+        <button class="save" onclick="applyPlan()">💡 خطة ادخار حسب الدخل</button>
+      </div>
+      <div class="action">
+        <button class="salary" style="grid-column:1/-1" onclick="call('/api/demo/complete-challenge', {})">✅ إنجاز تحدي الأسبوع</button>
+      </div>
+      <!-- Phase 2B — family journey (presenter side) -->
+      <div class="action">
+        <button class="salary" style="grid-column:1/-1" onclick="call('/api/contribution-plan/generate', {})">✨ توليد خطة نامو الذكية</button>
+      </div>
+      <div class="action">
+        <button class="save" style="grid-column:1/-1" onclick="settleHalfMillion()">📩 وصل عرض هاف مليون (تسوية)</button>
+      </div>
+      <div class="action">
+        <button class="coffee" style="grid-column:1/-1" onclick="sendParentReward()">🎖️ مكافأة الوالد لراشد (احتياطي)</button>
+      </div>
+      <button class="reset" onclick="call('/api/reset', {})">🔄 إعادة تعيين العرض (Panic Reset)</button>
+    </div>
+
+    <section class="engineStatus" aria-live="polite" aria-labelledby="engineTitle">
+      <div class="engineHead">
+        <div class="engineTitle" id="engineTitle">
+          <span class="engineDot" id="mlStatusDot"></span>
+          <span>Recommendation Engine</span>
+        </div>
+        <button class="statusRefresh" type="button" onclick="refreshMlStatus()">تحديث الحالة</button>
+      </div>
+      <div class="engineGrid">
+        <div class="engineMetric"><span>ML Service</span><b id="mlServiceStatus">Checking…</b></div>
+        <div class="engineMetric"><span>Last response</span><b id="mlLastResponse">—</b></div>
+        <div class="engineMetric"><span>Offer model</span><b id="mlOfferModel">—</b></div>
+        <div class="engineMetric"><span>Purchase model</span><b id="mlPurchaseModel">—</b></div>
+      </div>
+      <div class="engineReason" id="mlFallbackReason"></div>
+    </section>
+
+    <div class="status">
+      <div style="text-align:center">
+        <div class="emoji" id="emoji">🐣</div>
+        <span class="badge" id="mood">—</span>
+      </div>
+      <div class="row"><span>الصحة</span><div class="bar"><span id="healthBar" style="width:100%"></span></div><b id="healthNum">—</b></div>
+      <div class="row"><span>التقدم نحو الهدف</span><div class="bar"><span id="goalBar" style="width:0%; background:var(--alinma)"></span></div><b id="goalNum">—</b></div>
+      <div class="row"><span>درع الطوارئ المتبقي</span><b id="shield">—</b></div>
+      <div class="row"><span>🔥 السلسلة</span><b id="streak">—</b></div>
+      <div class="row"><span>💼 الدخل الشهري</span><b id="income">—</b></div>
+      <div class="row"><span>⭐ NXP</span><b id="nxp">—</b></div>
+      <div class="row"><span>🎯 تحدي الأسبوع</span><b id="challenge">—</b></div>
+      <div class="row"><span>◆ Akthr Points</span><b id="akthr">—</b></div>
+      <div class="row"><span>🐣 المرحلة</span><b id="stage">—</b></div>
+      <div class="row"><span>📅 اليوم</span><b id="day">—</b></div>
+      <div class="row"><span>💰 حساب التوفير</span><b id="savings">—</b></div>
+      <div class="row"><span>♻️ إجمالي التدوير للتوفير</span><b id="rollover">—</b></div>
+      <div class="bubble" id="bubble">…</div>
+      <div style="text-align:center"><span class="badge" id="aiBadge">—</span></div>
+      <div class="errBanner" id="errBanner"></div>
+      <pre id="raw">اضغط أي زر لعرض الاستجابة…</pre>
+    </div>
+  </div>
+
+  <script>
+    const EMOJI = { radiant: '🤩', happy: '😄', neutral: '🙂', tired: '🥱', sick: '🤒' };
+
+    // Changed to be hosted on render
+    const API_BASE = 'https://nadeemback.onrender.com';
+
+    function shortModelName(name, expected) {
+      if (typeof name !== 'string') return expected;
+      if (name.includes('CatBoost')) return 'CatBoost';
+      if (name.includes('HistGradientBoosting')) return 'HistGradientBoosting';
+      return name.replace(/Classifier$/, '') || expected;
+    }
+
+    function renderMlStatus(data = {}) {
+      const online = data.state === 'online' && data.source === 'ml-service';
+      const dot = document.getElementById('mlStatusDot');
+      dot.className = `engineDot ${online ? 'online' : 'fallback'}`;
+      document.getElementById('mlServiceStatus').textContent = online ? 'Online' : 'Fallback active';
+      document.getElementById('mlLastResponse').textContent = data.source || 'unavailable';
+      document.getElementById('mlOfferModel').textContent = online
+        ? shortModelName(data.models?.offer?.name, 'CatBoost')
+        : '—';
+      document.getElementById('mlPurchaseModel').textContent = online
+        ? shortModelName(data.models?.purchase?.name, 'HistGradientBoosting')
+        : '—';
+
+      const reason = document.getElementById('mlFallbackReason');
+      if (online) {
+        reason.style.display = 'none';
+        reason.textContent = '';
+      } else {
+        reason.style.display = 'block';
+        reason.textContent = `Reason: ${data.fallbackReason || 'ml_unavailable'}`;
+      }
+    }
+
+    async function refreshMlStatus() {
+      try {
+        const response = await fetch(API_BASE + '/api/ml/status?userId=rashid', { headers: { Accept: 'application/json' } });
+        if (!response.ok) throw new Error('status_unavailable');
+        renderMlStatus(await response.json());
+      } catch {
+        renderMlStatus({ state: 'fallback', source: 'unavailable', fallbackReason: 'backend_unavailable' });
+      }
+    }
+
+    // Each action button reads its own amount input so demo operators (or
+    // judges) can drive custom scenarios instead of only fixed values.
+    function buildBody(kind, amount) {
+      switch (kind) {
+        case 'save': return { amount };
+        case 'coffee': return { amount, category: 'coffee', label: 'قهوة' };
+        case 'big': return { amount, category: 'shopping', label: 'تسوق كبير' };
+        case 'emergency': return { amount, label: 'طوارئ طبية' };
+        default: return { amount };
+      }
+    }
+
+    function callAmt(kind, path, inputId) {
+      const raw = Number(document.getElementById(inputId).value);
+      const amount = Number.isFinite(raw) ? Math.max(0, Math.round(raw)) : 0;
+      call(path, buildBody(kind, amount));
+    }
+
+    // Per-category purchase: hits the same purchase endpoint but with the exact
+    // budget category key, so trackPurchase folds it into that category's
+    // current-period spend (and the leftover rolls into savings on settlement).
+    function callCategory(category, label, inputId) {
+      const raw = Number(document.getElementById(inputId).value);
+      const amount = Number.isFinite(raw) ? Math.max(0, Math.round(raw)) : 0;
+      call('/api/simulate/purchase', { amount, category, label });
+    }
+
+    // Salary is the one action with a second input: the % of the deposit
+    // that auto-routes to Instant Savings (choosable per click).
+    function callSalary() {
+      const rawAmount = Number(document.getElementById('amt-salary').value);
+      const rawPct = Number(document.getElementById('pct-salary').value);
+      const amount = Number.isFinite(rawAmount) ? Math.max(0, Math.round(rawAmount)) : 0;
+      const savePercent = Number.isFinite(rawPct) ? Math.min(100, Math.max(0, Math.round(rawPct))) : 20;
+      call('/api/simulate/salary', { amount, savePercent });
+    }
+
+    function setGoal() {
+      const raw = Number(document.getElementById('goalInput').value);
+      const goalAmount = Number.isFinite(raw) ? Math.max(1, Math.round(raw)) : 0;
+      call('/api/user/goal', { goalAmount });
+    }
+
+    // Income-persona switch — swaps name/income/balance only (pet, streak and
+    // goal progress survive), so the operator can save the same % of income
+    // from two personas back-to-back and show identical NXP payouts.
+    function setIncomeProfile(profileId) {
+      call('/api/demo/set-income-profile', { profileId });
+    }
+
+    async function call(path, body) {
+      setBusy(true);
+      try {
+        const res = await fetch(API_BASE + path, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        const data = await res.json();
+        render(data);
+      } catch (e) {
+        document.getElementById('raw').textContent = '❌ ' + e.message +
+          '\n(تأكد أن الخادم يعمل: npm run dev)';
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    // Phase 2B: settle the waited Half Million offer (presenter action —
+    // "the predicted campaign arrived"). Finds the waiting offer, settles it
+    // for راشد (rashid), which moves the saving into the family goal.
+    async function settleHalfMillion() {
+      setBusy(true);
+      try {
+        const res = await fetch(API_BASE + '/api/offers/predicted');
+        const data = await res.json();
+        const hm = Object.values(data.predicted || {}).find((o) => o.merchant === 'هاف مليون');
+        if (!hm) throw new Error('لا يوجد عرض متوقع');
+        if (hm.status !== 'waiting') {
+          render({ ok: false, message: hm.status === 'settled' ? 'تمت التسوية مسبقاً' : 'راشد لم يقرر الانتظار بعد (من التطبيق)' });
+          return;
+        }
+        const settle = await fetch(API_BASE + '/api/offers/settle', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ offerId: hm.id, memberId: 'rashid' }),
+        });
+        render(await settle.json());
+      } catch (e) {
+        document.getElementById('raw').textContent = '❌ ' + e.message;
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    // Backup path if the in-app reward button can't be reached mid-demo.
+    // Same canonical payload as the app; duplicate replays surface a
+    // readable Arabic message instead of double-crediting.
+    async function sendParentReward() {
+      setBusy(true);
+      try {
+        const res = await fetch(API_BASE + '/api/family/reward', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            eventId: 'reward_demo_001',
+            senderId: 'ahmed',
+            recipientId: 'rashid',
+            rewardType: 'akthr',
+            amount: 25,
+            message: 'تستاهل يا بطل، استمريت داخل ميزانيتك 7 أيام.',
+          }),
+        });
+        const data = await res.json();
+        if (data.error === 'duplicate_reward') {
+          render({ ok: false, message: 'تم إرسال المكافأة مسبقاً — لا يتم التكرار.' });
+        } else {
+          render(data);
+        }
+      } catch (e) {
+        document.getElementById('raw').textContent = '❌ ' + e.message;
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    // Apply a savings plan from a monthly income: opens the savings account
+    // and installs category budgets, then the state re-reads and the panel
+    // updates. The app's Firebase listener reflects it live too.
+    async function applyPlan() {
+      const raw = Number(document.getElementById('planIncome').value);
+      const monthlyIncome = Number.isFinite(raw) ? Math.max(1, Math.round(raw)) : 0;
+      await call('/api/plan/apply', { monthlyIncome });
+    }
+
+    function render(data) {
+      document.getElementById('raw').textContent = JSON.stringify(data, null, 2);
+
+      const errBanner = document.getElementById('errBanner');
+      if (data.ok === false) {
+        errBanner.textContent = '⚠️ ' + (data.message || 'حدث خطأ غير متوقع.');
+        errBanner.style.display = 'block';
+      } else {
+        errBanner.style.display = 'none';
+      }
+
+      const pet = data.pet, user = data.user, shield = data.emergencyShield;
+      if (pet) {
+        document.getElementById('emoji').textContent = EMOJI[pet.mood] || '🐣';
+        document.getElementById('mood').textContent = pet.mood;
+        document.getElementById('healthNum').textContent = pet.health;
+        document.getElementById('healthBar').style.width = pet.health + '%';
+        document.getElementById('healthBar').style.background =
+          pet.health >= 50 ? 'var(--green)' : pet.health >= 20 ? 'var(--amber)' : 'var(--red)';
+        document.getElementById('bubble').textContent = pet.message || '…';
+      }
+
+      const game = data.game;
+      if (game) {
+        const frozen = game.streak?.status === 'frozen';
+        document.getElementById('streak').textContent =
+          (game.streak?.current ?? 0) + ' يوم' + (frozen ? ' ❄️ (محمية)' : '') +
+          ' · درع ×' + (game.streak?.freezesLeft ?? 0);
+        document.getElementById('nxp').textContent = game.nxp_balance ?? 0;
+        document.getElementById('stage').textContent = ['بيضة 🥚', 'فرخ 🐤', 'صقر 🦅'][game.stage ?? 0];
+        document.getElementById('day').textContent = game.day ?? 1;
+        // The %-of-income-saved receipt is a USER-facing surface only (Home,
+        // Pet Room) — deliberately not mirrored here in the operator console.
+        const ch = game.activeChallenge;
+        document.getElementById('challenge').textContent =
+          ch ? `${ch.title} · ${ch.used ?? 0}/${ch.limit}` : '—';
+      }
+
+      // Akthr is campaign loyalty in /loyalty — separate currency from NXP.
+      // family/offers responses carry it; other responses simply leave it be.
+      if (data.loyalty) {
+        document.getElementById('akthr').textContent = data.loyalty.akthrPoints ?? 0;
+      }
+
+      // Makes it obvious whether this reply came from a real Gemini call, the
+      // mock-mode fallback (USE_MOCK_AI=true), or the emergency fallback
+      // (Gemini errored/timed out) — otherwise all three look identical.
+      const aiBadge = document.getElementById('aiBadge');
+      const AI_LABELS = {
+        gemini: ['🤖 رد Gemini حقيقي', '#e6f7f0', '#0e9488'],
+        mock: ['📋 وضع تجريبي (Mock)', '#f0ebfa', '#6b3fa0'],
+        fallback: ['⚠️ احتياطي (فشل Gemini)', '#fdeaea', '#d64545'],
+      };
+      if (data.aiSource && AI_LABELS[data.aiSource]) {
+        const [label, bg, fg] = AI_LABELS[data.aiSource];
+        aiBadge.textContent = label;
+        aiBadge.style.background = bg;
+        aiBadge.style.color = fg;
+        aiBadge.style.display = 'inline-block';
+      } else {
+        aiBadge.style.display = 'none';
+      }
+
+      if (user) {
+        const pct = Math.min(100, Math.round(user.savedAmount / user.goalAmount * 100));
+        document.getElementById('goalBar').style.width = pct + '%';
+        document.getElementById('goalNum').textContent = pct + '%';
+        document.getElementById('goalInput').value = user.goalAmount;
+        document.getElementById('income').textContent =
+          user.income ? `${user.income} ر.س (${user.name})` : '—';
+        const sv = document.getElementById('savings');
+        if (sv) sv.textContent = Math.round(user.savedAmount) + ' ر.س';
+        const rl = document.getElementById('rollover');
+        if (rl) rl.textContent = Math.round(user.rolloverTotal || 0) + ' ر.س';
+      }
+      if (shield) document.getElementById('shield').textContent = shield.usesRemaining;
+    }
+
+    function setBusy(b) { document.body.style.opacity = b ? .6 : 1; }
+
+    // Load initial state on open.
+    fetch(API_BASE + '/api/state').then(r => r.json()).then(render).catch(() => {});
+    refreshMlStatus();
+  </script>
+</body>
+</html>
