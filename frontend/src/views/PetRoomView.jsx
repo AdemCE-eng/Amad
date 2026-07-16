@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { ArrowLeft, HeartPulse, ShieldAlert, ShoppingBag, Trophy } from 'lucide-react';
 import { useAppData } from '../context/AppDataContext';
 import { api } from '../lib/api';
-import Mascot from '../components/mascot/Mascot';
 import { useMascotEmotion } from '../components/mascot/useMascotEmotion';
+import CompanionShowcase from '../components/pet/CompanionShowcase';
 import SaveRewardTag from '../components/ui/SaveRewardTag';
 import EmergencyWithdrawModal from '../components/ui/EmergencyWithdrawModal';
 import PetProgressionSections from '../components/pet/PetProgressionSections';
@@ -117,43 +117,30 @@ export default function PetRoomView() {
         {petActiveTab === 'status' && (
           <div id="pet-panel-status" role="tabpanel" aria-labelledby="pet-tab-status" className="w-full flex flex-col items-center" data-testid="pet-status-panel">
 
-        {/* --- MAIN INTERACTIVE PET AREA --- */}
-        <div className="relative w-60 h-60 mb-2 flex items-center justify-center" data-testid="pet-mascot-hero">
-          {/* Background Glow */}
-          <div className={`absolute inset-10 rounded-full blur-xl transition-all duration-500 ${
-            isSick ? 'bg-red-500/20' :
-            isHappy ? 'bg-yellow-400/16' :
-            'bg-coral/14'
-          }`}></div>
+        <CompanionShowcase
+          pet={pet}
+          game={game}
+          emotion={emotion}
+          goalProgress={goalProgress}
+          petName={petDisplayName}
+          evolution={evolution}
+          isSick={isSick}
+          isHappy={isHappy}
+          onTap={() => { poke(); handlePetInteraction(); }}
+        />
 
-          {/* The living mascot — tap to squish */}
-          <div className="relative z-10 cursor-pointer select-none">
-            <Mascot
-              emotion={emotion}
-              stage={game.stage}
-              equipped={game.equipped}
-              size={230}
-              track
-              onTap={() => { poke(); handlePetInteraction(); }}
-            />
+        {/* One glance tells judges how behavior becomes a living outcome. */}
+        <div className="relative mb-3 w-full overflow-hidden rounded-2xl border border-violet/20 bg-gradient-to-l from-violet/10 via-ink-card to-coral/10 px-4 py-3" data-testid="pet-status-message">
+          <div className="flex items-center justify-between gap-3">
+            <span className="inline-flex items-center gap-1.5 text-[9px] font-black text-violet"><span className="h-1.5 w-1.5 rounded-full bg-emerald-400 motion-safe:animate-pulse" /> استجابة مالية حيّة</span>
+            <span className="text-[8px] font-bold text-cream/35">يتحدث حسب حالتك</span>
           </div>
-
-          {/* Health Badge Overlay */}
-          <div className="absolute bottom-0 bg-ink-soft px-3.5 py-1.5 rounded-full shadow-xl border border-white/10 flex items-center gap-2 z-20" data-testid="pet-health-status">
-            <HeartPulse size={17} className={isSick ? 'text-red-400 motion-safe:animate-pulse' : 'text-emerald-400'} />
-            <div className="w-20 bg-white/10 rounded-full h-2">
-              <div className={`h-2 rounded-full transition-all duration-1000 ${isSick ? 'bg-red-400' : 'bg-emerald-400'}`} style={{ width: `${pet.health}%` }}></div>
-            </div>
-            <span className={`text-sm font-black ${isSick ? 'text-red-400' : 'text-emerald-400'}`}>{pet.health}%</span>
+          <p className="relative z-10 mt-2 text-center text-[13px] font-bold leading-relaxed text-cream">“{pet.message}”</p>
+          <div className="mt-3 grid grid-cols-[1fr_auto_1fr_auto_1fr] items-center gap-1 rounded-xl bg-black/10 px-2 py-2 text-center text-[8px] font-black">
+            <span className="text-cream/55">الميزانية</span><span className="text-coral/60">←</span>
+            <span className="text-emerald-300">الادخار</span><span className="text-coral/60">←</span>
+            <span className="text-coral">التطور</span>
           </div>
-        </div>
-
-        {/* Short live companion message. Secondary metadata lives below the financial cards. */}
-        <div className="bg-ink-card px-4 py-3 rounded-2xl w-full mb-3 relative" data-testid="pet-status-message">
-          <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-ink-card rotate-45" aria-hidden="true" />
-          <p className="text-center text-sm text-cream leading-relaxed relative z-10 font-bold">
-            "{pet.message}"
-          </p>
         </div>
 
         {/* Savings is the primary action and the only input to Saqr evolution. */}
