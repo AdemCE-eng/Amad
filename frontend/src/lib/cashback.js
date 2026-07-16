@@ -13,13 +13,13 @@ export const CASHBACK_REWARDS = [
   },
   {
     id: 'streak_30',
-    title: '٣٠ يوم داخل الميزانية',
+    title: '30 يوم داخل الميزانية',
     amount: 10,
     earned: (_user, game) => (game?.streak?.best ?? 0) >= 30,
   },
   {
     id: 'first_1000',
-    title: 'أول ١٠٠٠ ر.س مدخرات',
+    title: 'أول 1000 ر.س مدخرات',
     amount: 20,
     earned: (user) => user.savedAmount >= 1000,
   },

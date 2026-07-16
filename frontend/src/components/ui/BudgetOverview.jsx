@@ -24,7 +24,7 @@ export default function BudgetOverview({ budgets, budgetPeriod = {}, projectedRo
             <ArrowDownToLine size={11} /> المتبقّي للتوفير
           </p>
           <p className="text-lg font-black text-emerald-400 leading-tight">
-            {Math.round(projectedRollover).toLocaleString('ar-SA')} <span className="text-[11px] text-cream/40">ر.س</span>
+            {Math.round(projectedRollover).toLocaleString('ar-SA-u-nu-latn')} <span className="text-[11px] text-cream/40">ر.س</span>
           </p>
         </div>
       </div>

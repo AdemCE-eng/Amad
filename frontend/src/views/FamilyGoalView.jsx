@@ -148,32 +148,33 @@ export default function FamilyGoalView() {
           <div className="h-2 bg-white/10 rounded-full overflow-hidden mt-4">
             <div className="h-full bg-coral rounded-full transition-all" style={{ width: `${progress}%` }} />
           </div>
-          <div className="flex justify-between text-xs font-bold mt-2">
-            <span className="text-cream/55">{savedAmount} من {goalAmount} ر.س</span>
-            <span className="text-violet">المتبقي {Math.max(0, goalAmount - savedAmount)} ر.س</span>
+          <div className="grid grid-cols-2 gap-2 mt-3 text-[11px] font-bold">
+            <span className="min-w-0 rounded-xl bg-white/5 px-2.5 py-2 text-cream/55 text-center tabular-nums">{savedAmount} من {goalAmount} ر.س</span>
+            <span className="min-w-0 rounded-xl bg-violet/10 px-2.5 py-2 text-violet text-center tabular-nums">المتبقي {Math.max(0, goalAmount - savedAmount)} ر.س</span>
           </div>
         </section>
 
-        <section className="bg-ink-card rounded-3xl p-5">
+        <section className="bg-gradient-to-br from-ink-card to-ink-soft/70 border border-white/10 shadow-[0_14px_35px_-24px_rgba(0,0,0,0.9)] rounded-3xl p-4">
           <div className="flex items-center gap-2 mb-3">
             <PiggyBank size={16} className="text-coral" />
             <h2 className="font-black">ادّخر للهدف</h2>
           </div>
           <p className="text-[11px] text-cream/55 font-bold mb-3">اكتب المبلغ الذي تريد إضافته لهدف العائلة.</p>
-          <div className="flex flex-wrap gap-2 mb-3">
+          <div className="grid grid-cols-3 gap-2 mb-3">
             {[50, 100, 250].map((preset) => (
               <button
                 key={preset}
                 type="button"
                 onClick={() => setSaveAmount(String(preset))}
-                className="bg-white/5 border border-white/10 text-cream/80 text-xs font-black px-3 py-1.5 rounded-xl"
+                aria-pressed={saveAmount === String(preset)}
+                className={`min-w-0 w-full border text-xs font-black px-1.5 py-2.5 rounded-2xl transition-all ${saveAmount === String(preset) ? 'bg-coral/15 border-coral/50 text-coral shadow-[0_0_0_1px_rgba(232,132,102,0.12)]' : 'bg-ink-soft/70 border-white/10 text-cream/80 hover:border-white/20'}`}
               >
-                {preset} ر.س
+                <span dir="ltr" className="inline-block">{preset} ر.س</span>
               </button>
             ))}
           </div>
-          <div className="flex items-center gap-2">
-            <div className="relative flex-1">
+          <div className="grid grid-cols-[minmax(0,1fr)_5.5rem] items-stretch gap-2">
+            <div className="relative min-w-0">
               <input
                 type="number"
                 inputMode="numeric"
@@ -182,7 +183,7 @@ export default function FamilyGoalView() {
                 onChange={(e) => setSaveAmount(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') contributeToGoal(); }}
                 placeholder="المبلغ"
-                className="w-full bg-white/5 border border-white/10 rounded-2xl py-3 pr-4 pl-12 text-cream font-black placeholder:text-cream/30 focus:outline-none focus:border-coral/50"
+                className="w-full h-full min-w-0 bg-black/10 border border-white/15 rounded-2xl py-3 pr-4 pl-12 text-cream font-black placeholder:text-cream/30 focus:outline-none focus:border-coral/60 focus:ring-2 focus:ring-coral/10"
               />
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-cream/40 text-xs font-bold">ر.س</span>
             </div>
@@ -190,9 +191,9 @@ export default function FamilyGoalView() {
               type="button"
               onClick={contributeToGoal}
               disabled={isSubmitting || !(Number(saveAmount) > 0)}
-              className="bg-coral text-ink font-black px-5 py-3 rounded-2xl disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
+              className="w-full bg-coral text-ink font-black px-2 py-3 rounded-2xl shadow-[0_8px_20px_-12px_rgba(232,132,102,0.9)] disabled:bg-white/10 disabled:text-cream/30 disabled:shadow-none disabled:cursor-not-allowed whitespace-nowrap transition-colors"
             >
-              {isSubmitting ? 'جارٍ الإضافة…' : 'أضف'}
+              {isSubmitting ? 'جارٍ…' : 'أضف'}
             </button>
           </div>
         </section>

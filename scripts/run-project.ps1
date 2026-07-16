@@ -336,7 +336,7 @@ function Start-Project {
   }
   Set-DotEnvValue $backendEnv 'USE_ML_SERVICE' 'true'
   Set-DotEnvValue $backendEnv 'ML_SERVICE_URL' $mlUrl
-  Set-DotEnvValue $backendEnv 'ML_SERVICE_TIMEOUT_MS' '1500'
+  Set-DotEnvValue $backendEnv 'ML_SERVICE_TIMEOUT_MS' '10000'
 
   if (-not (Test-Path -LiteralPath (Join-Path $BackendDir 'node_modules'))) {
     Write-Step 'Installing backend dependencies...'
@@ -375,28 +375,36 @@ function Start-Project {
 
   $mlPython = Get-MlPython
   $mlOnline = $false
-  if (-not (Test-MlArtifacts)) {
-    Write-Warn 'ML model artifacts are missing; the launcher will use deterministic fallback without retraining.'
-  } else {
-    if (-not (Test-Path -LiteralPath $mlPython)) {
-      if (Test-Command 'python') {
-        Write-Step 'Creating the optional ML virtual environment...'
-        & python -m venv (Join-Path $MlDir '.venv')
-      } else {
-        Write-Warn 'Python is unavailable; the core application will continue with deterministic fallback.'
+  if (-not (Test-Path -LiteralPath $mlPython)) {
+    if (Test-Command 'python') {
+      Write-Step 'Creating the ML virtual environment...'
+      & python -m venv (Join-Path $MlDir '.venv')
+    } else {
+      Write-Warn 'Python is unavailable; the ML service cannot be started.'
+    }
+  }
+  if ((Test-Path -LiteralPath $mlPython) -and -not (Test-MlRuntime $mlPython)) {
+    Write-Step 'Installing ML runtime dependencies (PyTorch is not included)...'
+    & $mlPython -m pip install -r (Join-Path $MlDir 'requirements.txt')
+  }
+  if ((Test-MlRuntime $mlPython) -and -not (Test-MlArtifacts)) {
+    Write-Step 'Generating the synthetic Saudi demo dataset and training the prediction models...'
+    Push-Location $MlDir
+    try {
+      & $mlPython -m scripts.train_models
+      if ($LASTEXITCODE -ne 0) {
+        Write-Warn 'ML training did not complete; predictions will be unavailable until training succeeds.'
       }
+    } finally {
+      Pop-Location
     }
-    if ((Test-Path -LiteralPath $mlPython) -and -not (Test-MlRuntime $mlPython)) {
-      Write-Step 'Installing normal ML runtime dependencies (PyTorch is not included)...'
-      & $mlPython -m pip install -r (Join-Path $MlDir 'requirements.txt')
-    }
-    if (Test-MlRuntime $mlPython) {
-      Write-Step "Starting FastAPI ML service on $mlUrl..."
-      Start-CmdWindow 'Nadeem FastAPI ML Service' $MlDir @(
-        "`"$mlPython`" -m uvicorn app.main:app --host 127.0.0.1 --port $($ports.Ml)"
-      )
-      $mlOnline = Wait-MlHealth $mlUrl 60
-    }
+  }
+  if ((Test-MlRuntime $mlPython) -and (Test-MlArtifacts)) {
+    Write-Step "Starting FastAPI ML service on $mlUrl..."
+    Start-CmdWindow 'Nadeem FastAPI ML Service' $MlDir @(
+      "`"$mlPython`" -m uvicorn app.main:app --host 127.0.0.1 --port $($ports.Ml)"
+    )
+    $mlOnline = Wait-MlHealth $mlUrl 60
   }
   if ($mlOnline) {
     Write-Host 'ML service ready — live recommendations enabled' -ForegroundColor Green
@@ -410,7 +418,7 @@ function Start-Project {
     "set `"FIREBASE_DATABASE_EMULATOR_HOST=$emulatorHost`"",
     'set "USE_ML_SERVICE=true"',
     "set `"ML_SERVICE_URL=$mlUrl`"",
-    'set "ML_SERVICE_TIMEOUT_MS=1500"',
+    'set "ML_SERVICE_TIMEOUT_MS=10000"',
     'npm run dev'
   )
 

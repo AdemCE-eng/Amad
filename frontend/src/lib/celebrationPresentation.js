@@ -7,7 +7,7 @@ export function buildCelebrationPresentation(event, petName = 'صقر') {
     const achievement = ACHIEVEMENTS[event.id] || {
       title: 'إنجاز جديد',
       desc: 'واصل عاداتك المالية الإيجابية.',
-      coins: 0,
+      nxp: 0,
       icon: '🏅',
     };
     return {
@@ -15,7 +15,7 @@ export function buildCelebrationPresentation(event, petName = 'صقر') {
       label: 'إنجاز جديد',
       title: achievement.title,
       description: achievement.desc,
-      reward: achievement.coins > 0 ? `+${achievement.coins} NXP` : null,
+      reward: achievement.nxp > 0 ? `+${achievement.nxp} NXP` : null,
       icon: achievement.icon,
       accent: 'gold',
     };

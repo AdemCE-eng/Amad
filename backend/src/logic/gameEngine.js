@@ -19,12 +19,12 @@ export function stageFromSavings(savedAmount, goalAmount) {
 }
 
 export const ACHIEVEMENTS = {
-  first_save: { title: "أول توفير", desc: "أودعت أول مبلغ في مدخراتك", coins: 25, icon: "🌱" },
-  streak_3: { title: "ثلاثة أيام كفو", desc: "٣ أيام متتالية داخل الميزانية", coins: 30, icon: "🔥" },
-  budget_week: { title: "أسبوع منضبط", desc: "أسبوع كامل داخل الميزانية", coins: 50, icon: "📅" },
-  half_goal: { title: "نص الطريق", desc: "وصلت ٥٠٪ من هدف الادخار", coins: 50, icon: "⛰️" },
-  goal_reached: { title: "تحقق الهدف", desc: "وصلت هدف الادخار كاملاً", coins: 100, icon: "🏆" },
-  shield_wise: { title: "درع الحكمة", desc: "استخدمت درع الطوارئ بحكمة", coins: 25, icon: "🛡️" },
+  first_save: { title: "أول توفير", desc: "أودعت أول مبلغ في مدخراتك", nxp: 25, icon: "🌱" },
+  streak_3: { title: "ثلاثة أيام كفو", desc: "3 أيام متتالية داخل الميزانية", nxp: 30, icon: "🔥" },
+  budget_week: { title: "أسبوع منضبط", desc: "أسبوع كامل داخل الميزانية", nxp: 50, icon: "📅" },
+  half_goal: { title: "نص الطريق", desc: "وصلت 50٪ من هدف الادخار", nxp: 50, icon: "⛰️" },
+  goal_reached: { title: "تحقق الهدف", desc: "وصلت هدف الادخار كاملاً", nxp: 100, icon: "🏆" },
+  shield_wise: { title: "درع الحكمة", desc: "استخدمت درع الطوارئ بحكمة", nxp: 25, icon: "🛡️" },
 };
 
 export const SHOP_ITEMS = {
@@ -39,10 +39,10 @@ export const SHOP_ITEMS = {
 // `used` counter automatically (applyGameEffects counts coffee purchases);
 // the rest advance via POST /api/demo/complete-challenge.
 export const CHALLENGE_POOL = [
-  { id: "less_coffee", title: "قهوة أقل هذا الأسبوع", desc: "حافظ على ٣ زيارات مقهى أو أقل", limit: 3, reward: 50, icon: "☕" },
-  { id: "no_delivery", title: "أسبوع بلا توصيل", desc: "٣ طلبات توصيل مطاعم أو أقل هذا الأسبوع", limit: 3, reward: 40, icon: "🛵" },
-  { id: "save_thrice", title: "وفّر ثلاث مرات", desc: "أودع في المدخرات الفورية ٣ مرات هذا الأسبوع", limit: 3, reward: 60, icon: "💰" },
-  { id: "budget_days", title: "خمسة أيام منضبطة", desc: "أنهِ ٥ أيام دون تجاوز ميزانيتك الشهرية", limit: 5, reward: 70, icon: "📅" },
+  { id: "less_coffee", title: "قهوة أقل هذا الأسبوع", desc: "حافظ على 3 زيارات مقهى أو أقل", limit: 3, reward: 50, icon: "☕" },
+  { id: "no_delivery", title: "أسبوع بلا توصيل", desc: "3 طلبات توصيل مطاعم أو أقل هذا الأسبوع", limit: 3, reward: 40, icon: "🛵" },
+  { id: "save_thrice", title: "وفّر ثلاث مرات", desc: "أودع في المدخرات الفورية 3 مرات هذا الأسبوع", limit: 3, reward: 60, icon: "💰" },
+  { id: "budget_days", title: "خمسة أيام منضبطة", desc: "أنهِ 5 أيام دون تجاوز ميزانيتك الشهرية", limit: 5, reward: 70, icon: "📅" },
 ];
 
 // Rotation: hand back the pool entry after the one just finished, fresh.
@@ -112,9 +112,9 @@ function unlock(game, key) {
   return celebrate(
     {
       ...game,
-      // a.coins is the catalog's REWARD AMOUNT (see ACHIEVEMENTS); the balance
+      // a.nxp is the catalog's reward amount; the balance
       // it credits is nxp_balance.
-      nxp_balance: game.nxp_balance + a.coins,
+      nxp_balance: game.nxp_balance + a.nxp,
       achievements: { ...game.achievements, [key]: { unlockedAt: Date.now() } },
     },
     "achievement",

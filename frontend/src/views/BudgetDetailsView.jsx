@@ -17,12 +17,12 @@ export default function BudgetDetailsView() {
         <section className="bg-gradient-to-l from-coral/15 to-ink-card border border-coral/20 rounded-3xl p-4" data-testid="budget-overall-summary">
           <div className="flex items-center gap-2 text-coral font-black text-sm"><PiggyBank size={17} /> ملخص الميزانية</div>
           <div className="grid grid-cols-2 gap-2 mt-3">
-            <div className="bg-white/5 rounded-2xl p-3"><span className="block text-[10px] text-cream/45 font-bold">المستخدم حاليًا</span><strong className="text-lg">{totalSpent.toLocaleString('ar-SA')} <small className="text-cream/40">ر.س</small></strong></div>
-            <div className="bg-white/5 rounded-2xl p-3"><span className="block text-[10px] text-cream/45 font-bold">حدود الفئات</span><strong className="text-lg">{totalLimit.toLocaleString('ar-SA')} <small className="text-cream/40">ر.س</small></strong></div>
+            <div className="bg-white/5 rounded-2xl p-3"><span className="block text-[10px] text-cream/45 font-bold">المستخدم حاليًا</span><strong className="text-lg">{totalSpent.toLocaleString('ar-SA-u-nu-latn')} <small className="text-cream/40">ر.س</small></strong></div>
+            <div className="bg-white/5 rounded-2xl p-3"><span className="block text-[10px] text-cream/45 font-bold">حدود الفئات</span><strong className="text-lg">{totalLimit.toLocaleString('ar-SA-u-nu-latn')} <small className="text-cream/40">ر.س</small></strong></div>
           </div>
           <div className="grid grid-cols-2 gap-2 mt-2">
-            <div className="flex items-center gap-2 bg-emerald-400/10 text-emerald-300 rounded-2xl p-3"><ArrowDownToLine size={16} /><span><small className="block text-[9px] font-bold">متوقع للتوفير</small><strong>{Math.round(projectedRollover).toLocaleString('ar-SA')} ر.س</strong></span></div>
-            <div className="flex items-center gap-2 bg-violet/10 text-violet rounded-2xl p-3"><WalletCards size={16} /><span><small className="block text-[9px] font-bold">تم ترحيله سابقًا</small><strong>{(user.rolloverTotal || 0).toLocaleString('ar-SA')} ر.س</strong></span></div>
+            <div className="flex items-center gap-2 bg-emerald-400/10 text-emerald-300 rounded-2xl p-3"><ArrowDownToLine size={16} /><span><small className="block text-[9px] font-bold">متوقع للتوفير</small><strong>{Math.round(projectedRollover).toLocaleString('ar-SA-u-nu-latn')} ر.س</strong></span></div>
+            <div className="flex items-center gap-2 bg-violet/10 text-violet rounded-2xl p-3"><WalletCards size={16} /><span><small className="block text-[9px] font-bold">تم ترحيله سابقًا</small><strong>{(user.rolloverTotal || 0).toLocaleString('ar-SA-u-nu-latn')} ر.س</strong></span></div>
           </div>
         </section>
 

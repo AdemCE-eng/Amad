@@ -99,7 +99,7 @@ export function initialState() {
       activeChallenge: {
         id: "less_coffee",
         title: "قهوة أقل هذا الأسبوع",
-        desc: "حافظ على ٣ زيارات مقهى أو أقل",
+        desc: "حافظ على 3 زيارات مقهى أو أقل",
         limit: 3,
         used: 1,
         reward: 50,

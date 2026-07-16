@@ -36,7 +36,7 @@ export default function NotificationsView({ setActiveView }) {
             <div className="flex justify-between items-start gap-3">
               <h2 className="text-white font-semibold">{notification.title}</h2>
               <time className="text-xs text-zinc-400 shrink-0">
-                {new Date(notification.timestamp).toLocaleTimeString('ar-SA', {
+                {new Date(notification.timestamp).toLocaleTimeString('ar-SA-u-nu-latn', {
                   hour: '2-digit',
                   minute: '2-digit',
                 })}

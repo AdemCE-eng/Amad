@@ -169,7 +169,7 @@ test("validateParentReward: error paths", () => {
 
 // ── Loyalty / pet ────────────────────────────────────────
 
-test("initialLoyaltyState: Akthr only — NXP lives in game.coins", () => {
+test("initialLoyaltyState: Akthr only — NXP lives in game.nxp_balance", () => {
   const loyalty = initialLoyaltyState();
   assert.equal(loyalty.akthrPoints, 120);
   assert.equal(loyalty.nxp, undefined); // never stored — no dual source of truth

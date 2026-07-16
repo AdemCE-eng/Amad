@@ -23,7 +23,7 @@ export default function BudgetCategoryList({ entries, budgetPeriod = {}, compact
               <span className={`font-bold text-cream ${compact ? 'text-xs' : 'text-sm'}`}>{config.label}</span>
               <span className="text-[9px] font-bold text-cream/40 bg-white/5 px-1.5 py-0.5 rounded-full">{CADENCE_LABEL[config.cadence]}</span>
               <span className="mr-auto text-[11px] font-bold text-cream/60">
-                {spent.toLocaleString('ar-SA')} / {limit.toLocaleString('ar-SA')}
+                {spent.toLocaleString('ar-SA-u-nu-latn')} / {limit.toLocaleString('ar-SA-u-nu-latn')}
               </span>
             </div>
             <div className="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
@@ -34,7 +34,7 @@ export default function BudgetCategoryList({ entries, budgetPeriod = {}, compact
             </div>
             {!over && leftover > 0 && (
               <p className="text-[10px] text-emerald-400/80 font-bold mt-0.5">
-                +{leftover.toLocaleString('ar-SA')} ر.س ستُحوّل للتوفير
+                +{leftover.toLocaleString('ar-SA-u-nu-latn')} ر.س ستُحوّل للتوفير
               </p>
             )}
           </article>

@@ -11,7 +11,7 @@ export const TRANSACTION_META = {
 
 export function formatTransactionDate(timestamp) {
   if (!timestamp) return '';
-  return new Date(timestamp).toLocaleString('ar-SA', { dateStyle: 'medium', timeStyle: 'short' });
+  return new Date(timestamp).toLocaleString('ar-SA-u-nu-latn', { dateStyle: 'medium', timeStyle: 'short' });
 }
 
 export default function TransactionRow({ transaction }) {

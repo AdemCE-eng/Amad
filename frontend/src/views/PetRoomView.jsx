@@ -16,7 +16,7 @@ const PET_TABS = [
   { id: 'progress', label: 'التحديات والإنجازات', icon: Trophy },
   { id: 'accessories', label: 'الإكسسوارات', icon: ShoppingBag },
 ];
-const SAR_NUMBER = new Intl.NumberFormat('ar-SA', { maximumFractionDigits: 0 });
+const SAR_NUMBER = new Intl.NumberFormat('ar-SA-u-nu-latn', { maximumFractionDigits: 0 });
 
 // The hero screen — YOUR companion, singular and named. Full pupil tracking,
 // tap to squish, accessories on, evolution meter toward the goal. Dark ink.
@@ -157,17 +157,17 @@ export default function PetRoomView() {
         </div>
 
         {/* Savings is the primary action and the only input to Saqr evolution. */}
-        <section className="w-full bg-ink-card rounded-3xl px-4 py-3.5 mb-3" data-testid="pet-savings-summary" aria-labelledby="pet-savings-title">
+        <section className="w-full bg-gradient-to-br from-ink-card to-ink-soft/70 border border-white/10 shadow-[0_14px_35px_-24px_rgba(0,0,0,0.9)] rounded-3xl px-4 py-3.5 mb-3" data-testid="pet-savings-summary" aria-labelledby="pet-savings-title">
           <div className="flex items-end justify-between gap-3">
             <div className="min-w-0">
               <p id="pet-savings-title" className="text-[10px] text-cream/50 font-bold">إجمالي المدخرات</p>
-              <p className="mt-0.5 text-xl font-black text-emerald-400 tabular-nums" data-testid="pet-saved-amount">
+              <p dir="ltr" className="mt-0.5 text-xl font-black text-emerald-400 tabular-nums text-right" data-testid="pet-saved-amount">
                 {SAR_NUMBER.format(user.savedAmount)} <span className="text-[11px]">ر.س</span>
               </p>
             </div>
             <div className="text-left shrink-0">
               <p className="text-[10px] text-cream/50 font-bold">هدف الادخار</p>
-              <p className="mt-0.5 text-lg font-black text-coral tabular-nums" data-testid="pet-goal-amount">
+              <p dir="ltr" className="mt-0.5 text-lg font-black text-coral tabular-nums text-left" data-testid="pet-goal-amount">
                 {SAR_NUMBER.format(user.goalAmount)} <span className="text-[10px]">ر.س</span>
               </p>
             </div>
@@ -189,20 +189,21 @@ export default function PetRoomView() {
             <span className="shrink-0 tabular-nums">{goalProgress}%</span>
           </div>
 
-          <div className="mt-2.5 flex flex-wrap gap-2" aria-label="مبالغ التوفير السريع">
+          <div className="mt-2.5 grid grid-cols-3 gap-2" aria-label="مبالغ التوفير السريع">
             {SAVE_PRESETS.map((amount) => (
               <button
                 key={amount}
                 type="button"
                 onClick={() => setSaveInput(String(amount))}
-                className="bg-white/5 border border-white/10 text-cream/80 text-xs font-black px-3 py-1.5 rounded-xl"
+                aria-pressed={saveInput === String(amount)}
+                className={`min-w-0 w-full border text-xs font-black px-1.5 py-2.5 rounded-2xl transition-all ${saveInput === String(amount) ? 'bg-coral/15 border-coral/50 text-coral shadow-[0_0_0_1px_rgba(232,132,102,0.12)]' : 'bg-ink-soft/70 border-white/10 text-cream/80 hover:border-white/20'}`}
               >
-                {SAR_NUMBER.format(amount)} ر.س
+                <span dir="ltr" className="inline-block">{SAR_NUMBER.format(amount)} ر.س</span>
               </button>
             ))}
           </div>
-          <div className="mt-2.5 flex items-center gap-2">
-            <div className="relative flex-1">
+          <div className="mt-2.5 grid grid-cols-[minmax(0,1fr)_5.5rem] items-stretch gap-2">
+            <div className="relative min-w-0">
               <input
                 type="number"
                 inputMode="numeric"
@@ -211,7 +212,7 @@ export default function PetRoomView() {
                 onChange={(e) => setSaveInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') submitSave(); }}
                 placeholder="المبلغ"
-                className="w-full bg-white/5 border border-white/10 rounded-2xl py-2.5 pr-4 pl-12 text-cream font-black placeholder:text-cream/30 focus:outline-none focus:border-coral/50"
+                className="w-full h-full min-w-0 bg-black/10 border border-white/15 rounded-2xl py-2.5 pr-4 pl-12 text-cream font-black placeholder:text-cream/30 focus:outline-none focus:border-coral/60 focus:ring-2 focus:ring-coral/10"
               />
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-cream/40 text-xs font-bold">ر.س</span>
             </div>
@@ -220,9 +221,9 @@ export default function PetRoomView() {
               disabled={isSubmitting || !(Number(saveInput) > 0)}
               onClick={submitSave}
               data-focus-return-key="pet-save-custom"
-              className="bg-coral text-ink font-black px-5 py-2.5 rounded-2xl disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap"
+              className="w-full bg-coral text-ink font-black px-2 py-2.5 rounded-2xl shadow-[0_8px_20px_-12px_rgba(232,132,102,0.9)] disabled:bg-white/10 disabled:text-cream/30 disabled:shadow-none disabled:cursor-not-allowed whitespace-nowrap transition-colors"
             >
-              {isSubmitting ? 'جارٍ الإضافة…' : 'أضف'}
+              {isSubmitting ? 'جارٍ…' : 'أضف'}
             </button>
           </div>
           <SaveRewardTag reward={game.lastSaveReward} compact />

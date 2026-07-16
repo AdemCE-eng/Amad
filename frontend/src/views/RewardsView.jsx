@@ -1,17 +1,18 @@
 import React from 'react';
+import { CircleDollarSign, Coins, CreditCard } from 'lucide-react';
 import { useAppData } from '../context/AppDataContext';
 import { cashbackState } from '../lib/cashback';
 
 const REWARD_TYPES = [
-  { id: 'nxp', label: 'NXP', icon: '🪙', style: 'violet', description: 'عملة نديم للإنجازات وإكسسوارات المرافق.' },
-  { id: 'akthr', label: 'أكثر / Akthr', icon: '🟢', style: 'emerald', description: 'نقاط ولاء مرتبطة بالمكافآت والعروض.' },
-  { id: 'cashback', label: 'كاش باك', icon: '💳', style: 'sky', description: 'مكافآت كاش باك من العروض المؤهلة.' },
+  { id: 'nxp', label: 'NXP', icon: Coins, style: 'violet', description: 'عملة نديم للإنجازات وإكسسوارات المرافق.' },
+  { id: 'akthr', label: 'أكثر / Akthr', icon: CircleDollarSign, style: 'emerald', description: 'نقاط ولاء مرتبطة بالمكافآت والعروض.' },
+  { id: 'cashback', label: 'كاش باك', icon: CreditCard, style: 'sky', description: 'مكافآت كاش باك من العروض المؤهلة.' },
 ];
 
 const BALANCE_STYLES = {
-  violet: 'bg-violet/10 border-violet/25 text-violet',
-  emerald: 'bg-emerald-400/10 border-emerald-400/25 text-emerald-300',
-  sky: 'bg-sky-400/10 border-sky-400/25 text-sky-300',
+  violet: 'bg-gradient-to-b from-violet/15 to-violet/5 border-violet/30 text-violet',
+  emerald: 'bg-gradient-to-b from-emerald-400/15 to-emerald-400/5 border-emerald-400/30 text-emerald-300',
+  sky: 'bg-gradient-to-b from-sky-400/15 to-sky-400/5 border-sky-400/30 text-sky-300',
 };
 
 // المكافآت is the value ledger: three distinct balances, their meaning,
@@ -42,27 +43,34 @@ export default function RewardsView() {
         <section aria-labelledby="reward-balances-title">
           <h2 id="reward-balances-title" className="sr-only">أرصدة المكافآت</h2>
           <div className="grid grid-cols-3 gap-2" data-testid="reward-balances">
-            {REWARD_TYPES.map((type) => (
-              <div key={type.id} className={`border rounded-2xl p-2.5 text-center min-w-0 ${BALANCE_STYLES[type.style]}`}>
-                <p className="text-[10px] font-bold leading-tight break-words">{type.icon} {type.label}</p>
-                <p className="text-lg font-black leading-tight mt-1 break-words">{balances[type.id]}</p>
-              </div>
-            ))}
+            {REWARD_TYPES.map((type) => {
+              const RewardIcon = type.icon;
+              return (
+                <article key={type.id} className={`border rounded-2xl p-2.5 text-center min-w-0 shadow-[0_12px_28px_-22px_rgba(0,0,0,0.9)] ${BALANCE_STYLES[type.style]}`}>
+                  <span className="mx-auto grid h-7 w-7 place-items-center rounded-xl bg-white/5 border border-white/10" aria-hidden="true"><RewardIcon size={14} strokeWidth={2.2} /></span>
+                  <p className="mt-1.5 min-h-6 text-[9px] font-black leading-tight break-words">{type.label}</p>
+                  <p dir="ltr" className="text-lg font-black leading-tight mt-0.5 break-words tabular-nums">{balances[type.id]}</p>
+                </article>
+              );
+            })}
           </div>
         </section>
 
-        <section className="bg-ink-card rounded-3xl p-4" aria-labelledby="reward-types-title">
+        <section className="bg-gradient-to-br from-ink-card to-ink-soft/65 border border-white/10 rounded-3xl p-4" aria-labelledby="reward-types-title">
           <h2 id="reward-types-title" className="font-black text-cream mb-3">ما الفرق بين المكافآت؟</h2>
           <div className="space-y-3">
-            {REWARD_TYPES.map((type) => (
-              <div key={type.id} className="flex items-start gap-3">
-                <span className="text-lg" aria-hidden="true">{type.icon}</span>
-                <div className="min-w-0">
-                  <p className="text-xs font-black text-cream">{type.label}</p>
-                  <p className="text-[11px] text-cream/60 font-medium leading-relaxed">{type.description}</p>
+            {REWARD_TYPES.map((type) => {
+              const RewardIcon = type.icon;
+              return (
+                <div key={type.id} className={`flex items-center gap-3 rounded-2xl border p-3 ${BALANCE_STYLES[type.style]}`}>
+                  <span className="grid h-9 w-9 place-items-center rounded-xl bg-black/10 shrink-0" aria-hidden="true"><RewardIcon size={18} strokeWidth={2.2} /></span>
+                  <div className="min-w-0">
+                    <p className="text-xs font-black text-cream">{type.label}</p>
+                    <p className="text-[10px] text-cream/60 font-medium leading-relaxed">{type.description}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </section>
 

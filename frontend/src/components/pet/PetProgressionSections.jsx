@@ -58,7 +58,7 @@ function ChallengesAndAchievements({ game }) {
                 <span className="text-3xl block" aria-hidden="true">{unlocked ? achievement.icon : '🔒'}</span>
                 <p className="text-[10px] font-black text-cream mt-1 leading-tight break-words">{achievement.title}</p>
                 <p className="text-[9px] text-cream/45 mt-1 leading-tight">{achievement.desc}</p>
-                <p className="text-[9px] font-bold text-amber-300 mt-1">+{achievement.coins} NXP</p>
+                <p dir="ltr" className="text-[9px] font-bold text-amber-300 mt-1">+{achievement.nxp} NXP</p>
               </article>
             );
           })}

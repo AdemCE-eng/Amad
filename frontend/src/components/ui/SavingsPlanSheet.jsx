@@ -106,7 +106,7 @@ export default function SavingsPlanSheet({ onClose }) {
                   onClick={() => setIncome(String(p))}
                   className={`px-4 py-2 rounded-full text-sm font-bold border ${String(p) === income ? 'bg-coral text-ink border-coral' : 'bg-white/10 border-white/10 text-cream/70'}`}
                 >
-                  {p.toLocaleString('ar-SA')}
+                  {p.toLocaleString('ar-SA-u-nu-latn')}
                 </button>
               ))}
             </div>
@@ -126,7 +126,7 @@ export default function SavingsPlanSheet({ onClose }) {
             <div className="bg-ink-soft rounded-2xl p-4 mb-4">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-bold text-cream/60">الادخار الشهري (ر.س)</label>
-                <span className="text-[11px] font-bold text-coral">{ratePct}% من الدخل · هدف سنوي {goal.toLocaleString('ar-SA')}</span>
+                <span className="text-[11px] font-bold text-coral">{ratePct}% من الدخل · هدف سنوي {goal.toLocaleString('ar-SA-u-nu-latn')}</span>
               </div>
               <input
                 type="number" inputMode="numeric" value={target}
@@ -167,7 +167,7 @@ export default function SavingsPlanSheet({ onClose }) {
         {step === 'pet' && (
           <>
             <p className="text-sm text-cream/50 font-medium mb-3">
-              مرافقك يرتبط بخطتك مباشرة — ينمو كل ما اقتربت من هدفك ({goal.toLocaleString('ar-SA')} ر.س).
+              مرافقك يرتبط بخطتك مباشرة — ينمو كل ما اقتربت من هدفك ({goal.toLocaleString('ar-SA-u-nu-latn')} ر.س).
             </p>
             <div className="flex justify-center my-2">
               <Mascot emotion={petName ? 'happy' : 'idle'} stage={0} size={130} />
