@@ -1,4 +1,4 @@
-# Namo ML service
+# Nadeem ML service
 
 Two fitted, explainable scikit-learn classifiers power a seasonal offer probability and a seven-day purchase probability. Their inputs are derived only from **MOCK / SYNTHETIC DEMO DATA — SAUDI MARKET**. Named merchants demonstrate Saudi-market applicability; campaign records are not factual claims.
 
@@ -23,7 +23,7 @@ Generate the full labeled synthetic datasets, train the models, and regenerate e
 
 The complete generated CSV datasets and fitted `.joblib` files are intentionally ignored by Git. Small deterministic, schema-preserving examples are tracked under `data/samples/`; every row is labeled **MOCK / SYNTHETIC DEMO DATA — SAUDI MARKET**. Running `scripts.generate_demo_data` recreates the complete datasets in `data/`, and `scripts.train_models` recreates both required binaries in `artifacts/models/`.
 
-If the trained binaries are absent, `/health` reports `ready: false` and prediction endpoints return HTTP 503 with `models_not_trained`. Run the generation and training commands above before using ML endpoints. The stable Namo application and its deterministic Node fallback do not require Python or these artifacts.
+If the trained binaries are absent, `/health` reports `ready: false` and prediction endpoints return HTTP 503 with `models_not_trained`. Run the generation and training commands above before using ML endpoints. The stable Nadeem application and its deterministic Node fallback do not require Python or these artifacts.
 
 Run verification and the service:
 

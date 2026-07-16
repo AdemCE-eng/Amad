@@ -1,1 +1,1 @@
-"""Namo personalized promotion prediction service."""
+"""Nadeem personalized promotion prediction service."""

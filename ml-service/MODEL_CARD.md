@@ -1,4 +1,4 @@
-# Namo personalized promotion models — model card
+# Nadeem personalized promotion models — model card
 
 ## Intended use
 

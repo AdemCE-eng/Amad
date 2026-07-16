@@ -1,4 +1,4 @@
-# Namo ML results showcase
+# Nadeem ML results showcase
 
 An offline, Arabic RTL results report. It is a continuous screenshot-ready dashboard with fixed 1920×1080 sections, not a presentation and not part of the production frontend.
 
