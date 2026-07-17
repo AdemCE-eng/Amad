@@ -15,43 +15,6 @@ export const ANALYSIS_STEPS = [
 ];
 export const ANALYSIS_MIN_MS = 7500;
 
-function categoryDiverseRecommendations(ranked, limit = 6) {
-  if (ranked.length <= 1) return ranked;
-  const selected = [ranked[0]];
-  const selectedIds = new Set([ranked[0].offerId || ranked[0].merchantId]);
-  const categories = new Set([ranked[0].category]);
-  const displayedOfferScores = new Set([Math.round(ranked[0].offerProbability * 1000)]);
-
-  const add = (item) => {
-    selected.push(item);
-    selectedIds.add(item.offerId || item.merchantId);
-    categories.add(item.category);
-    displayedOfferScores.add(Math.round(item.offerProbability * 1000));
-  };
-
-  for (const item of ranked.slice(1)) {
-    if (selected.length >= limit) break;
-    const score = Math.round(item.offerProbability * 1000);
-    const savingIsDistinct = selected.every((chosen) => Math.abs(chosen.estimatedSavingSar - item.estimatedSavingSar) >= 5);
-    if (categories.has(item.category) || displayedOfferScores.has(score) || !savingIsDistinct) continue;
-    add(item);
-  }
-  for (const item of ranked.slice(1)) {
-    if (selected.length >= limit) break;
-    const id = item.offerId || item.merchantId;
-    const score = Math.round(item.offerProbability * 1000);
-    if (selectedIds.has(id) || displayedOfferScores.has(score)) continue;
-    add(item);
-  }
-  for (const item of ranked.slice(1)) {
-    if (selected.length >= limit) break;
-    const id = item.offerId || item.merchantId;
-    if (selectedIds.has(id)) continue;
-    add(item);
-  }
-  return selected;
-}
-
 function actionLabel(action) {
   if (action === 'wait_for_offer') return 'انتظر العرض المتوقع';
   if (action === 'buy_now') return 'اشترِ الآن';
@@ -184,7 +147,10 @@ export default function OpportunitiesView() {
     ...item,
     persisted: offers?.predicted?.[item.offerId] || null,
   }));
-  const opportunities = categoryDiverseRecommendations(rankedOpportunities);
+  // The backend already returns the recommendation engine's personalized
+  // order. Preserve it exactly; presentation diversity must never reshuffle
+  // model output and make a lower-scored merchant appear more relevant.
+  const opportunities = rankedOpportunities.slice(0, 6);
   const best = opportunities[0];
   const additional = opportunities.slice(1);
   const visibleAdditional = expanded ? additional : additional.slice(0, 3);

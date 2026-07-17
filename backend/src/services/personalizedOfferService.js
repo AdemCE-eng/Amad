@@ -1,75 +1,23 @@
-import { buildPredictedOffers } from "../logic/offerEngine.js";
+import { FROZEN_RECOMMENDATION_OUTPUTS } from "../mocks/frozenRecommendationOutputs.js";
 
 const ESSENTIAL_CATEGORIES = new Set(["pharmacy", "grocery", "medicine", "emergency_transport", "mandatory_bill", "health"]);
 const USER_ID_PATTERN = /^[a-z0-9_-]{1,64}$/i;
-// Frozen, intentionally distinct offline outputs. These are used only when
-// the ML service is unavailable; the live-service path returns model values.
-const FROZEN_FALLBACK_OUTPUTS = Object.freeze({
-  "هاف مليون": {
-    offerProbability: 0.72,
-    purchaseProbability: 0.827,
-    estimatedSavingSar: 15,
-    windowDays: 3,
-    explanation: "تكررت حملة اليوم الوطني 3 سنوات، مع ارتفاع الخصم من 20% إلى 25%",
-  },
-  "نون": {
-    offerProbability: 0.70,
-    purchaseProbability: 0.7412,
-    estimatedSavingSar: 70,
-    windowDays: 4,
-    explanation: "تكررت عروض الجمعة البيضاء وارتفع الخصم من 20% إلى 25%",
-  },
-  "جرير": {
-    offerProbability: 0.65,
-    purchaseProbability: 0.6538,
-    estimatedSavingSar: 45,
-    windowDays: 5,
-    explanation: "تكررت عروض العودة للمدارس موسمين بخصم ثابت 15%",
-  },
-  "إكسترا": {
-    offerProbability: 0.61,
-    purchaseProbability: 0.6924,
-    estimatedSavingSar: 95,
-    windowDays: 7,
-    explanation: "عادت عروض الإلكترونيات للمدارس وارتفع الخصم من 18% إلى 20%",
-  },
-  "فوكس سينما": {
-    offerProbability: 0.58,
-    purchaseProbability: 0.6187,
-    estimatedSavingSar: 25,
-    windowDays: 6,
-    explanation: "تكررت عروض إجازة عيد الفطر وارتفع الخصم من 15% إلى 20%",
-  },
-});
+function deterministicFallback(userId, reason) {
+  const recommendations = FROZEN_RECOMMENDATION_OUTPUTS
+    .map((item) => ({ ...item, userId }))
+    .sort((a, b) => Number(Boolean(b.eligible)) - Number(Boolean(a.eligible))
+      || b.personalizedScore - a.personalizedScore
+      || a.merchantId.localeCompare(b.merchantId));
 
-function deterministicFallback(userId, reason, now = Date.now()) {
-  const recommendations = Object.values(buildPredictedOffers(now))
-    .filter((offer) => !ESSENTIAL_CATEGORIES.has(offer.category))
-    .filter((offer) => Boolean(FROZEN_FALLBACK_OUTPUTS[offer.merchant]))
-    .map((offer) => {
-      const frozen = FROZEN_FALLBACK_OUTPUTS[offer.merchant];
-      return {
-        userId,
-        merchantId: offer.id,
-        merchant: offer.merchant,
-        merchantNameAr: offer.merchant,
-        category: offer.category,
-        offerProbability: frozen.offerProbability,
-        purchaseProbability: frozen.purchaseProbability,
-        personalizedScore: null,
-        windowDays: frozen.windowDays,
-        estimatedSavingSar: frozen.estimatedSavingSar,
-        occasion: offer.occasion,
-        action: "wait_for_offer",
-        explanation: frozen.explanation,
-        reasons: [frozen.explanation],
-        disclaimer: "توقع تجريبي غير مضمون — تعذر استخدام نموذج التخصيص، فعُرض مسار نديم الثابت.",
-        dataLabel: "MOCK / SYNTHETIC DEMO DATA — SAUDI MARKET · deterministic fallback",
-      };
-    })
-    .sort((a, b) => b.offerProbability - a.offerProbability || a.merchantId.localeCompare(b.merchantId))
-    .slice(0, 5);
-  return { ok: true, userId, recommendations, source: "deterministic-fallback", fallbackReason: reason, models: null };
+  return {
+    ok: true,
+    userId,
+    recommendations,
+    source: "deterministic-fallback",
+    fallbackReason: reason,
+    models: null,
+    fixture: { id: "evaluated-recommendations-v1", userId: "rashid" },
+  };
 }
 
 function validRecommendation(value) {
