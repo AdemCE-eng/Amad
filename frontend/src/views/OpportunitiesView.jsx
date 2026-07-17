@@ -29,6 +29,10 @@ function formatOfferProbability(value) {
   return `${new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 }).format(value * 100)}٪`;
 }
 
+function formatPersonalizedScore(value) {
+  return Number.isFinite(value) ? `${new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 }).format(value * 100)}٪` : '—';
+}
+
 function formatSaving(value) {
   return new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 }).format(value);
 }
@@ -45,15 +49,15 @@ function OpportunityCard({ opportunity, featured, activeRole, isSubmitting, runA
           <p className="font-black text-cream">{opportunity.merchantNameAr}</p>
           <p className="text-[11px] text-coral font-bold mt-0.5">{opportunity.occasion}</p>
         </div>
-        <span className="bg-coral/15 text-coral text-xs font-black px-2.5 py-1 rounded-full shrink-0">
-          {formatOfferProbability(opportunity.offerProbability)}
+        <span className="bg-coral/15 text-coral text-[10px] font-black px-2.5 py-1 rounded-full shrink-0">
+          عرض {formatOfferProbability(opportunity.offerProbability)}
         </span>
       </div>
 
       <div className="grid grid-cols-3 gap-2 mt-3">
         <div className="bg-white/5 rounded-xl p-2 text-center"><span className="block text-[9px] text-cream/45">ملاءمة الشراء</span><strong className="text-xs">{formatPurchaseSuitability(opportunity.purchaseProbability)}</strong></div>
         <div className="bg-white/5 rounded-xl p-2 text-center"><span className="block text-[9px] text-cream/45">التوفير</span><strong className="text-xs"><span dir="ltr">{formatSaving(opportunity.estimatedSavingSar)} ر.س</span></strong></div>
-        <div className="bg-white/5 rounded-xl p-2 text-center"><span className="block text-[9px] text-cream/45">النافذة</span><strong className="text-xs">{opportunity.windowDays} أيام</strong></div>
+        <div className="bg-white/5 rounded-xl p-2 text-center"><span className="block text-[9px] text-cream/45">النتيجة الشخصية</span><strong className="text-xs text-violet">{formatPersonalizedScore(opportunity.personalizedScore)}</strong></div>
       </div>
 
       <p className="text-[11px] text-cream/60 leading-relaxed mt-3">{opportunity.explanation}</p>
@@ -224,6 +228,9 @@ export default function OpportunitiesView() {
 
         {best && (
           <section data-testid="best-opportunity">
+            <div className="mb-3 rounded-2xl border border-white/10 bg-white/5 px-3 py-2.5 text-[10px] font-bold leading-relaxed text-cream/55">
+              <strong className="text-cream">أفق التوقع: خلال {best.windowDays} أيام.</strong> محرك العروض يقدّر الحملة والتوفير، ثم يرتبها محرك التوصية حسب سلوكك وميزانيتك.
+            </div>
             <div className="flex items-center gap-2 mb-3 px-1"><Sparkles size={16} className="text-coral" /><h2 className="font-black">أفضل فرصة لك</h2></div>
             <OpportunityCard opportunity={best} featured activeRole={activeRole} isSubmitting={isSubmitting} runAction={runAction} />
           </section>

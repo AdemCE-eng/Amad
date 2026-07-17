@@ -1,7 +1,6 @@
-// Frozen from ml-service/artifacts/recommendation_examples.json.
-// These values are evaluated outputs from Nadeem's offer + purchase models,
-// not hand-authored probabilities. Keep this snapshot available so the demo
-// preserves the model's ranking when the local Python service is unavailable.
+// Model probabilities and ranking are frozen from the evaluated recommendation
+// artifact. The shared three-day horizon and 5-SAR saving bands follow the
+// current Model A contract in ml-service/app/settings.py and recommender.py.
 const DATA_LABEL = "MOCK / SYNTHETIC DEMO DATA — SAUDI MARKET · frozen evaluated ML output";
 const DISCLAIMER = "توقع احتمالي مبني على بيانات تجريبية وأنماط سابقة، وليس عرضاً مضموناً";
 
@@ -14,16 +13,16 @@ export const FROZEN_RECOMMENDATION_OUTPUTS = Object.freeze([
     offerProbability: 0.5352,
     purchaseProbability: 0.827,
     personalizedScore: 0.1095,
-    windowDays: 7,
-    estimatedSavingSar: 14.85,
+    windowDays: 3,
+    estimatedSavingSar: 15,
     occasion: "اليوم الوطني السعودي",
     eligible: true,
     action: "wait_for_offer",
-    explanation: "احتمال العرض 54% وملاءمة الشراء 83%، مع توفير تقديري 14.85 ر.س",
+    explanation: "احتمال العرض 54% وملاءمة الشراء 83%، مع توفير تقديري 15 ر.س",
     reasons: [
       "تكرر الشراء 3 مرات خلال آخر 30 يوماً",
       "ظهرت 11 حملة تجريبية في الموسم نفسه سابقاً",
-      "تأجيل عملية غير أساسية حتى 7 أيام قد يوفر نحو 14.85 ر.س",
+      "تأجيل عملية غير أساسية خلال أفق التوقع قد يوفر نحو 15 ر.س",
     ],
   },
   {
@@ -34,16 +33,16 @@ export const FROZEN_RECOMMENDATION_OUTPUTS = Object.freeze([
     offerProbability: 0.7069,
     purchaseProbability: 0.9101,
     personalizedScore: 0.07,
-    windowDays: 7,
-    estimatedSavingSar: 33.59,
+    windowDays: 3,
+    estimatedSavingSar: 35,
     occasion: "اليوم الوطني السعودي",
     eligible: true,
     action: "wait_for_offer",
-    explanation: "احتمال العرض 71% وملاءمة الشراء 91%، مع توفير تقديري 33.59 ر.س",
+    explanation: "احتمال العرض 71% وملاءمة الشراء 91%، مع توفير تقديري 35 ر.س",
     reasons: [
       "فواصل الشراء السابقة منتظمة نسبياً",
       "ظهرت 16 حملة تجريبية في الموسم نفسه سابقاً",
-      "تأجيل عملية غير أساسية حتى 7 أيام قد يوفر نحو 33.59 ر.س",
+      "تأجيل عملية غير أساسية خلال أفق التوقع قد يوفر نحو 35 ر.س",
     ],
   },
   {
@@ -54,16 +53,16 @@ export const FROZEN_RECOMMENDATION_OUTPUTS = Object.freeze([
     offerProbability: 0.7222,
     purchaseProbability: 0.5,
     personalizedScore: 0.0646,
-    windowDays: 7,
-    estimatedSavingSar: 11.17,
+    windowDays: 3,
+    estimatedSavingSar: 10,
     occasion: "اليوم الوطني السعودي",
     eligible: true,
     action: "wait_for_offer",
-    explanation: "احتمال العرض 72% وملاءمة الشراء 50%، مع توفير تقديري 11.17 ر.س",
+    explanation: "احتمال العرض 72% وملاءمة الشراء 50%، مع توفير تقديري 10 ر.س",
     reasons: [
       "تكرر الشراء 3 مرات خلال آخر 30 يوماً",
       "ظهرت 5 حملات تجريبية في الموسم نفسه سابقاً",
-      "تأجيل عملية غير أساسية حتى 7 أيام قد يوفر نحو 11.17 ر.س",
+      "تأجيل عملية غير أساسية خلال أفق التوقع قد يوفر نحو 10 ر.س",
     ],
   },
   {
@@ -74,16 +73,16 @@ export const FROZEN_RECOMMENDATION_OUTPUTS = Object.freeze([
     offerProbability: 0.7069,
     purchaseProbability: 0.9101,
     personalizedScore: 0.0594,
-    windowDays: 7,
-    estimatedSavingSar: 15.18,
+    windowDays: 3,
+    estimatedSavingSar: 15,
     occasion: "اليوم الوطني السعودي",
     eligible: true,
     action: "wait_for_offer",
-    explanation: "احتمال العرض 71% وملاءمة الشراء 91%، مع توفير تقديري 15.18 ر.س",
+    explanation: "احتمال العرض 71% وملاءمة الشراء 91%، مع توفير تقديري 15 ر.س",
     reasons: [
       "فواصل الشراء السابقة منتظمة نسبياً",
       "ظهرت 13 حملة تجريبية في الموسم نفسه سابقاً",
-      "تأجيل عملية غير أساسية حتى 7 أيام قد يوفر نحو 15.18 ر.س",
+      "تأجيل عملية غير أساسية خلال أفق التوقع قد يوفر نحو 15 ر.س",
     ],
   },
   {
@@ -94,16 +93,16 @@ export const FROZEN_RECOMMENDATION_OUTPUTS = Object.freeze([
     offerProbability: 0.4159,
     purchaseProbability: 0.5588,
     personalizedScore: 0.0459,
-    windowDays: 7,
-    estimatedSavingSar: 11.84,
+    windowDays: 3,
+    estimatedSavingSar: 10,
     occasion: "اليوم الوطني السعودي",
     eligible: true,
     action: "wait_for_offer",
-    explanation: "احتمال العرض 42% وملاءمة الشراء 56%، مع توفير تقديري 11.84 ر.س",
+    explanation: "احتمال العرض 42% وملاءمة الشراء 56%، مع توفير تقديري 10 ر.س",
     reasons: [
       "تكرر الشراء 3 مرات خلال آخر 30 يوماً",
       "ظهرت 11 حملة تجريبية في الموسم نفسه سابقاً",
-      "تأجيل عملية غير أساسية حتى 7 أيام قد يوفر نحو 11.84 ر.س",
+      "تأجيل عملية غير أساسية خلال أفق التوقع قد يوفر نحو 10 ر.س",
     ],
   },
 ].map((item) => Object.freeze({
