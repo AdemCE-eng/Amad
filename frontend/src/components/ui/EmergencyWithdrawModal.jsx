@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { X, ShieldCheck, HeartPulse, Flame } from 'lucide-react';
+import SarAmount from './SarAmount';
 
 // In-app replacement for window.prompt() on the emergency-withdrawal flow.
 // Bottom-sheet style, RTL, no browser-native dialogs anywhere in this path.
@@ -47,7 +48,7 @@ export default function EmergencyWithdrawModal({ open, onClose, onConfirm, balan
     const v = validate();
     if (v) { setError(v); return; }
     setError(null);
-    const label = reason ? `سحب طارئ — ${reason}` : 'سحب طارئ';
+    const label = reason ? `سحب طارئ: ${reason}` : 'سحب طارئ';
     try {
       await onConfirm(amt, label);
       setDone(true);
@@ -98,7 +99,7 @@ export default function EmergencyWithdrawModal({ open, onClose, onConfirm, balan
         ) : (
           <>
             {/* Amount */}
-            <label className="block text-[11px] font-bold text-cream/50 mb-1.5">المبلغ (ر.س)</label>
+            <label className="block text-[11px] font-bold text-cream/50 mb-1.5">المبلغ (⃁)</label>
             <input
               type="number"
               inputMode="decimal"
@@ -129,11 +130,11 @@ export default function EmergencyWithdrawModal({ open, onClose, onConfirm, balan
             <div className="bg-white/5 rounded-2xl p-4 mt-4 space-y-2">
               <div className="flex justify-between text-[13px]">
                 <span className="text-cream/60 font-bold">رصيدك الحالي</span>
-                <span className="text-cream font-black">{balance.toFixed(2)} ر.س</span>
+                <SarAmount value={balance.toFixed(2)} className="text-cream font-black" />
               </div>
               <div className="flex justify-between text-[13px]">
                 <span className="text-cream/60 font-bold">الرصيد بعد السحب</span>
-                <span className={`font-black ${overBalance ? 'text-red-400' : 'text-cream'}`}>{after.toFixed(2)} ر.س</span>
+                <SarAmount value={after.toFixed(2)} className={`font-black ${overBalance ? 'text-red-400' : 'text-cream'}`} />
               </div>
               <div className="flex justify-between text-[13px]">
                 <span className="text-cream/60 font-bold">دروع الطوارئ المتبقية</span>
@@ -143,7 +144,7 @@ export default function EmergencyWithdrawModal({ open, onClose, onConfirm, balan
               <div className="flex items-center gap-2 text-[12px]">
                 <HeartPulse size={14} className={shielded ? 'text-emerald-400' : 'text-red-400'} />
                 <span className={shielded ? 'text-emerald-300 font-bold' : 'text-red-300 font-bold'}>
-                  {shielded ? `صحة ${petName} محمية بالكامل` : `لا يوجد درع متبقٍ — قد تتأثر صحة ${petName}`}
+                  {shielded ? `صحة ${petName} محمية بالكامل` : `لا يوجد درع متبقٍ، قد تتأثر صحة ${petName}`}
                 </span>
               </div>
               <div className="flex items-center gap-2 text-[12px]">

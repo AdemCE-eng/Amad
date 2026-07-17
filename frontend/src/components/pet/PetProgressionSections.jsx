@@ -52,7 +52,7 @@ function ChallengesAndAchievements({ game }) {
             return (
               <article
                 key={key}
-                aria-label={`${achievement.title} — ${unlocked ? 'مفتوح' : 'مقفل'}`}
+                aria-label={`${achievement.title}: ${unlocked ? 'مفتوح' : 'مقفل'}`}
                 className={`rounded-3xl p-3 text-center min-w-0 ${unlocked ? 'bg-ink-card border border-amber-400/25' : 'bg-ink-card/70 opacity-80 grayscale'}`}
               >
                 <span className="text-3xl block" aria-hidden="true">{unlocked ? achievement.icon : '🔒'}</span>

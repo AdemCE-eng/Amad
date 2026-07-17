@@ -5,6 +5,7 @@ import { api } from '../lib/api';
 import { useMascotEmotion } from '../components/mascot/useMascotEmotion';
 import CompanionShowcase from '../components/pet/CompanionShowcase';
 import SaveRewardTag from '../components/ui/SaveRewardTag';
+import SarAmount from '../components/ui/SarAmount';
 import EmergencyWithdrawModal from '../components/ui/EmergencyWithdrawModal';
 import PetProgressionSections from '../components/pet/PetProgressionSections';
 import { SAVE_PRESETS } from '../lib/catalog';
@@ -16,8 +17,6 @@ const PET_TABS = [
   { id: 'progress', label: 'التحديات والإنجازات', icon: Trophy },
   { id: 'accessories', label: 'الإكسسوارات', icon: ShoppingBag },
 ];
-const SAR_NUMBER = new Intl.NumberFormat('ar-SA-u-nu-latn', { maximumFractionDigits: 0 });
-
 // The hero screen — YOUR companion, singular and named. Full pupil tracking,
 // tap to squish, accessories on, evolution meter toward the goal. Dark ink.
 export default function PetRoomView() {
@@ -123,7 +122,6 @@ export default function PetRoomView() {
           emotion={emotion}
           goalProgress={goalProgress}
           petName={petDisplayName}
-          evolution={evolution}
           isSick={isSick}
           isHappy={isHappy}
           onTap={() => { poke(); handlePetInteraction(); }}
@@ -136,11 +134,6 @@ export default function PetRoomView() {
             <span className="text-[8px] font-bold text-cream/35">يتحدث حسب حالتك</span>
           </div>
           <p className="relative z-10 mt-2 text-center text-[13px] font-bold leading-relaxed text-cream">“{pet.message}”</p>
-          <div className="mt-3 grid grid-cols-[1fr_auto_1fr_auto_1fr] items-center gap-1 rounded-xl bg-black/10 px-2 py-2 text-center text-[8px] font-black">
-            <span className="text-cream/55">الميزانية</span><span className="text-coral/60">←</span>
-            <span className="text-emerald-300">الادخار</span><span className="text-coral/60">←</span>
-            <span className="text-coral">التطور</span>
-          </div>
         </div>
 
         {/* Savings is the primary action and the only input to Saqr evolution. */}
@@ -148,15 +141,11 @@ export default function PetRoomView() {
           <div className="flex items-end justify-between gap-3">
             <div className="min-w-0">
               <p id="pet-savings-title" className="text-[10px] text-cream/50 font-bold">إجمالي المدخرات</p>
-              <p dir="ltr" className="mt-0.5 text-xl font-black text-emerald-400 tabular-nums text-right" data-testid="pet-saved-amount">
-                {SAR_NUMBER.format(user.savedAmount)} <span className="text-[11px]">ر.س</span>
-              </p>
+              <p className="mt-0.5 text-xl font-black text-emerald-400 tabular-nums" data-testid="pet-saved-amount"><SarAmount value={user.savedAmount} /></p>
             </div>
             <div className="text-left shrink-0">
               <p className="text-[10px] text-cream/50 font-bold">هدف الادخار</p>
-              <p dir="ltr" className="mt-0.5 text-lg font-black text-coral tabular-nums text-left" data-testid="pet-goal-amount">
-                {SAR_NUMBER.format(user.goalAmount)} <span className="text-[10px]">ر.س</span>
-              </p>
+              <p className="mt-0.5 text-lg font-black text-coral tabular-nums" data-testid="pet-goal-amount"><SarAmount value={user.goalAmount} /></p>
             </div>
           </div>
 
@@ -185,7 +174,7 @@ export default function PetRoomView() {
                 aria-pressed={saveInput === String(amount)}
                 className={`min-w-0 w-full border text-xs font-black px-1.5 py-2.5 rounded-2xl transition-all ${saveInput === String(amount) ? 'bg-coral/15 border-coral/50 text-coral shadow-[0_0_0_1px_rgba(232,132,102,0.12)]' : 'bg-ink-soft/70 border-white/10 text-cream/80 hover:border-white/20'}`}
               >
-                <span dir="ltr" className="inline-block">{SAR_NUMBER.format(amount)} ر.س</span>
+                <SarAmount value={amount} />
               </button>
             ))}
           </div>
@@ -201,7 +190,7 @@ export default function PetRoomView() {
                 placeholder="المبلغ"
                 className="w-full h-full min-w-0 bg-black/10 border border-white/15 rounded-2xl py-2.5 pr-4 pl-12 text-cream font-black placeholder:text-cream/30 focus:outline-none focus:border-coral/60 focus:ring-2 focus:ring-coral/10"
               />
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-cream/40 text-xs font-bold">ر.س</span>
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-cream/40 text-sm font-bold" aria-label="ريال سعودي">⃁</span>
             </div>
             <button
               type="button"
@@ -258,7 +247,7 @@ export default function PetRoomView() {
 
           <p className="mt-2 rounded-xl border border-white/5 bg-black/10 px-2.5 py-1.5 text-[10px] font-bold leading-relaxed text-cream/65" data-testid="pet-next-milestone-explanation">
             {evolution.nextStage
-              ? <>باقي <strong className="text-coral">{SAR_NUMBER.format(evolution.remainingAmount)} ر.س</strong> لانتقال {petDisplayName} إلى مرحلة {evolution.nextStage.name}.</>
+              ? <>باقي <SarAmount value={evolution.remainingAmount} className="text-coral font-black" /> لانتقال {petDisplayName} إلى مرحلة {evolution.nextStage.name}.</>
               : <>وصل {petDisplayName} إلى مرحلته النهائية؛ واصل الادخار الشخصي لإكمال هدفك.</>}
           </p>
         </section>

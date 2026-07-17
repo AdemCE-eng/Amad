@@ -19,7 +19,7 @@ export const CASHBACK_REWARDS = [
   },
   {
     id: 'first_1000',
-    title: 'أول 1000 ر.س مدخرات',
+    title: 'أول ادخار بقيمة \u2066⃁ 1,000\u2069',
     amount: 20,
     earned: (user) => user.savedAmount >= 1000,
   },

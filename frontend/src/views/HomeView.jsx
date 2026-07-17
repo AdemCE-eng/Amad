@@ -8,6 +8,7 @@ import Mascot from '../components/mascot/Mascot';
 import { useMascotEmotion } from '../components/mascot/useMascotEmotion';
 import BudgetOverview from '../components/ui/BudgetOverview';
 import CountUp from '../components/ui/CountUp';
+import SarAmount from '../components/ui/SarAmount';
 import SavingsPlanSheet from '../components/ui/SavingsPlanSheet';
 import TransactionRow from '../components/ui/TransactionRow';
 import { STAGE_INFO } from '../lib/catalog';
@@ -65,7 +66,7 @@ export default function HomeView() {
           <div className="flex items-center justify-between"><div><p className="text-xs text-cream/45 font-bold">الحساب الجاري</p><p className="text-[11px] text-cream/35 mt-1" dir="ltr">SA•• •••• •••• 1000</p></div><span className="text-[10px] bg-white/5 px-3 py-1 rounded-full text-cream/60 font-bold">جاري</span></div>
           <div className="flex items-center gap-3 mt-5">
             <button aria-label={showBalance ? 'إخفاء الرصيد' : 'إظهار الرصيد'} onClick={() => setShowBalance((value) => !value)} className="w-9 h-9 rounded-xl bg-white/5 grid place-items-center text-cream/60">{showBalance ? <Eye size={18} /> : <EyeOff size={18} />}</button>
-            {showBalance ? <h2 className="text-3xl font-black"><CountUp value={user.balance} /> <span className="text-sm text-cream/40">ر.س</span></h2> : <h2 className="text-3xl font-black tracking-widest">••••••••</h2>}
+            {showBalance ? <h2 className="text-3xl font-black"><SarAmount><CountUp value={user.balance} /></SarAmount></h2> : <h2 className="text-3xl font-black tracking-widest">••••••••</h2>}
           </div>
           <div className="flex justify-center gap-1.5 mt-5"><span className="w-6 h-1.5 rounded-full bg-coral" /><span className="w-1.5 h-1.5 rounded-full bg-white/20" /></div>
         </section>
@@ -115,13 +116,13 @@ export default function HomeView() {
           <div className="flex items-center justify-between"><span className="flex items-center gap-2 text-xs text-coral font-black"><Users size={16} /> هدف العائلة</span><ChevronLeft size={17} className="text-cream/40" /></div>
           <p className="font-black mt-2">{family?.goalTitle || 'رحلة العائلة'}</p>
           <div className="h-1.5 bg-white/10 rounded-full overflow-hidden mt-3"><span className="block h-full bg-coral rounded-full" style={{ width: `${familyProgress}%` }} /></div>
-          <div className="flex justify-between mt-2 text-[11px] font-bold"><span className="text-cream/55">{family?.savedAmount ?? 0} / {family?.goalAmount ?? 0} ر.س</span><span className="text-violet">مساهمة راشد {rashidContribution} ر.س</span></div>
+          <div className="flex justify-between mt-2 text-[11px] font-bold"><span className="text-cream/55"><SarAmount value={family?.savedAmount ?? 0} /> / <SarAmount value={family?.goalAmount ?? 0} /></span><span className="text-violet">مساهمة راشد <SarAmount value={rashidContribution} /></span></div>
         </button>
 
         <button onClick={() => setActiveView('opportunities')} className="w-full bg-ink-card rounded-3xl p-4 text-right" data-testid="home-opportunity-preview">
           <div className="flex items-center justify-between"><span className="flex items-center gap-2 text-xs text-violet font-black"><TrendingUp size={16} /> فرص التوفير</span><ChevronLeft size={17} className="text-cream/40" /></div>
           {topOpportunity ? (
-            <div className="mt-2"><div className="flex justify-between gap-3"><strong>{topOpportunity.merchantNameAr}</strong><span className="text-coral font-black">{Math.round(topOpportunity.offerProbability * 100)}٪</span></div><p className="text-[11px] text-cream/50 mt-1">توفير محتمل {topOpportunity.estimatedSavingSar} ر.س</p><span className="inline-block text-xs text-coral font-black mt-3">عرض كل الفرص</span></div>
+            <div className="mt-2"><div className="flex justify-between gap-3"><strong>{topOpportunity.merchantNameAr}</strong><span className="text-coral font-black">{Math.round(topOpportunity.offerProbability * 100)}٪</span></div><p className="text-[11px] text-cream/50 mt-1">توفير محتمل <SarAmount value={topOpportunity.estimatedSavingSar} /></p><span className="inline-block text-xs text-coral font-black mt-3">عرض كل الفرص</span></div>
           ) : (
             <div className="mt-2"><strong>اكتشف فرص التوفير</strong><p className="text-[11px] text-cream/50 mt-1">حلّل مشترياتك للعثور على فرص مناسبة لميزانيتك.</p></div>
           )}

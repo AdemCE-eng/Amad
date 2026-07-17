@@ -114,7 +114,7 @@ router.post("/shop/buy", async (req, res, next) => {
         error: result.error,
         message:
           result.error === "insufficient_coins"
-            ? "عملاتك لا تكفي بعد — واصل الادخار والتحديات!"
+            ? "عملاتك لا تكفي بعد، واصل الادخار والتحديات!"
             : "لا يمكن شراء هذا العنصر.",
       });
     }

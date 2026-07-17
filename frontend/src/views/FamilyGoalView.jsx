@@ -6,6 +6,7 @@ import { runStagedRequest } from '../lib/stagedRequest';
 import RoleSwitch from '../components/ui/RoleSwitch';
 import StagedProgress from '../components/ui/StagedProgress';
 import CountUp from '../components/ui/CountUp';
+import SarAmount from '../components/ui/SarAmount';
 
 export const CONTRIBUTION_STAGES = [
   'نحلل دخل والتزامات أفراد العائلة',
@@ -149,8 +150,8 @@ export default function FamilyGoalView() {
             <div className="h-full bg-coral rounded-full transition-all" style={{ width: `${progress}%` }} />
           </div>
           <div className="grid grid-cols-2 gap-2 mt-3 text-[11px] font-bold">
-            <span className="min-w-0 rounded-xl bg-white/5 px-2.5 py-2 text-cream/55 text-center tabular-nums">{savedAmount} من {goalAmount} ر.س</span>
-            <span className="min-w-0 rounded-xl bg-violet/10 px-2.5 py-2 text-violet text-center tabular-nums">المتبقي {Math.max(0, goalAmount - savedAmount)} ر.س</span>
+            <span className="min-w-0 rounded-xl bg-white/5 px-2.5 py-2 text-cream/55 text-center tabular-nums"><SarAmount value={savedAmount} /> من <SarAmount value={goalAmount} /></span>
+            <span className="min-w-0 rounded-xl bg-violet/10 px-2.5 py-2 text-violet text-center tabular-nums">المتبقي <SarAmount value={Math.max(0, goalAmount - savedAmount)} /></span>
           </div>
         </section>
 
@@ -169,7 +170,7 @@ export default function FamilyGoalView() {
                 aria-pressed={saveAmount === String(preset)}
                 className={`min-w-0 w-full border text-xs font-black px-1.5 py-2.5 rounded-2xl transition-all ${saveAmount === String(preset) ? 'bg-coral/15 border-coral/50 text-coral shadow-[0_0_0_1px_rgba(232,132,102,0.12)]' : 'bg-ink-soft/70 border-white/10 text-cream/80 hover:border-white/20'}`}
               >
-                <span dir="ltr" className="inline-block">{preset} ر.س</span>
+                <SarAmount value={preset} />
               </button>
             ))}
           </div>
@@ -185,7 +186,7 @@ export default function FamilyGoalView() {
                 placeholder="المبلغ"
                 className="w-full h-full min-w-0 bg-black/10 border border-white/15 rounded-2xl py-3 pr-4 pl-12 text-cream font-black placeholder:text-cream/30 focus:outline-none focus:border-coral/60 focus:ring-2 focus:ring-coral/10"
               />
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-cream/40 text-xs font-bold">ر.س</span>
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-cream/40 text-sm font-bold" aria-label="ريال سعودي">⃁</span>
             </div>
             <button
               type="button"
@@ -203,7 +204,7 @@ export default function FamilyGoalView() {
         <section>
           <div className="flex items-center justify-between mb-3 px-1">
             <div className="flex items-center gap-2"><Sparkles size={16} className="text-violet" /><h2 className="font-black">خطة المساهمة</h2></div>
-            {visiblePlan && <span className="text-xs text-violet font-black">{visiblePlan.monthlyRequired} ر.س شهريًا</span>}
+            {visiblePlan && <span className="text-xs text-violet font-black"><SarAmount value={visiblePlan.monthlyRequired} /> شهريًا</span>}
           </div>
           {planStage >= 0 ? (
             <div className="bg-violet/15 border border-violet/30 rounded-3xl p-5" aria-busy="true">
@@ -232,9 +233,9 @@ export default function FamilyGoalView() {
                       <span className={`w-10 h-10 rounded-full grid place-items-center font-black ${avatarOf(member.id).bg} ${avatarOf(member.id).text}`}>{avatarOf(member.id).init}</span>
                       <div className="flex-1 min-w-0">
                         <p className="font-black text-sm">{member.name}{isSelf && <span className="mr-2 text-[9px] text-coral">أنت</span>}</p>
-                        <p className="text-[11px] text-cream/55 font-bold">ساهم حتى الآن بـ {member.contributed} ر.س</p>
+                        <p className="text-[11px] text-cream/55 font-bold">ساهم حتى الآن بـ <SarAmount value={member.contributed} /></p>
                       </div>
-                      <span className="text-coral font-black text-sm"><CountUp value={allocation.amount} decimals={0} duration={0.65} startFrom={0} /> ر.س</span>
+                      <SarAmount className="text-coral font-black text-sm"><CountUp value={allocation.amount} decimals={0} duration={0.65} startFrom={0} /></SarAmount>
                     </div>
                     {isSelf ? (
                       <div className="mt-2">
@@ -260,7 +261,7 @@ export default function FamilyGoalView() {
                 <span className="text-xs text-cream/40 font-black">{index + 1}</span>
                 <span className={`w-9 h-9 rounded-full grid place-items-center font-black ${avatarOf(member.id).bg} ${avatarOf(member.id).text}`}>{avatarOf(member.id).init}</span>
                 <div className="flex-1 min-w-0"><p className="font-black text-sm">{member.name}</p><p className="text-[11px] text-cream/50">{member.relation}</p></div>
-                <span className="font-black text-sm">{member.contributed} ر.س</span>
+                <SarAmount value={member.contributed} className="font-black text-sm" />
                 {activeRole === 'ahmed' && member.role === 'child' && (
                   rewards.reward_demo_001
                     ? <span className="text-[11px] text-emerald-300 font-black">تمت ✓</span>

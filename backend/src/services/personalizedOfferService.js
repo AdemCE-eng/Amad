@@ -63,8 +63,8 @@ function deterministicFallback(userId, reason, now = Date.now()) {
         action: "wait_for_offer",
         explanation: frozen.explanation,
         reasons: [frozen.explanation],
-        disclaimer: "توقع تجريبي غير مضمون — تعذر استخدام نموذج التخصيص، فعُرض مسار نديم الثابت.",
-        dataLabel: "MOCK / SYNTHETIC DEMO DATA — SAUDI MARKET · deterministic fallback",
+        disclaimer: "توقع تجريبي غير مضمون، تعذر استخدام نموذج التخصيص، فعُرض مسار نديم الثابت.",
+        dataLabel: "MOCK / SYNTHETIC DEMO DATA · SAUDI MARKET · deterministic fallback",
       };
     })
     .sort((a, b) => b.offerProbability - a.offerProbability || a.merchantId.localeCompare(b.merchantId))

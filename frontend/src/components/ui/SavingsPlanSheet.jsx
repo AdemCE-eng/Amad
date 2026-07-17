@@ -3,6 +3,7 @@ import { X, Sparkles, TrendingUp, Check, ChevronLeft } from 'lucide-react';
 import { useAppData } from '../../context/AppDataContext';
 import { api } from '../../lib/api';
 import Mascot from '../mascot/Mascot';
+import SarAmount from './SarAmount';
 
 // Activation flow, three linked steps:
 //   1) income      → the algorithm proposes a plan
@@ -90,9 +91,9 @@ export default function SavingsPlanSheet({ onClose }) {
         {step === 'income' && (
           <>
             <p className="text-sm text-cream/50 font-medium mb-5">
-              أدخل دخلك الشهري ونقترح لك نسبة ادخار وميزانية لكل فئة — والمتبقّي من كل ميزانية يذهب تلقائياً لحساب التوفير.
+              أدخل دخلك الشهري ونقترح لك نسبة ادخار وميزانية لكل فئة، والمتبقّي من كل ميزانية يذهب تلقائياً لحساب التوفير.
             </p>
-            <label className="block text-xs font-bold text-cream/60 mb-2">الدخل الشهري (ر.س)</label>
+            <label className="block text-xs font-bold text-cream/60 mb-2">الدخل الشهري (⃁)</label>
             <input
               type="number" inputMode="numeric" value={income}
               onChange={(e) => setIncome(e.target.value)}
@@ -125,7 +126,7 @@ export default function SavingsPlanSheet({ onClose }) {
           <>
             <div className="bg-ink-soft rounded-2xl p-4 mb-4">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-bold text-cream/60">الادخار الشهري (ر.س)</label>
+                <label className="text-xs font-bold text-cream/60">الادخار الشهري (⃁)</label>
                 <span className="text-[11px] font-bold text-coral">{ratePct}% من الدخل · هدف سنوي {goal.toLocaleString('ar-SA-u-nu-latn')}</span>
               </div>
               <input
@@ -158,7 +159,7 @@ export default function SavingsPlanSheet({ onClose }) {
               onClick={() => setStep('pet')}
               className="mt-6 w-full bg-coral text-ink font-black py-4 rounded-2xl active:scale-95 transition-transform shadow-lg shadow-coral/20 flex items-center justify-center gap-2"
             >
-              التالي — اختر مرافقك <ChevronLeft size={18} />
+              التالي: اختر مرافقك <ChevronLeft size={18} />
             </button>
           </>
         )}
@@ -167,7 +168,7 @@ export default function SavingsPlanSheet({ onClose }) {
         {step === 'pet' && (
           <>
             <p className="text-sm text-cream/50 font-medium mb-3">
-              مرافقك يرتبط بخطتك مباشرة — ينمو كل ما اقتربت من هدفك ({goal.toLocaleString('ar-SA-u-nu-latn')} ر.س).
+              مرافقك يرتبط بخطتك مباشرة، وينمو كلما اقتربت من هدفك (<SarAmount value={goal} />).
             </p>
             <div className="flex justify-center my-2">
               <Mascot emotion={petName ? 'happy' : 'idle'} stage={0} size={130} />

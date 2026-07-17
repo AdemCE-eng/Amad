@@ -129,7 +129,7 @@ router.post("/offers/settle", async (req, res, next) => {
         type: "save",
         amount: outcome.saving,
         category: "family-goal",
-        label: `توفير ذكي — ${outcome.merchant}`,
+        label: `توفير ذكي: ${outcome.merchant}`,
         timestamp: settledAt,
       },
     });

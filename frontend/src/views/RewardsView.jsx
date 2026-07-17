@@ -2,6 +2,7 @@ import React from 'react';
 import { CircleDollarSign, Coins, CreditCard } from 'lucide-react';
 import { useAppData } from '../context/AppDataContext';
 import { cashbackState } from '../lib/cashback';
+import SarAmount from '../components/ui/SarAmount';
 
 const REWARD_TYPES = [
   { id: 'nxp', label: 'NXP', icon: Coins, style: 'violet', description: 'عملة نديم للإنجازات وإكسسوارات المرافق.' },
@@ -28,7 +29,7 @@ export default function RewardsView() {
   const balances = {
     nxp: String(game.nxp_balance ?? 0),
     akthr: String(akthrPoints),
-    cashback: `${cashback.total} ر.س`,
+    cashback: <SarAmount value={cashback.total} />,
   };
   const familyRewards = Object.values(family?.rewards || {}).sort((a, b) => (b.at || 0) - (a.at || 0));
 
@@ -36,7 +37,7 @@ export default function RewardsView() {
     <div className="bg-ink h-full overflow-y-auto overflow-x-hidden font-sans pb-28 text-cream" dir="rtl">
       <div className="px-5 pt-5 pb-3">
         <h1 className="text-2xl font-black text-cream">المكافآت</h1>
-        <p className="text-xs text-cream/50 font-bold mt-1">أرصدة وقيمة مكتسبة — منفصلة وواضحة</p>
+        <p className="text-xs text-cream/50 font-bold mt-1">أرصدة وقيمة مكتسبة، منفصلة وواضحة</p>
       </div>
 
       <div className="px-4 space-y-5">
@@ -49,7 +50,7 @@ export default function RewardsView() {
                 <article key={type.id} className={`border rounded-2xl p-2.5 text-center min-w-0 shadow-[0_12px_28px_-22px_rgba(0,0,0,0.9)] ${BALANCE_STYLES[type.style]}`}>
                   <span className="mx-auto grid h-7 w-7 place-items-center rounded-xl bg-white/5 border border-white/10" aria-hidden="true"><RewardIcon size={14} strokeWidth={2.2} /></span>
                   <p className="mt-1.5 min-h-6 text-[9px] font-black leading-tight break-words">{type.label}</p>
-                  <p dir="ltr" className="text-lg font-black leading-tight mt-0.5 break-words tabular-nums">{balances[type.id]}</p>
+                  <p className="text-lg font-black leading-tight mt-0.5 break-words tabular-nums">{balances[type.id]}</p>
                 </article>
               );
             })}
@@ -102,7 +103,7 @@ export default function RewardsView() {
         <section aria-labelledby="cashback-title" data-testid="cashback-milestones">
           <div className="flex items-center justify-between gap-3 mb-1 px-1">
             <h2 id="cashback-title" className="font-black text-cream">مكافآت الكاش باك</h2>
-            <span className="text-[10px] font-bold text-sky-300/90 whitespace-nowrap">💳 {cashback.total} ر.س</span>
+            <span className="text-[10px] font-bold text-sky-300/90 whitespace-nowrap">💳 <SarAmount value={cashback.total} /></span>
           </div>
           <p className="text-[10px] font-bold text-cream/60 mb-3 px-1">مكافآت مرتبطة بالعروض المؤهلة</p>
           <div className="space-y-2">
@@ -110,7 +111,7 @@ export default function RewardsView() {
               <div key={reward.id} className={`rounded-2xl p-3 flex items-center gap-3 min-w-0 ${reward.earned ? 'bg-sky-400/10 border border-sky-400/25' : 'bg-ink-card/70'}`}>
                 <span className="text-xl" aria-hidden="true">{reward.earned ? '💳' : '🔒'}</span>
                 <p className={`flex-1 min-w-0 text-[12px] font-bold break-words ${reward.earned ? 'text-cream' : 'text-cream/70'}`}>{reward.title}</p>
-                <span className={`text-[11px] font-black whitespace-nowrap ${reward.earned ? 'text-sky-300' : 'text-cream/50'}`}>+{reward.amount} ر.س</span>
+                <SarAmount value={reward.amount} prefix="+" className={`text-[11px] font-black ${reward.earned ? 'text-sky-300' : 'text-cream/50'}`} />
               </div>
             ))}
           </div>

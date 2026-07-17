@@ -1,6 +1,7 @@
 import React from 'react';
 import { PiggyBank, ArrowDownToLine, ChevronLeft } from 'lucide-react';
 import BudgetCategoryList, { budgetEntries } from '../budget/BudgetCategoryList';
+import SarAmount from './SarAmount';
 
 // Live category-budget board on Home. Each row shows spent / limit for the
 // current period + a bar; the header shows the total that WILL sweep into
@@ -24,7 +25,7 @@ export default function BudgetOverview({ budgets, budgetPeriod = {}, projectedRo
             <ArrowDownToLine size={11} /> المتبقّي للتوفير
           </p>
           <p className="text-lg font-black text-emerald-400 leading-tight">
-            {Math.round(projectedRollover).toLocaleString('ar-SA-u-nu-latn')} <span className="text-[11px] text-cream/40">ر.س</span>
+            <SarAmount value={Math.round(projectedRollover)} />
           </p>
         </div>
       </div>

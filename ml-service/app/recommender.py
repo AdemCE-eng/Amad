@@ -54,7 +54,8 @@ def recommendations(offer_bundle, purchase_bundle, campaigns, transactions, cata
         normalized_saving = min(1.0, saving / 60)
         score = float(offer["offerProbability"]) * purchase_probability * budget_relevance * normalized_saving
         eligible = not bool(merchant.is_essential) and merchant.merchant_id not in decisions and offer["offerProbability"] >= float(offer_bundle["threshold"]) and purchase_probability >= float(purchase_bundle["threshold"]) and saving >= MIN_SAVING_SAR and score >= RECOMMENDATION_THRESHOLD
-        explanation = f"احتمال العرض {offer['offerProbability']:.0%} وملاءمة الشراء {purchase_probability:.0%}، مع توفير تقديري {saving:g} ر.س"
+        sar_saving = f"\u2066⃁ {saving:g}\u2069"
+        explanation = f"احتمال العرض {offer['offerProbability']:.0%} وملاءمة الشراء {purchase_probability:.0%}، مع توفير تقديري {sar_saving}"
         ranked.append({
             "userId": user_id, "merchantId": merchant.merchant_id, "merchant": merchant.name_en,
             "merchantNameAr": merchant.name_ar, "category": merchant.category,
@@ -65,7 +66,7 @@ def recommendations(offer_bundle, purchase_bundle, campaigns, transactions, cata
             "action": "wait_for_offer" if eligible else "not_relevant",
             "explanation": explanation,
             "suppressionReason": "essential_purchase" if bool(merchant.is_essential) else ("prior_decision" if merchant.merchant_id in decisions else (None if eligible else "threshold_not_met")),
-            "reasons": [*(public_pattern(purchase_row, merchant, purchase_probability)["reasons"][:1]), *(offer["reasons"][:1]), f"تأجيل عملية غير أساسية حتى {offer['windowDays']} أيام قد يوفر نحو {saving:g} ر.س"],
+            "reasons": [*(public_pattern(purchase_row, merchant, purchase_probability)["reasons"][:1]), *(offer["reasons"][:1]), f"تأجيل عملية غير أساسية حتى {offer['windowDays']} أيام قد يوفر نحو {sar_saving}"],
             "disclaimer": DISCLAIMER_AR, "dataLabel": DATA_LABEL,
         })
     return sorted(ranked, key=lambda item: (-item["personalizedScore"], item["merchantId"]))

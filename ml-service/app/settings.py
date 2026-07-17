@@ -18,7 +18,7 @@ DEMO_AS_OF = "2026-09-15"
 DEMO_WINDOW_DAYS = 3
 DATA_START = "2022-01-03"
 DATASET_VERSION = "synthetic-saudi-v2"
-DATA_LABEL = "MOCK / SYNTHETIC DEMO DATA — SAUDI MARKET"
+DATA_LABEL = "MOCK / SYNTHETIC DEMO DATA · SAUDI MARKET"
 RESULTS_LABEL_AR = "نتائج على بيانات تجريبية من السوق السعودي"
 DISCLAIMER_AR = "توقع احتمالي مبني على بيانات تجريبية وأنماط سابقة، وليس عرضاً مضموناً"
 

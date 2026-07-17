@@ -5,6 +5,7 @@ import { api } from '../lib/api';
 import { runStagedRequest } from '../lib/stagedRequest';
 import StagedProgress from '../components/ui/StagedProgress';
 import Mascot from '../components/mascot/Mascot';
+import SarAmount from '../components/ui/SarAmount';
 
 export const ANALYSIS_STEPS = [
   'نقرأ أنماط مشترياتك',
@@ -66,10 +67,6 @@ function formatOfferProbability(value) {
   return `${new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 }).format(value * 100)}٪`;
 }
 
-function formatSaving(value) {
-  return new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 }).format(value);
-}
-
 function OpportunityCard({ opportunity, featured, activeRole, isSubmitting, runAction }) {
   const status = opportunity.persisted?.status || 'pending';
   return (
@@ -89,7 +86,7 @@ function OpportunityCard({ opportunity, featured, activeRole, isSubmitting, runA
 
       <div className="grid grid-cols-3 gap-2 mt-3">
         <div className="bg-white/5 rounded-xl p-2 text-center"><span className="block text-[9px] text-cream/45">ملاءمة الشراء</span><strong className="text-xs">{formatPurchaseSuitability(opportunity.purchaseProbability)}</strong></div>
-        <div className="bg-white/5 rounded-xl p-2 text-center"><span className="block text-[9px] text-cream/45">التوفير</span><strong className="text-xs"><span dir="ltr">{formatSaving(opportunity.estimatedSavingSar)} ر.س</span></strong></div>
+        <div className="bg-white/5 rounded-xl p-2 text-center"><span className="block text-[9px] text-cream/45">التوفير</span><strong className="text-xs"><SarAmount value={opportunity.estimatedSavingSar} /></strong></div>
         <div className="bg-white/5 rounded-xl p-2 text-center"><span className="block text-[9px] text-cream/45">النافذة</span><strong className="text-xs">{opportunity.windowDays} أيام</strong></div>
       </div>
 
@@ -238,7 +235,7 @@ export default function OpportunitiesView() {
                   activeIndex={analysisStep}
                   testId="analysis-progress"
                   showStageCount
-                  supportingText={analysisCompleting ? 'اكتمل التحليل — لحظة ونجهز النتائج' : 'نحلل بياناتك ونقارن الفرص المتاحة'}
+                  supportingText={analysisCompleting ? 'اكتمل التحليل، لحظة ونجهز النتائج' : 'نحلل بياناتك ونقارن الفرص المتاحة'}
                 />
                 <div className={`mt-4 w-full rounded-2xl py-2.5 text-center text-xs font-black transition-colors ${analysisCompleting ? 'bg-emerald-400/15 text-emerald-300' : 'bg-coral/20 text-coral'}`}>
                   {analysisCompleting ? 'تم العثور على النتائج ✓' : 'جارٍ تحليل الفرص…'}

@@ -1,4 +1,5 @@
 import React from 'react';
+import SarAmount from '../ui/SarAmount';
 
 export const CADENCE_LABEL = { daily: 'يومي', weekly: 'أسبوعي', monthly: 'شهري' };
 
@@ -34,7 +35,7 @@ export default function BudgetCategoryList({ entries, budgetPeriod = {}, compact
             </div>
             {!over && leftover > 0 && (
               <p className="text-[10px] text-emerald-400/80 font-bold mt-0.5">
-                +{leftover.toLocaleString('ar-SA-u-nu-latn')} ر.س ستُحوّل للتوفير
+                <SarAmount value={leftover} prefix="+" /> ستُحوّل للتوفير
               </p>
             )}
           </article>
