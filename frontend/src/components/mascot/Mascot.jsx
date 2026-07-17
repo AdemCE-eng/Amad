@@ -431,15 +431,13 @@ function Mascot({
                   <path d="M55,200 Q60,184 69,172 Q65,190 62,201 Z" fill={P.wingDark} opacity="0.7" />
                 </Pivot>
               </g>
-              {emotion !== 'thinking' && (
-                <g className={flapping ? 'anim-flap-r' : ''} style={{ transformOrigin: '170px 136px' }}>
-                  <Pivot x={170} y={136} animate={{ rotate: e.body === 'droop' ? -12 : 0 }} transition={springs.gentle}>
-                    <path d="M168,130 Q204,150 196,202 Q182,198 169,166 Q172,146 159,140 Z" fill={P.wing} />
-                    <path d="M196,202 Q190,180 177,166 Q182,190 187,203 Z" fill={P.wingDark} />
-                    <path d="M185,200 Q180,184 171,172 Q175,190 178,201 Z" fill={P.wingDark} opacity="0.7" />
-                  </Pivot>
-                </g>
-              )}
+              <g className={flapping ? 'anim-flap-r' : ''} style={{ transformOrigin: '170px 136px' }}>
+                <Pivot x={170} y={136} animate={{ rotate: e.body === 'droop' ? -12 : 0 }} transition={springs.gentle}>
+                  <path d="M168,130 Q204,150 196,202 Q182,198 169,166 Q172,146 159,140 Z" fill={P.wing} />
+                  <path d="M196,202 Q190,180 177,166 Q182,190 187,203 Z" fill={P.wingDark} />
+                  <path d="M185,200 Q180,184 171,172 Q175,190 178,201 Z" fill={P.wingDark} opacity="0.7" />
+                </Pivot>
+              </g>
             </>
           ) : (
             <>
@@ -448,13 +446,11 @@ function Mascot({
                   <path d="M66,140 Q46,158 58,186 Q72,178 74,156 Z" fill={P.wing} />
                 </Pivot>
               </g>
-              {emotion !== 'thinking' && (
-                <g className={flapping ? 'anim-flap-r' : ''} style={{ transformOrigin: '172px 144px' }}>
-                  <Pivot x={172} y={144} animate={{ rotate: e.body === 'droop' ? -10 : 0 }} transition={springs.gentle}>
-                    <path d="M174,140 Q194,158 182,186 Q168,178 166,156 Z" fill={P.wing} />
-                  </Pivot>
-                </g>
-              )}
+              <g className={flapping ? 'anim-flap-r' : ''} style={{ transformOrigin: '172px 144px' }}>
+                <Pivot x={172} y={144} animate={{ rotate: e.body === 'droop' ? -10 : 0 }} transition={springs.gentle}>
+                  <path d="M174,140 Q194,158 182,186 Q168,178 166,156 Z" fill={P.wing} />
+                </Pivot>
+              </g>
             </>
           ))}
 
@@ -544,37 +540,6 @@ function Mascot({
 
             {equipped && <Accessory id={equipped} uid={uid} />}
           </Pivot>
-
-          {/* Thinking replaces the normal right wing instead of adding a
-              third limb. It stays anchored at the shoulder while its rounded
-              feather tip rests against the cheek. */}
-          {emotion === 'thinking' && stage >= 1 && (
-            <Pivot x={169} y={163} animate={{ rotate: [-2, 2, -2] }} transition={{ duration: 1.9, repeat: Infinity, ease: 'easeInOut' }}>
-              {grown ? (
-                <g>
-                  <path
-                    d="M171,181 C181,162 178,145 165,133 C160,129 157,123 152,125 C148,127 150,133 155,138 C162,145 164,153 159,166 C161,174 166,179 171,181 Z"
-                    fill={P.wing}
-                    stroke={P.wingDark}
-                    strokeWidth="2"
-                    strokeLinejoin="round"
-                  />
-                  <path d="M160,166 Q166,169 172,164 M163,174 Q168,176 172,172" fill="none" stroke={P.wingDark} strokeWidth="2" strokeLinecap="round" opacity="0.72" />
-                </g>
-              ) : (
-                <g>
-                  <path
-                    d="M171,175 C179,161 177,149 167,139 C162,134 159,128 154,130 C150,132 152,137 157,141 C162,147 163,154 159,163 C161,169 166,173 171,175 Z"
-                    fill={P.wing}
-                    stroke={P.wingDark}
-                    strokeWidth="1.6"
-                    strokeLinejoin="round"
-                  />
-                  <path d="M160,163 Q166,166 171,161" fill="none" stroke={P.wingDark} strokeWidth="1.5" strokeLinecap="round" opacity="0.55" />
-                </g>
-              )}
-            </Pivot>
-          )}
 
           {/* Egg shell (stage 0) wraps the lower body, over the belly. */}
           {stage === 0 && (
