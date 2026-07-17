@@ -106,7 +106,7 @@
          offers buttons further down hit the canonical endpoints instead. -->
 
     <div class="settings">
-      <input class="amt" type="number" id="goalInput" value="5000" min="1" step="100" placeholder="هدف الادخار (⃁)">
+      <input class="amt" type="number" id="goalInput" value="4000" min="1" step="100" placeholder="هدف الادخار (⃁)">
       <button class="goalset" onclick="setGoal()">🎯 تحديث هدف الادخار</button>
     </div>
 
@@ -154,8 +154,8 @@
         <button class="coffee" onclick="callCategory('subscriptions','اشتراك','amt-cat-subscriptions')">📱 اشتراكات</button>
       </div>
       <div class="action">
-        <input class="amt" type="number" id="amt-emergency" value="1500" min="0" step="100">
-        <button class="emergency" onclick="callAmt('emergency', '/api/simulate/emergency', 'amt-emergency')">🛡️ درع الطوارئ</button>
+        <input class="amt" type="number" id="amt-emergency" value="200" min="0" step="100">
+        <button class="emergency" onclick="callAmt('emergency', '/api/simulate/emergency', 'amt-emergency')">🛡️ تحويل من المدخرات بالدرع</button>
       </div>
       <!-- Time machine: advance the demo clock. Each jump settles the budgets
            whose period closes (daily / weekly / monthly) into savings. -->

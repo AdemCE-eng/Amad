@@ -60,11 +60,32 @@ export function generateContributionPlan(family, profiles = MOCK_FINANCIAL_PROFI
     return { memberId: id, ...memberCapacity(profile), profile };
   });
   const totalCapacity = capacities.reduce((s, c) => s + c.savingCapacity, 0);
+  const allocationMode = totalCapacity > 0 ? "saving-capacity" : "equal-fallback";
+  const shares = capacities.map((c) => (
+    totalCapacity > 0
+      ? c.savingCapacity / totalCapacity
+      : capacities.length > 0 ? 1 / capacities.length : 0
+  ));
+
+  // Largest-remainder allocation keeps the family total exact and prevents
+  // an all-zero result for small targets or legacy members without profiles.
+  const rawAmounts = shares.map((share) => monthlyRequired * share);
+  const amounts = rawAmounts.map(Math.floor);
+  let undistributed = monthlyRequired - amounts.reduce((sum, amount) => sum + amount, 0);
+  const remainderOrder = rawAmounts
+    .map((value, index) => ({ index, fraction: value - Math.floor(value) }))
+    .sort((a, b) => b.fraction - a.fraction
+      || capacities[a.index].memberId.localeCompare(capacities[b.index].memberId));
+  for (const { index } of remainderOrder) {
+    if (undistributed <= 0) break;
+    amounts[index] += 1;
+    undistributed -= 1;
+  }
 
   const allocations = {};
-  for (const c of capacities) {
-    const share = totalCapacity > 0 ? c.savingCapacity / totalCapacity : 0;
-    const amount = Math.round(monthlyRequired * share);
+  capacities.forEach((c, index) => {
+    const share = shares[index];
+    const amount = amounts[index];
     allocations[c.memberId] = {
       memberId: c.memberId,
       name: family.members[c.memberId].name,
@@ -78,10 +99,11 @@ export function generateContributionPlan(family, profiles = MOCK_FINANCIAL_PROFI
       savingCapacity: c.savingCapacity,
       sharePct: Math.round(share * 100),
       amount,
-      explanation:
-        `الدخل ${c.profile?.income ?? 0} − التزامات ${(c.profile?.fixedExpenses ?? 0) + (c.profile?.essentialExpenses ?? 0)} − احتياطي ${c.profile?.safetyBuffer ?? 0} = فائض آمن ${c.safeSurplus} ← قدرة ادخار ${c.savingCapacity} (${Math.round(share * 100)}٪ من قدرة العائلة)`,
+      explanation: totalCapacity > 0
+        ? `الدخل ${c.profile?.income ?? 0} − التزامات ${(c.profile?.fixedExpenses ?? 0) + (c.profile?.essentialExpenses ?? 0)} − احتياطي ${c.profile?.safetyBuffer ?? 0} = فائض آمن ${c.safeSurplus} ← قدرة ادخار ${c.savingCapacity} (${Math.round(share * 100)}٪ من قدرة العائلة)`
+        : `لم تتوفر بيانات مالية كافية، لذلك وزع المبلغ الشهري بالتساوي بنسبة ${Math.round(share * 100)}٪.`,
     };
-  }
+  });
 
   return {
     familyId: family.id,
@@ -89,10 +111,11 @@ export function generateContributionPlan(family, profiles = MOCK_FINANCIAL_PROFI
     monthsRemaining: months,
     remainingToGoal: remaining,
     totalCapacity,
+    allocationMode,
     safeSavingRate: SAFE_SAVING_RATE,
     allocations,
     generatedAt: now,
-    status: "active",
+    status: remaining === 0 ? "completed" : "active",
     engine: "explainable-saving-capacity", // deterministic — not LLM, not ML
   };
 }

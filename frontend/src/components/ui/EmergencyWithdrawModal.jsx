@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { X, ShieldCheck, HeartPulse, Flame } from 'lucide-react';
+import { X, ShieldCheck, HeartPulse } from 'lucide-react';
 import SarAmount from './SarAmount';
 
 // In-app replacement for window.prompt() on the emergency-withdrawal flow.
@@ -8,15 +8,25 @@ import SarAmount from './SarAmount';
 // backend already accepts) — no new field, no contract change.
 const REASONS = ['ظرف صحي', 'إصلاح عاجل', 'التزام أساسي', 'سبب آخر'];
 
-export default function EmergencyWithdrawModal({ open, onClose, onConfirm, balance, shieldsRemaining, isSubmitting, petName = 'صقر' }) {
+export default function EmergencyWithdrawModal({
+  open,
+  onClose,
+  onConfirm,
+  savingsBalance,
+  accountBalance,
+  shieldsRemaining,
+  isSubmitting,
+  petName = 'صقر',
+}) {
   const [amount, setAmount] = useState('200');
   const [reason, setReason] = useState(null);
   const [error, setError] = useState(null);
   const [done, setDone] = useState(false);
+  const [usedShield, setUsedShield] = useState(false);
 
   // Reset transient state whenever the sheet re-opens.
   useEffect(() => {
-    if (open) { setAmount('200'); setReason(null); setError(null); setDone(false); }
+    if (open) { setAmount('200'); setReason(null); setError(null); setDone(false); setUsedShield(false); }
   }, [open]);
 
   // Escape closes — but never mid-submit, so an in-flight request can't be
@@ -32,14 +42,15 @@ export default function EmergencyWithdrawModal({ open, onClose, onConfirm, balan
 
   const amt = parseFloat(amount);
   const validAmount = Number.isFinite(amt) && amt > 0;
-  const overBalance = validAmount && amt > balance;
+  const overSavings = validAmount && amt > savingsBalance;
   const shielded = shieldsRemaining > 0;
-  const after = validAmount ? Math.max(0, balance - amt) : balance;
+  const savingsAfter = validAmount ? Math.max(0, savingsBalance - amt) : savingsBalance;
+  const accountAfter = validAmount ? accountBalance + amt : accountBalance;
 
   const validate = () => {
     if (!amount.trim() || Number.isNaN(amt)) return 'أدخل رقماً صحيحاً للمبلغ';
     if (amt <= 0) return 'المبلغ يجب أن يكون أكبر من صفر';
-    if (amt > balance) return 'المبلغ أكبر من رصيدك المتاح';
+    if (amt > savingsBalance) return 'المبلغ أكبر من مدخراتك المتاحة';
     return null;
   };
 
@@ -50,6 +61,7 @@ export default function EmergencyWithdrawModal({ open, onClose, onConfirm, balan
     setError(null);
     const label = reason ? `سحب طارئ: ${reason}` : 'سحب طارئ';
     try {
+      setUsedShield(shielded);
       await onConfirm(amt, label);
       setDone(true);
     } catch {
@@ -82,12 +94,14 @@ export default function EmergencyWithdrawModal({ open, onClose, onConfirm, balan
 
         {done ? (
           <div className="py-6 text-center">
-            <div className="w-16 h-16 rounded-full bg-emerald-400/15 flex items-center justify-center mx-auto mb-4">
-              <ShieldCheck size={30} className="text-emerald-400" />
+            <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${usedShield ? 'bg-emerald-400/15' : 'bg-coral/15'}`}>
+              {usedShield
+                ? <ShieldCheck size={30} className="text-emerald-400" />
+                : <HeartPulse size={30} className="text-coral" />}
             </div>
             <p className="font-black text-cream text-lg mb-2">تم السحب بنجاح</p>
             <p className="text-sm text-cream/70 leading-relaxed mb-6">
-              استخدمنا الدرع الطارئ، لذلك لم تتأثر صحة {petName} أو سلسلتك الادخارية.
+              نُقل المبلغ من المدخرات إلى رصيد الحساب{usedShield ? `، وحمى الدرع صحة ${petName}.` : `، وتأثرت صحة ${petName} حسب نسبة السحب.`}
             </p>
             <button
               onClick={onClose}
@@ -129,12 +143,16 @@ export default function EmergencyWithdrawModal({ open, onClose, onConfirm, balan
             {/* Summary before confirmation */}
             <div className="bg-white/5 rounded-2xl p-4 mt-4 space-y-2">
               <div className="flex justify-between text-[13px]">
-                <span className="text-cream/60 font-bold">رصيدك الحالي</span>
-                <SarAmount value={balance.toFixed(2)} className="text-cream font-black" />
+                <span className="text-cream/60 font-bold">المدخرات الحالية</span>
+                <SarAmount value={savingsBalance.toFixed(2)} className="text-cream font-black" />
               </div>
               <div className="flex justify-between text-[13px]">
-                <span className="text-cream/60 font-bold">الرصيد بعد السحب</span>
-                <SarAmount value={after.toFixed(2)} className={`font-black ${overBalance ? 'text-red-400' : 'text-cream'}`} />
+                <span className="text-cream/60 font-bold">المدخرات بعد السحب</span>
+                <SarAmount value={savingsAfter.toFixed(2)} className={`font-black ${overSavings ? 'text-red-400' : 'text-cream'}`} />
+              </div>
+              <div className="flex justify-between text-[13px]">
+                <span className="text-cream/60 font-bold">رصيد الحساب بعد التحويل</span>
+                <SarAmount value={accountAfter.toFixed(2)} className="text-emerald-300 font-black" />
               </div>
               <div className="flex justify-between text-[13px]">
                 <span className="text-cream/60 font-bold">دروع الطوارئ المتبقية</span>
@@ -145,12 +163,6 @@ export default function EmergencyWithdrawModal({ open, onClose, onConfirm, balan
                 <HeartPulse size={14} className={shielded ? 'text-emerald-400' : 'text-red-400'} />
                 <span className={shielded ? 'text-emerald-300 font-bold' : 'text-red-300 font-bold'}>
                   {shielded ? `صحة ${petName} محمية بالكامل` : `لا يوجد درع متبقٍ، قد تتأثر صحة ${petName}`}
-                </span>
-              </div>
-              <div className="flex items-center gap-2 text-[12px]">
-                <Flame size={14} className={shielded ? 'text-emerald-400' : 'text-red-400'} />
-                <span className={shielded ? 'text-emerald-300 font-bold' : 'text-red-300 font-bold'}>
-                  {shielded ? 'سلسلتك الادخارية محمية' : 'قد تتأثر سلسلتك الادخارية'}
                 </span>
               </div>
             </div>
@@ -166,7 +178,7 @@ export default function EmergencyWithdrawModal({ open, onClose, onConfirm, balan
               </button>
               <button
                 onClick={submit}
-                disabled={isSubmitting || !validAmount || overBalance}
+                disabled={isSubmitting || !validAmount || overSavings}
                 className="flex-[2] py-3.5 rounded-2xl font-black bg-coral text-ink active:scale-[0.98] transition-transform disabled:opacity-50"
               >
                 {isSubmitting ? '...جارٍ السحب' : 'تأكيد السحب'}

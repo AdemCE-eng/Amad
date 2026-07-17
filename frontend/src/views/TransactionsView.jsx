@@ -8,6 +8,7 @@ const FILTERS = [
   { id: 'salary', label: 'إيداعات' },
   { id: 'purchase', label: 'مشتريات' },
   { id: 'save', label: 'ادخار' },
+  { id: 'withdrawal', label: 'سحب من المدخرات' },
   { id: 'emergency', label: 'سحب طارئ' },
 ];
 

@@ -12,6 +12,7 @@ import SarAmount from './SarAmount';
 // Applying does BOTH in one action: /api/plan/apply (opens account, installs the
 // edited budgets, sets the goal) + /api/user/profile (the chosen companion).
 const INCOME_PRESETS = [4000, 8000, 15000, 25000];
+const DEFAULT_SAVINGS_GOAL = 4000;
 const CADENCE_LABEL = { daily: 'يومي', weekly: 'أسبوعي', monthly: 'شهري' };
 const NAME_SUGGESTIONS = ['صقر', 'سعود', 'رزين', 'وفرة'];
 const COMPANIONS = [
@@ -27,12 +28,12 @@ export default function SavingsPlanSheet({ onClose }) {
   const [plan, setPlan] = useState(null);
   const [budgets, setBudgets] = useState(null);   // editable copy
   const [target, setTarget] = useState(0);        // editable monthly savings
+  const [goal, setGoal] = useState(DEFAULT_SAVINGS_GOAL);
   const [loadingPlan, setLoadingPlan] = useState(false);
   const [petType, setPetType] = useState('falcon');
   const [petName, setPetName] = useState('');
 
   const incomeNum = parseFloat(income) || 0;
-  const goal = Math.max(1, Math.round(target * 12));
   const ratePct = incomeNum > 0 ? Math.round((target / incomeNum) * 100) : 0;
 
   const compute = async () => {
@@ -127,13 +128,28 @@ export default function SavingsPlanSheet({ onClose }) {
             <div className="bg-ink-soft rounded-2xl p-4 mb-4">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-bold text-cream/60">الادخار الشهري (⃁)</label>
-                <span className="text-[11px] font-bold text-coral">{ratePct}% من الدخل · هدف سنوي {goal.toLocaleString('ar-SA-u-nu-latn')}</span>
+                <span className="text-[11px] font-bold text-coral">{ratePct}% من الدخل</span>
               </div>
               <input
-                type="number" inputMode="numeric" value={target}
-                onChange={(e) => setTarget(Math.max(0, Math.round(parseFloat(e.target.value) || 0)))}
+                type="number" inputMode="numeric" min="1" max={incomeNum} value={target}
+                onChange={(e) => setTarget(Math.min(incomeNum, Math.max(0, Math.round(parseFloat(e.target.value) || 0))))}
                 className="mt-2 w-full text-center text-2xl font-black bg-white/10 text-emerald-400 border-2 border-white/15 focus:border-coral rounded-xl py-2.5 outline-none"
               />
+              <p className="mt-1.5 text-center text-[10px] font-bold text-cream/40">
+                الحد الأعلى هو دخلك الشهري: <SarAmount value={incomeNum} />
+              </p>
+
+              <div className="mt-3 border-t border-white/10 pt-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-cream/60">هدف الادخار (⃁)</label>
+                  <span className="text-[10px] font-bold text-cream/40">القيمة الافتراضية 4000</span>
+                </div>
+                <input
+                  type="number" inputMode="numeric" min="1" value={goal}
+                  onChange={(e) => setGoal(Math.max(1, Math.round(parseFloat(e.target.value) || 1)))}
+                  className="mt-2 w-full text-center text-2xl font-black bg-white/10 text-coral border-2 border-white/15 focus:border-coral rounded-xl py-2.5 outline-none"
+                />
+              </div>
             </div>
 
             <div className="flex items-center justify-between mb-2">
@@ -157,7 +173,8 @@ export default function SavingsPlanSheet({ onClose }) {
 
             <button
               onClick={() => setStep('pet')}
-              className="mt-6 w-full bg-coral text-ink font-black py-4 rounded-2xl active:scale-95 transition-transform shadow-lg shadow-coral/20 flex items-center justify-center gap-2"
+              disabled={target <= 0 || target > incomeNum}
+              className="mt-6 w-full bg-coral text-ink font-black py-4 rounded-2xl active:scale-95 transition-transform shadow-lg shadow-coral/20 flex items-center justify-center gap-2 disabled:bg-white/10 disabled:text-cream/30 disabled:shadow-none"
             >
               التالي: اختر مرافقك <ChevronLeft size={18} />
             </button>

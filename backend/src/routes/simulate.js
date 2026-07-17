@@ -6,10 +6,12 @@ import { db } from "../firebase.js";
 import {
   applySalary,
   applyInstantSave,
+  applySavingsWithdrawal,
   applyPurchase,
   applyEmergency,
   initialState,
   hasSufficientFunds,
+  hasSufficientSavings,
 } from "../logic/petEngine.js";
 import { applyGameEffects } from "../logic/gameEngine.js";
 import { generatePetMessage } from "../ai/gemini.js";
@@ -42,7 +44,7 @@ function withGame(next) {
     savedPortion: ctx.savedPortion,
     category: ctx.txnCategory || ctx.category,
     overBudget: ctx.overBudget,
-    shielded: ctx.event === "emergency", // unshielded emergencies arrive as `purchase`
+    shielded: Boolean(ctx.shielded),
   });
 }
 
@@ -74,6 +76,23 @@ function insufficientFunds(res, state) {
     error: "insufficient_funds",
     message: "الرصيد غير كافٍ لإتمام هذه العملية.",
     user: state.user,
+  });
+}
+
+function insufficientSavings(res, state) {
+  res.status(400).json({
+    ok: false,
+    error: "insufficient_savings",
+    message: "المدخرات غير كافية لإتمام هذا السحب.",
+    user: state.user,
+  });
+}
+
+function invalidAmount(res) {
+  return res.status(400).json({
+    ok: false,
+    error: "invalid_amount",
+    message: "المبلغ يجب أن يكون رقمًا أكبر من صفر.",
   });
 }
 
@@ -118,6 +137,30 @@ router.post("/simulate/save", async (req, res, next) => {
   }
 });
 
+// POST /api/simulate/withdraw-savings  { amount }
+// Moves money from savings back to the available account and applies the
+// goal-relative health impact through the same pure engine pipeline.
+router.post("/simulate/withdraw-savings", async (req, res, next) => {
+  try {
+    const amount = req.body.amount == null ? 100 : Number(req.body.amount);
+    if (!Number.isFinite(amount) || amount <= 0) return invalidAmount(res);
+    const state = await readState();
+    if (!hasSufficientSavings(state, amount)) return insufficientSavings(res, state);
+    const out = await commit(
+      withGame(applySavingsWithdrawal(state, { amount })),
+      {
+        type: "withdrawal",
+        amount,
+        category: "savings",
+        label: "تحويل من المدخرات إلى الحساب",
+      }
+    );
+    res.json({ ok: true, ...out });
+  } catch (e) {
+    next(e);
+  }
+});
+
 // POST /api/simulate/purchase  { amount, category, label }
 router.post("/simulate/purchase", async (req, res, next) => {
   try {
@@ -140,14 +183,15 @@ router.post("/simulate/purchase", async (req, res, next) => {
 // POST /api/simulate/emergency  { amount, label }
 router.post("/simulate/emergency", async (req, res, next) => {
   try {
-    const amount = Number(req.body.amount) || 1500;
+    const amount = req.body.amount == null ? 200 : Number(req.body.amount);
+    if (!Number.isFinite(amount) || amount <= 0) return invalidAmount(res);
     const { label = "سحب طارئ" } = req.body;
     const state = await readState();
-    if (!hasSufficientFunds(state, amount)) return insufficientFunds(res, state);
+    if (!hasSufficientSavings(state, amount)) return insufficientSavings(res, state);
     const out = await commit(withGame(applyEmergency(state, { amount, label })), {
       type: "emergency",
       amount,
-      category: "emergency",
+      category: "savings",
       label,
     });
     res.json({ ok: true, ...out });

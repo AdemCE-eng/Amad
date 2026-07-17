@@ -31,18 +31,28 @@ router.post("/plan/suggest", (req, res, next) => {
 router.post("/plan/apply", async (req, res, next) => {
   try {
     const monthlyIncome = Number(req.body.monthlyIncome);
+    const monthlyTarget = Number(req.body.monthlyTarget);
     if (!Number.isFinite(monthlyIncome) || monthlyIncome <= 0) {
       return res.status(400).json({ ok: false, error: "invalid_income", message: "أدخل دخلاً شهرياً صحيحاً." });
+    }
+    if (Number.isFinite(monthlyTarget) && monthlyTarget > monthlyIncome) {
+      return res.status(400).json({
+        ok: false,
+        error: "savings_exceeds_income",
+        message: "الادخار الشهري لا يمكن أن يتجاوز الدخل الشهري.",
+      });
     }
     const state = await readState();
     const nextUser = applyPlanToUser(state.user, {
       monthlyIncome,
       budgets: req.body.budgets,
-      monthlyTarget: Number(req.body.monthlyTarget),
+      monthlyTarget,
       goalAmount: Number(req.body.goalAmount),
     });
     await db.ref("/user").update({
+      income: nextUser.income,
       monthlyIncome: nextUser.monthlyIncome,
+      balance: nextUser.balance,
       goalAmount: nextUser.goalAmount,
       savingsAccountOpened: nextUser.savingsAccountOpened,
       savingsPlan: nextUser.savingsPlan,

@@ -6,7 +6,9 @@ export const TRANSACTION_META = {
   purchase: { icon: ShoppingCart, sign: '-', color: 'text-coral' },
   salary: { icon: Wallet, sign: '+', color: 'text-emerald-400' },
   save: { icon: PiggyBank, sign: '-', color: 'text-coral' },
-  emergency: { icon: ShieldAlert, sign: '-', color: 'text-red-400' },
+  'family-contribution': { icon: PiggyBank, sign: '-', color: 'text-coral' },
+  withdrawal: { icon: Wallet, sign: '+', color: 'text-emerald-400' },
+  emergency: { icon: ShieldAlert, sign: '+', color: 'text-emerald-400' },
   reward: { icon: Sparkles, sign: '+', color: 'text-violet' },
 };
 

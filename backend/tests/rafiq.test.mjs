@@ -101,7 +101,7 @@ test("healthStateOf maps the 5 bands at their boundaries", () => {
 // ── Priority 1b: goal-secured spending shield ────────────────────────────
 test("goal-secured pet takes no health loss from over-budget spending", () => {
   const secured = { ...initialState() };
-  secured.user = { ...secured.user, savedAmount: 5000, spentThisMonth: 2900 }; // saved >= goal(5000)
+  secured.user = { ...secured.user, savedAmount: 4000, spentThisMonth: 2900 }; // saved >= goal(4000)
   secured.pet = { ...secured.pet, health: 45 };
   const after = applyPurchase(secured, { amount: 3000, category: "shopping" });
   assert.equal(after.pet.health, 45, "shielded health must not drop");
@@ -120,7 +120,7 @@ test("not-secured pet still loses health on over-budget spending", () => {
 // ── In-budget purchases never cost health (even before the goal is secured) ──
 test("not-secured pet takes NO health loss from in-budget purchases", () => {
   let s = { ...initialState() };
-  s.user = { ...s.user, savedAmount: 1200, spentThisMonth: 0, monthlyBudget: 3000 }; // 1200 < goal(5000)
+  s.user = { ...s.user, savedAmount: 1200, spentThisMonth: 0, monthlyBudget: 3000 }; // 1200 < goal(4000)
   s.pet = { ...s.pet, health: 70 };
 
   // Several in-budget purchases in a row — total stays under the 3000 budget.
@@ -161,10 +161,10 @@ test("purchase penalty scales with overPercentage of monthlyBudget, not a flat n
 });
 
 test("save heal scales with percentOfGoal, not a flat number", () => {
-  const s = initialState(); // goalAmount 5000
+  const s = initialState(); // goalAmount 4000
 
-  // 20% of goal (1000 SAR) -> clamp(round(0.2*60), 8, 30) = 12.
-  const twentyPct = applyInstantSave(s, 1000);
+  // 20% of goal (800 SAR) -> clamp(round(0.2*60), 8, 30) = 12.
+  const twentyPct = applyInstantSave(s, 800);
   assert.equal(twentyPct._aiContext.healthDelta, 12);
 
   // A tiny save floors at SAVE_HEAL_MIN (8), never less.
@@ -172,12 +172,12 @@ test("save heal scales with percentOfGoal, not a flat number", () => {
   assert.equal(tinySave._aiContext.healthDelta, 8);
 
   // A huge save (more than the whole goal) caps at SAVE_HEAL_MAX (30).
-  const hugeSave = applyInstantSave(s, 5000);
+  const hugeSave = applyInstantSave(s, 4000);
   assert.equal(hugeSave._aiContext.healthDelta, 30);
 });
 
 test("calibration: saving X% of the goal always heals more than overspending by the same X%", () => {
-  const s = initialState(); // goalAmount 5000, monthlyBudget 3000
+  const s = initialState(); // goalAmount 4000, monthlyBudget 3000
   const atBudget = { ...s, user: { ...s.user, spentThisMonth: s.user.monthlyBudget } };
 
   for (const pct of [0.02, 0.05, 0.2, 0.5, 1, 2]) {

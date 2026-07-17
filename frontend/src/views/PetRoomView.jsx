@@ -25,7 +25,7 @@ export default function PetRoomView() {
   const {
     user, pet, game, emergencyShield,
     isSick, isHappy, goalProgress,
-    handlePetInteraction, isSubmitting, runAction,
+    handlePetInteraction, isSubmitting, runAction, actionError,
     petActiveTab, setPetActiveTab,
   } = useAppData();
   const { emotion, poke } = useMascotEmotion(pet);
@@ -44,6 +44,15 @@ export default function PetRoomView() {
     rememberCelebrationReturnFocus('pet-save-custom');
     runAction(async () => {
       await api.save(amount);
+      setSaveInput('');
+    }, { notifyInsufficientFunds: true });
+  };
+
+  const submitWithdrawal = () => {
+    const amount = Number(saveInput);
+    if (!Number.isFinite(amount) || amount <= 0 || amount > user.savedAmount) return;
+    runAction(async () => {
+      await api.withdrawSavings(amount);
       setSaveInput('');
     });
   };
@@ -164,8 +173,12 @@ export default function PetRoomView() {
             <span>كل توفير يقرّبك من هدفك ويطوّر {petDisplayName}</span>
             <span className="shrink-0 tabular-nums">{goalProgress}%</span>
           </div>
+          <div className="mt-2 flex items-center justify-between rounded-xl border border-white/5 bg-black/10 px-3 py-2 text-[10px] font-bold">
+            <span className="text-cream/45">رصيد الحساب المتاح</span>
+            <SarAmount value={user.balance} className="text-emerald-300 font-black" />
+          </div>
 
-          <div className="mt-2.5 grid grid-cols-3 gap-2" aria-label="مبالغ التوفير السريع">
+          <div className="mt-2.5 grid grid-cols-3 gap-2" aria-label="مبالغ سريعة للإضافة أو السحب">
             {SAVE_PRESETS.map((amount) => (
               <button
                 key={amount}
@@ -178,7 +191,7 @@ export default function PetRoomView() {
               </button>
             ))}
           </div>
-          <div className="mt-2.5 grid grid-cols-[minmax(0,1fr)_5.5rem] items-stretch gap-2">
+          <div className="mt-2.5 grid grid-cols-[minmax(0,1fr)_4.5rem_4.5rem] items-stretch gap-2">
             <div className="relative min-w-0">
               <input
                 type="number"
@@ -201,8 +214,21 @@ export default function PetRoomView() {
             >
               {isSubmitting ? 'جارٍ…' : 'أضف'}
             </button>
+            <button
+              type="button"
+              disabled={isSubmitting || !(Number(saveInput) > 0) || Number(saveInput) > user.savedAmount}
+              onClick={submitWithdrawal}
+              data-testid="pet-withdraw-savings"
+              className="w-full border border-coral/35 bg-coral/10 text-coral font-black px-2 py-2.5 rounded-2xl disabled:bg-white/5 disabled:border-white/10 disabled:text-cream/25 disabled:cursor-not-allowed whitespace-nowrap transition-colors"
+            >
+              {isSubmitting ? 'جارٍ…' : 'اسحب'}
+            </button>
           </div>
           <SaveRewardTag reward={game.lastSaveReward} compact />
+          <p className="mt-2 text-[9px] font-bold leading-relaxed text-cream/45">
+            السحب ينقل المبلغ من المدخرات إلى رصيد الحساب، وقد يؤثر على صحة {petDisplayName} بحسب نسبته من هدفك.
+          </p>
+          {actionError && <p className="mt-2 rounded-xl bg-red-500/10 px-3 py-2 text-center text-[10px] font-bold text-red-300">{actionError}</p>}
         </section>
 
         {/* Growth uses a stage rail so it cannot be mistaken for the financial progress bar. */}
@@ -261,9 +287,9 @@ export default function PetRoomView() {
           className="w-full py-4 rounded-3xl font-bold flex items-center justify-center gap-2 transition-all duration-300 active:scale-[0.98] bg-ink-soft border border-white/10 text-cream shadow-lg disabled:opacity-50"
         >
           <ShieldAlert size={20} className="animate-pulse text-coral" />
-          سحب طارئ ({emergencyShield.usesRemaining} متبقٍ)
+          سحب طارئ من المدخرات ({emergencyShield.usesRemaining} متبقٍ)
         </button>
-        <p className="text-[10px] text-cream/60 mt-3 text-center font-medium">يفعل الدرع مؤقتاً لحماية المرافق من التأثر النفسي عند سحب مبلغ للظروف القاهرة.</p>
+        <p className="text-[10px] text-cream/60 mt-3 text-center font-medium">ينقل المبلغ من المدخرات إلى رصيد الحساب، ويستهلك الدرع لحماية المرافق من أثر السحب.</p>
           </div>
         )}
 
@@ -299,7 +325,8 @@ export default function PetRoomView() {
           });
           if (failed) throw new Error('emergency_failed');
         }}
-        balance={user.balance}
+        savingsBalance={user.savedAmount}
+        accountBalance={user.balance}
         shieldsRemaining={emergencyShield.usesRemaining}
         isSubmitting={isSubmitting}
       />

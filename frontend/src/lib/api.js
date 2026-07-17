@@ -35,6 +35,7 @@ export const api = {
   startSession: () => post('/api/session'),
   salary: (amount, savePercent) => post('/api/simulate/salary', { amount, savePercent }),
   save: (amount) => post('/api/simulate/save', { amount }),
+  withdrawSavings: (amount) => post('/api/simulate/withdraw-savings', { amount }),
   purchase: (amount, category, label) => post('/api/simulate/purchase', { amount, category, label }),
   emergency: (amount, label) => post('/api/simulate/emergency', { amount, label }),
   setGoal: (goalAmount) => post('/api/user/goal', { goalAmount }),

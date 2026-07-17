@@ -24,6 +24,13 @@ const SEED_SAVED_AMOUNT = 1200;
 const SAVE_HEAL_K = 60;
 const SAVE_HEAL_MIN = 8;
 const SAVE_HEAL_MAX = 30;
+// Savings withdrawals move money back to the spending account. Their health
+// impact scales against the personal goal, but stays gentler than the reward
+// for building the same amount of savings: with the default 4000 goal,
+// 100 SAR = -1 health, 500 SAR = -6, 1000 SAR = -13, capped at -25.
+const WITHDRAWAL_PENALTY_K = 50;
+const WITHDRAWAL_PENALTY_MIN = 1;
+const WITHDRAWAL_PENALTY_MAX = 25;
 // In-budget purchases cost NO health: spending inside your own budget is not a
 // failure, so Rafiq never punishes it. Health only ever falls from genuine
 // over-budget spending (the scaled penalty below).
@@ -39,10 +46,14 @@ const PURCHASE_PENALTY_MAX = 25;
 // ── Helpers ──────────────────────────────────────────────
 export const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 
-// Any event that pulls money OUT of balance (purchase, emergency, instant
+// Any event that pulls money OUT of the available account (purchase, instant
 // save) must check this first — real accounts don't go negative.
 export function hasSufficientFunds(state, amount) {
   return amount <= state.user.balance;
+}
+
+export function hasSufficientSavings(state, amount) {
+  return amount <= state.user.savedAmount;
 }
 
 // The 5-state bands live in shared/rafiqIdentity.js — one source for the
@@ -60,7 +71,7 @@ export function initialState() {
       petName: "صقر",
       petType: "falcon",
       income: DEFAULT_INCOME, // SAR/month — swapped live via the Cheat Controller's income profiles
-      goalAmount: 5000,
+      goalAmount: 4000,
       savedAmount: SEED_SAVED_AMOUNT,
       // NXP high-water mark of savedAmount (anti-farming): deposits earn NXP
       // only on the part that pushes savings past this; withdrawals never
@@ -182,6 +193,46 @@ export function applyInstantSave(state, amount) {
   };
 }
 
+// Savings withdrawal → transfer from savings into the available account.
+// The high-water mark deliberately does not fall, preventing withdraw/deposit
+// loops from farming NXP. A shielded emergency uses the same transfer math
+// while suppressing the health impact.
+export function applySavingsWithdrawal(
+  state,
+  { amount, label = "سحب من المدخرات", shielded = false, emergency = false }
+) {
+  const user = {
+    ...state.user,
+    savedAmount: state.user.savedAmount - amount,
+    balance: state.user.balance + amount,
+  };
+  const percentOfGoal = state.user.goalAmount > 0 ? amount / state.user.goalAmount : 0;
+  const healthDelta = shielded
+    ? 0
+    : -clamp(
+        Math.round(percentOfGoal * WITHDRAWAL_PENALTY_K),
+        WITHDRAWAL_PENALTY_MIN,
+        WITHDRAWAL_PENALTY_MAX
+      );
+  const pet = withHealth(state.pet, healthDelta, {
+    animationState: shielded ? "idle" : "sad",
+  });
+  return {
+    ...state,
+    user,
+    pet,
+    meta: { lastEvent: emergency ? "emergency" : "withdrawal" },
+    _aiContext: {
+      category: shielded ? "emergency" : pet.mood,
+      event: emergency ? "emergency" : "withdrawal",
+      amount,
+      label,
+      healthDelta,
+      shielded,
+    },
+  };
+}
+
 // Purchase → within budget = NO health change; over budget = pet gets sick.
 // Goal-secured shield: once savings have met the savings goal, even
 // over-budget spending can no longer hurt the pet — health loss is suppressed
@@ -241,23 +292,21 @@ export function applyCheer(state, { healthDelta = 5, event = "cheer", extra = {}
   };
 }
 
-// Emergency withdrawal → the Shield protects the pet: no health penalty if a use remains.
+// Emergency withdrawal transfers savings into the available account. A shield
+// protects the pet from the normal savings-withdrawal health penalty.
 export function applyEmergency(state, { amount, label = "سحب طارئ" }) {
   const shielded = state.emergencyShield.usesRemaining > 0;
-
-  if (!shielded) {
-    return applyPurchase(state, { amount, category: "emergency", label });
-  }
-
-  const user = { ...state.user, balance: state.user.balance - amount };
-  const emergencyShield = { usesRemaining: state.emergencyShield.usesRemaining - 1 };
-  const pet = withHealth(state.pet, 0, { animationState: "idle" });
+  const transferred = applySavingsWithdrawal(state, {
+    amount,
+    label,
+    shielded,
+    emergency: true,
+  });
+  const emergencyShield = shielded
+    ? { usesRemaining: state.emergencyShield.usesRemaining - 1 }
+    : state.emergencyShield;
   return {
-    ...state,
-    user,
-    pet,
+    ...transferred,
     emergencyShield,
-    meta: { lastEvent: "emergency" },
-    _aiContext: { category: "emergency", event: "emergency", amount, label },
   };
 }

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { useBackendData } from '../lib/useBackendData';
 import { api } from '../lib/api';
 import { CANONICAL_DEMO_ROLE, clearDemoBrowserState } from '../lib/demoReset';
@@ -38,6 +38,8 @@ export function AppDataProvider({ children }) {
   const [isPetted, setIsPetted] = useState(false);
   const [flashColor, setFlashColor] = useState(null);
   const [actionError, setActionError] = useState(null);
+  const [actionNotice, setActionNotice] = useState(null);
+  const dismissActionNotice = useCallback(() => setActionNotice(null), []);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const notificationState = useUserNotifications(activeRole, appUserId);
 
@@ -93,16 +95,30 @@ export function AppDataProvider({ children }) {
 
   // Wraps a backend call: errors surface in the banner; success needs no
   // local mutation — the Firebase listener delivers the new state.
-  const runAction = async (fn) => {
+  const runAction = async (fn, { notifyInsufficientFunds = false } = {}) => {
     setIsSubmitting(true);
     setActionError(null);
+    setActionNotice(null);
     try {
       await fn();
     } catch (err) {
-      setActionError(err.message === 'insufficient_funds' ? 'الرصيد غير كافٍ لإتمام هذه العملية'
-        : err.message === 'invalid_goal' ? 'قيمة الهدف غير صالحة'
-        : err.message === 'invalid_income' ? 'أدخل دخلاً شهرياً صحيحاً'
-        : 'حدث خطأ، حاول مرة أخرى');
+      const code = err.message;
+      const message = code === 'insufficient_funds' ? 'الرصيد غير كافٍ لإتمام هذه العملية'
+        : code === 'insufficient_savings' ? 'المدخرات غير كافية لإتمام هذا السحب'
+        : code === 'savings_exceeds_income' ? 'الادخار الشهري لا يمكن أن يتجاوز الدخل الشهري'
+        : code === 'invalid_amount' ? 'أدخل مبلغًا صحيحًا أكبر من صفر'
+        : code === 'invalid_goal' ? 'قيمة الهدف غير صالحة'
+        : code === 'invalid_income' ? 'أدخل دخلاً شهرياً صحيحاً'
+        : 'حدث خطأ، حاول مرة أخرى';
+
+      setActionError(message);
+      if (code === 'insufficient_funds' && notifyInsufficientFunds) {
+        setActionNotice({
+          id: Date.now(),
+          title: 'الرصيد غير كافٍ',
+          body: 'لا يوجد رصيد كافٍ في الحساب لإضافة هذا المبلغ إلى مدخراتك.',
+        });
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -115,6 +131,7 @@ export function AppDataProvider({ children }) {
   const restartDemo = async () => {
     setRestarting(true);
     setActionError(null);
+    setActionNotice(null);
     try {
       await api.reset();
       clearDemoBrowserState();
@@ -152,7 +169,7 @@ export function AppDataProvider({ children }) {
     nxp, akthrPoints,
     isPetted, handlePetInteraction,
     flashColor,
-    actionError, isSubmitting, runAction,
+    actionError, actionNotice, dismissActionNotice, isSubmitting, runAction,
     isSick, isTired, isHappy, goalProgress,
     budgets, budgetPeriod, savingsPlan, savingsAccountOpened, projectedRollover,
   };

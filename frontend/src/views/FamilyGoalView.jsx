@@ -5,7 +5,6 @@ import { api } from '../lib/api';
 import { runStagedRequest } from '../lib/stagedRequest';
 import RoleSwitch from '../components/ui/RoleSwitch';
 import StagedProgress from '../components/ui/StagedProgress';
-import CountUp from '../components/ui/CountUp';
 import SarAmount from '../components/ui/SarAmount';
 
 export const CONTRIBUTION_STAGES = [
@@ -28,7 +27,7 @@ const avatarOf = (id) => MEMBER_AVATARS[id] || MEMBER_AVATARS.rashid;
 
 export default function FamilyGoalView() {
   const {
-    family, contributionPlan, activeRole, savingsAccountOpened,
+    user, family, contributionPlan, activeRole, savingsAccountOpened,
     setActiveView, runAction, isSubmitting, actionError,
   } = useAppData();
   const [openDetails, setOpenDetails] = useState(false);
@@ -73,7 +72,15 @@ export default function FamilyGoalView() {
   const memberList = Object.entries(members || {})
     .map(([id, member]) => ({ id, ...member }))
     .sort((a, b) => b.contributed - a.contributed);
-  const allocations = visiblePlan?.allocations || null;
+  const rawAllocations = visiblePlan?.allocations || null;
+  const allocationTotal = rawAllocations
+    ? Object.values(rawAllocations).reduce((sum, allocation) => sum + Number(allocation.amount || 0), 0)
+    : 0;
+  const allocations = rawAllocations && (visiblePlan?.remainingToGoal === 0 || allocationTotal > 0)
+    ? rawAllocations
+    : null;
+  const contributionAmount = Number(saveAmount);
+  const contributionTooHigh = Number.isFinite(contributionAmount) && contributionAmount > Number(user?.balance || 0);
 
   const generateContributionPlan = async () => {
     if (planRunning.current) return;
@@ -161,6 +168,10 @@ export default function FamilyGoalView() {
             <h2 className="font-black">ادّخر للهدف</h2>
           </div>
           <p className="text-[11px] text-cream/55 font-bold mb-3">اكتب المبلغ الذي تريد إضافته لهدف العائلة.</p>
+          <div className="mb-3 flex items-center justify-between rounded-xl border border-white/5 bg-black/10 px-3 py-2 text-[10px] font-bold">
+            <span className="text-cream/45">رصيد الحساب المتاح</span>
+            <SarAmount value={user?.balance || 0} className="font-black text-emerald-300" />
+          </div>
           <div className="grid grid-cols-3 gap-2 mb-3">
             {[50, 100, 250].map((preset) => (
               <button
@@ -180,6 +191,7 @@ export default function FamilyGoalView() {
                 type="number"
                 inputMode="numeric"
                 min="1"
+                max={user?.balance || 0}
                 value={saveAmount}
                 onChange={(e) => setSaveAmount(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') contributeToGoal(); }}
@@ -191,12 +203,15 @@ export default function FamilyGoalView() {
             <button
               type="button"
               onClick={contributeToGoal}
-              disabled={isSubmitting || !(Number(saveAmount) > 0)}
+              disabled={isSubmitting || !(contributionAmount > 0) || contributionTooHigh}
               className="w-full bg-coral text-ink font-black px-2 py-3 rounded-2xl shadow-[0_8px_20px_-12px_rgba(232,132,102,0.9)] disabled:bg-white/10 disabled:text-cream/30 disabled:shadow-none disabled:cursor-not-allowed whitespace-nowrap transition-colors"
             >
               {isSubmitting ? 'جارٍ…' : 'أضف'}
             </button>
           </div>
+          {contributionTooHigh && (
+            <p className="mt-2 text-center text-[10px] font-bold text-red-300">المبلغ أعلى من رصيد حسابك المتاح.</p>
+          )}
         </section>
 
         {actionError && <p className="bg-red-500/10 text-red-300 rounded-2xl p-3 text-sm font-bold text-center">{actionError}</p>}
@@ -204,7 +219,7 @@ export default function FamilyGoalView() {
         <section>
           <div className="flex items-center justify-between mb-3 px-1">
             <div className="flex items-center gap-2"><Sparkles size={16} className="text-violet" /><h2 className="font-black">خطة المساهمة</h2></div>
-            {visiblePlan && <span className="text-xs text-violet font-black"><SarAmount value={visiblePlan.monthlyRequired} /> شهريًا</span>}
+            {visiblePlan && visiblePlan.status !== 'completed' && allocations && <span className="text-xs text-violet font-black"><SarAmount value={visiblePlan.monthlyRequired} /> شهريًا</span>}
           </div>
           {planStage >= 0 ? (
             <div className="bg-violet/15 border border-violet/30 rounded-3xl p-5" aria-busy="true">
@@ -215,6 +230,12 @@ export default function FamilyGoalView() {
             <div className="bg-red-500/10 border border-red-400/20 rounded-3xl p-5 text-center" role="alert">
               <p className="text-sm text-red-200 font-bold">{planError}</p>
               <button type="button" onClick={generateContributionPlan} className="mt-4 bg-white/10 text-cream font-black px-5 py-2.5 rounded-2xl inline-flex items-center gap-2"><RefreshCw size={15} /> إعادة المحاولة</button>
+            </div>
+          ) : visiblePlan?.status === 'completed' ? (
+            <div className="rounded-3xl border border-emerald-400/25 bg-emerald-400/10 p-5 text-center">
+              <Trophy size={28} className="mx-auto text-emerald-300" />
+              <p className="mt-2 font-black text-emerald-200">اكتمل الهدف العائلي</p>
+              <p className="mt-1 text-xs font-bold text-cream/55">لا توجد مساهمة شهرية متبقية.</p>
             </div>
           ) : !allocations ? (
             <div className="bg-violet/15 border border-violet/30 rounded-3xl p-5 text-center">
@@ -233,9 +254,9 @@ export default function FamilyGoalView() {
                       <span className={`w-10 h-10 rounded-full grid place-items-center font-black ${avatarOf(member.id).bg} ${avatarOf(member.id).text}`}>{avatarOf(member.id).init}</span>
                       <div className="flex-1 min-w-0">
                         <p className="font-black text-sm">{member.name}{isSelf && <span className="mr-2 text-[9px] text-coral">أنت</span>}</p>
-                        <p className="text-[11px] text-cream/55 font-bold">ساهم حتى الآن بـ <SarAmount value={member.contributed} /></p>
+                        <p className="text-[11px] text-cream/55 font-bold">المساهمة الشهرية المقترحة</p>
                       </div>
-                      <SarAmount className="text-coral font-black text-sm"><CountUp value={allocation.amount} decimals={0} duration={0.65} startFrom={0} /></SarAmount>
+                      <SarAmount value={allocation.amount} className="text-coral font-black text-sm" />
                     </div>
                     {isSelf ? (
                       <div className="mt-2">

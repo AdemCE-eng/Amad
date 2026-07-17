@@ -144,12 +144,28 @@ export const VOICE = {
       "خرجنا عن الخطة نتفة، نرجع نضبطها مع بعض 💛",
     ],
   },
+  withdrawal: {
+    promptHint: "حوّل المستخدم مبلغًا من مدخراته إلى رصيد الحساب، فانخفضت صحة الصقر بشكل متدرج حسب نسبة السحب من هدف الادخار. عبّر بلطف عن التأثر دون لوم.",
+    lines: [
+      "حوّلنا جزء من المدخرات للحساب، تأثرت شوي بس نقدر نبنيها من جديد 🌱",
+      "نقصت مدخراتنا شوي ورجعت للحساب، وأنا معك نرتبها بهدوء 💛",
+      "السحب أثّر علي شوي، بس كل خطوة توفير جاية ترجع طاقتي 💚",
+    ],
+  },
   emergency: {
     promptHint: "سحب المستخدم مبلغاً لحالة طارئة ودرع الطوارئ يحميك. طمئنه أنك بخير.",
     lines: [
       "الطوارئ لها أحكامها وأنا بخير، لا تشيل هم 🛡️",
       "درع الأمان حاماني، ركّز على اللي يهمك 💙",
       "خذ اللي تحتاجه، صحتي بأمان والأزمات تعدّي 🤗",
+    ],
+  },
+  emergency_unshielded: {
+    promptHint: "حوّل المستخدم مبلغًا طارئًا من مدخراته إلى الحساب ولم يكن هناك درع متبقٍ، فتأثرت صحة الصقر. عبّر بتفهم وبدون لوم.",
+    lines: [
+      "حوّلنا اللي نحتاجه للحساب، تأثرت شوي بس الطوارئ لها أحكامها 💛",
+      "ما كان عندنا درع هالمرة، بس نعدّي الظرف ونرجع نبنيها سوا 🌱",
+      "المدخرات ساعدتنا وقت الحاجة، وأنا معك نرجع نقويها بهدوء 🤍",
     ],
   },
   streak_up: {
@@ -207,7 +223,8 @@ export function selectVoiceKey(ctx = {}) {
   switch (ctx.event) {
     case "salary": return "salary";
     case "save": return "save";
-    case "emergency": return "emergency";
+    case "withdrawal": return "withdrawal";
+    case "emergency": return ctx.shielded ? "emergency" : "emergency_unshielded";
     case "purchase":
       return ctx.goalSecured ? "goal_secured" : ctx.overBudget ? "purchase_over" : "purchase_ok";
     case "streak_up": return "streak_up";

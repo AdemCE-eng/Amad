@@ -18,7 +18,8 @@ test('family contribution calculation stages a fresh immediate backend request',
   assert.match(family, /if \(planRunning\.current\) return/);
   assert.match(family, /setVisiblePlan\(null\)/);
   assert.match(family, /response\.contributionPlan/);
-  assert.match(family, /startFrom=\{0\}/);
+  assert.doesNotMatch(family, /startFrom=\{0\}/);
+  assert.match(family, /المساهمة الشهرية المقترحة/);
   assert.match(family, /إعادة المحاولة/);
   assert.match(family, /إعادة حساب الخطة/);
 });

@@ -14,6 +14,7 @@ import BottomNav from './components/ui/BottomNav';
 import CelebrationOverlay from './components/ui/CelebrationOverlay';
 import RewardNotice from './components/ui/RewardNotice';
 import OfferWaitNotice from './components/ui/OfferWaitNotice';
+import ActionNotice from './components/ui/ActionNotice';
 
 // iOS-style status bar rendered inside the device screen (like landing-page
 // phone mockups): time on the right in RTL, signal/wifi/battery on the left.
@@ -81,6 +82,7 @@ function AppShell() {
                 )}
                 <RewardNotice />
                 <OfferWaitNotice />
+                <ActionNotice />
             </React.Fragment>
           </div>
         </div>

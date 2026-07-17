@@ -68,7 +68,7 @@ router.post("/family/goal", async (req, res, next) => {
 // POST /api/family/contribute  { memberId, amount, source? }
 router.post("/family/contribute", async (req, res, next) => {
   try {
-    const { family } = await readFamilyNodes();
+    const [{ family }, state] = await Promise.all([readFamilyNodes(), readState()]);
     const amount = Number(req.body.amount);
     const result = applyFamilyContribution(family, {
       memberId: req.body.memberId,
@@ -76,8 +76,42 @@ router.post("/family/contribute", async (req, res, next) => {
       source: req.body.source,
     });
     if (result.error) return res.status(400).json({ ok: false, error: result.error });
-    await db.ref("/family").set(result.family);
-    res.json({ ok: true, family: result.family, progressPct: familyProgressPct(result.family), event: result.event });
+    if (amount > Number(state.user.balance || 0)) {
+      return res.status(400).json({
+        ok: false,
+        error: "insufficient_funds",
+        message: "الرصيد غير كافٍ للمساهمة بهذا المبلغ.",
+      });
+    }
+
+    const user = { ...state.user, balance: state.user.balance - amount };
+    const contributionPlan = generateContributionPlan(result.family);
+    const transactionKey = db.ref("/transactions").push().key;
+    const memberName = result.family.members[req.body.memberId]?.name || "العائلة";
+
+    // The family total, the member total, and the account deduction move in
+    // one multi-location write so the UI can never show a contribution that
+    // did not leave the contributor's available balance.
+    await db.ref("/").update({
+      "/family": result.family,
+      "/contributionPlan": contributionPlan,
+      "/user/balance": user.balance,
+      [`/transactions/${transactionKey}`]: {
+        type: "family-contribution",
+        amount,
+        category: "family-goal",
+        label: `مساهمة ${memberName} في الهدف العائلي`,
+        timestamp: result.event.at,
+      },
+    });
+    res.json({
+      ok: true,
+      family: result.family,
+      user,
+      contributionPlan,
+      progressPct: familyProgressPct(result.family),
+      event: result.event,
+    });
   } catch (e) {
     next(e);
   }

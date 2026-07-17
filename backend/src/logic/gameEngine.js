@@ -134,11 +134,17 @@ export function applyGameEffects(state, ctx) {
   let user = state.user;
 
   const today = { ...game.today };
-  if (ctx.event === "purchase" || ctx.event === "emergency") today.spent += ctx.amount || 0;
+  if (ctx.event === "purchase") today.spent += ctx.amount || 0;
   if (ctx.event === "salary" || ctx.event === "save") today.saved += ctx.savedPortion ?? ctx.amount ?? 0;
   if (ctx.overBudget) today.overBudget = true;
   if (ctx.event === "purchase" && ctx.category === "coffee") today.coffees += 1;
   game = { ...game, today };
+
+  // A withdrawal is not a save receipt. Clear the previous +NXP banner so a
+  // stale reward can never appear beside a newly reduced savings balance.
+  if (ctx.event === "withdrawal" || ctx.event === "emergency") {
+    game = { ...game, lastSaveReward: { nxp: 0, pctOfIncome: 0, at: 0 } };
+  }
 
   if (game.activeChallenge?.status === "active" && ctx.event === "purchase" && ctx.category === "coffee") {
     game = { ...game, activeChallenge: { ...game.activeChallenge, used: game.activeChallenge.used + 1 } };

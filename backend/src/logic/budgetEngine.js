@@ -101,16 +101,19 @@ export function suggestSavingsPlan(monthlyIncome) {
 export function applyPlanToUser(user, { monthlyIncome, budgets, monthlyTarget, goalAmount } = {}) {
   const plan = suggestSavingsPlan(monthlyIncome);
   const nextBudgets = budgets && Object.keys(budgets).length ? budgets : plan.budgets;
-  const target = Number.isFinite(monthlyTarget) && monthlyTarget > 0
+  const requestedTarget = Number.isFinite(monthlyTarget) && monthlyTarget > 0
     ? Math.round(monthlyTarget)
     : plan.monthlyTarget;
+  const target = Math.min(plan.income, requestedTarget);
   const goal = Number.isFinite(goalAmount) && goalAmount > 0
     ? Math.round(goalAmount)
     : Math.max(1, target * 12);
   const ratePct = plan.income > 0 ? Math.round((target / plan.income) * 100) : plan.ratePct;
   return {
     ...user,
+    income: plan.income,
     monthlyIncome: plan.income,
+    balance: plan.income,
     goalAmount: goal,                 // pet growth is measured against this
     savingsAccountOpened: true,
     savingsPlan: {

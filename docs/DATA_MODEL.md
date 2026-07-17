@@ -14,7 +14,7 @@ directly to the DB.
     "username": "550e8400-e29b-41d4-a716-446655440000",
     "name": "راشد",
     "income": 8000,               // monthly income (SAR) — NXP save rewards scale to % of this
-    "goalAmount": 5000,           // the user's personal savings goal (SAR)
+    "goalAmount": 4000,           // the user's personal savings goal (SAR)
     "savedAmount": 1200,          // progress toward the goal (SAR)
     "allTimeHighBalance": 1200,   // high-water mark of savedAmount (anti-farming): deposits
                                   //   earn NXP only above this; withdrawals never lower it
@@ -37,7 +37,7 @@ directly to the DB.
 
   "transactions": {
     "<pushId>": {
-      "type": "purchase",      // purchase | salary | save | emergency
+      "type": "purchase",      // purchase | salary | save | withdrawal | emergency | family-contribution
       "amount": 50,            // SAR
       "category": "coffee",
       "label": "قهوة",         // Arabic display label
