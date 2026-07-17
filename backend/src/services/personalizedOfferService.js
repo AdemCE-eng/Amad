@@ -1,23 +1,36 @@
-import { FROZEN_RECOMMENDATION_OUTPUTS } from "../mocks/frozenRecommendationOutputs.js";
+import { buildPredictedOffers } from "../logic/offerEngine.js";
 
 const ESSENTIAL_CATEGORIES = new Set(["pharmacy", "grocery", "medicine", "emergency_transport", "mandatory_bill", "health"]);
 const USER_ID_PATTERN = /^[a-z0-9_-]{1,64}$/i;
-function deterministicFallback(userId, reason) {
-  const recommendations = FROZEN_RECOMMENDATION_OUTPUTS
-    .map((item) => ({ ...item, userId }))
-    .sort((a, b) => Number(Boolean(b.eligible)) - Number(Boolean(a.eligible))
-      || b.personalizedScore - a.personalizedScore
-      || a.merchantId.localeCompare(b.merchantId));
+const CANONICAL_FALLBACK_MERCHANT = "هاف مليون";
+const CANONICAL_FALLBACK_PROBABILITY = 0.72;
 
-  return {
-    ok: true,
-    userId,
-    recommendations,
-    source: "deterministic-fallback",
-    fallbackReason: reason,
-    models: null,
-    fixture: { id: "evaluated-recommendations-v1", userId: "rashid" },
-  };
+function deterministicFallback(userId, reason, now = Date.now()) {
+  const recommendations = Object.values(buildPredictedOffers(now))
+    .filter((offer) => !ESSENTIAL_CATEGORIES.has(offer.category))
+    .sort((a, b) => b.probability - a.probability || a.id.localeCompare(b.id))
+    .slice(0, 3)
+    .map((offer) => ({
+      userId,
+      merchantId: offer.id,
+      merchant: offer.merchant,
+      merchantNameAr: offer.merchant,
+      category: offer.category,
+      offerProbability: offer.merchant === CANONICAL_FALLBACK_MERCHANT
+        ? CANONICAL_FALLBACK_PROBABILITY
+        : offer.probability / 100,
+      purchaseProbability: null,
+      personalizedScore: null,
+      windowDays: offer.windowDays,
+      estimatedSavingSar: offer.potentialSaving,
+      occasion: offer.occasion,
+      action: "wait_for_offer",
+      explanation: offer.basis,
+      reasons: [offer.basis],
+      disclaimer: "توقع تجريبي غير مضمون — تعذر استخدام نموذج التخصيص، فعُرض مسار نديم الثابت.",
+      dataLabel: "MOCK deterministic merchant-campaigns",
+    }));
+  return { ok: true, userId, recommendations, source: "deterministic-fallback", fallbackReason: reason, models: null };
 }
 
 function validRecommendation(value) {
@@ -42,9 +55,7 @@ export function validateMlResponse(payload) {
   if (!payload.recommendations.every(validRecommendation)) return null;
   return payload.recommendations
     .filter((item) => !item.isEssential && !ESSENTIAL_CATEGORIES.has(item.category))
-    .sort((a, b) => Number(Boolean(b.eligible)) - Number(Boolean(a.eligible))
-      || b.personalizedScore - a.personalizedScore
-      || a.merchantId.localeCompare(b.merchantId));
+    .sort((a, b) => b.personalizedScore - a.personalizedScore || a.merchantId.localeCompare(b.merchantId));
 }
 
 // Safe operator-facing status derived from the same service result used by
@@ -66,7 +77,7 @@ export function recommendationEngineStatus(result) {
 export function createPersonalizedOfferService({
   enabled = process.env.USE_ML_SERVICE === "true",
   baseUrl = process.env.ML_SERVICE_URL || "http://127.0.0.1:8001",
-  timeoutMs = Number(process.env.ML_SERVICE_TIMEOUT_MS || 10000),
+  timeoutMs = Number(process.env.ML_SERVICE_TIMEOUT_MS || 3000),
   fetchImpl = globalThis.fetch,
   fallback = deterministicFallback,
 } = {}) {
@@ -78,7 +89,7 @@ export function createPersonalizedOfferService({
     const timer = setTimeout(() => controller.abort(), Math.max(50, timeoutMs));
     try {
       // Data minimization: the request contains only the pseudonymous ID in the path.
-      const response = await fetchImpl(`${baseUrl.replace(/\/$/, "")}/v1/users/${encodeURIComponent(userId)}/recommendations?includeSuppressed=true`, {
+      const response = await fetchImpl(`${baseUrl.replace(/\/$/, "")}/v1/users/${encodeURIComponent(userId)}/recommendations`, {
         method: "GET",
         headers: { Accept: "application/json" },
         signal: controller.signal,

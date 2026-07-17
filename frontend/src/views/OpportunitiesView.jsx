@@ -4,7 +4,6 @@ import { useAppData } from '../context/AppDataContext';
 import { api } from '../lib/api';
 import { runStagedRequest } from '../lib/stagedRequest';
 import StagedProgress from '../components/ui/StagedProgress';
-import Mascot from '../components/mascot/Mascot';
 
 export const ANALYSIS_STEPS = [
   'نقرأ أنماط مشترياتك',
@@ -21,22 +20,6 @@ function actionLabel(action) {
   return 'غير مناسب حاليًا';
 }
 
-function formatPurchaseSuitability(value) {
-  return Number.isFinite(value) ? `${new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 }).format(value * 100)}٪` : 'مناسبة';
-}
-
-function formatOfferProbability(value) {
-  return `${new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 }).format(value * 100)}٪`;
-}
-
-function formatPersonalizedScore(value) {
-  return Number.isFinite(value) ? `${new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 }).format(value * 100)}٪` : '—';
-}
-
-function formatSaving(value) {
-  return new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 }).format(value);
-}
-
 function OpportunityCard({ opportunity, featured, activeRole, isSubmitting, runAction }) {
   const status = opportunity.persisted?.status || 'pending';
   return (
@@ -49,15 +32,15 @@ function OpportunityCard({ opportunity, featured, activeRole, isSubmitting, runA
           <p className="font-black text-cream">{opportunity.merchantNameAr}</p>
           <p className="text-[11px] text-coral font-bold mt-0.5">{opportunity.occasion}</p>
         </div>
-        <span className="bg-coral/15 text-coral text-[10px] font-black px-2.5 py-1 rounded-full shrink-0">
-          عرض {formatOfferProbability(opportunity.offerProbability)}
+        <span className="bg-coral/15 text-coral text-xs font-black px-2.5 py-1 rounded-full shrink-0">
+          {Math.round(opportunity.offerProbability * 100)}٪
         </span>
       </div>
 
       <div className="grid grid-cols-3 gap-2 mt-3">
-        <div className="bg-white/5 rounded-xl p-2 text-center"><span className="block text-[9px] text-cream/45">ملاءمة الشراء</span><strong className="text-xs">{formatPurchaseSuitability(opportunity.purchaseProbability)}</strong></div>
-        <div className="bg-white/5 rounded-xl p-2 text-center"><span className="block text-[9px] text-cream/45">التوفير</span><strong className="text-xs"><span dir="ltr">{formatSaving(opportunity.estimatedSavingSar)} ر.س</span></strong></div>
-        <div className="bg-white/5 rounded-xl p-2 text-center"><span className="block text-[9px] text-cream/45">النتيجة الشخصية</span><strong className="text-xs text-violet">{formatPersonalizedScore(opportunity.personalizedScore)}</strong></div>
+        <div className="bg-white/5 rounded-xl p-2 text-center"><span className="block text-[9px] text-cream/45">ملاءمة الشراء</span><strong className="text-xs">{Math.round(opportunity.purchaseProbability * 100)}٪</strong></div>
+        <div className="bg-white/5 rounded-xl p-2 text-center"><span className="block text-[9px] text-cream/45">التوفير</span><strong className="text-xs">{opportunity.estimatedSavingSar} ر.س</strong></div>
+        <div className="bg-white/5 rounded-xl p-2 text-center"><span className="block text-[9px] text-cream/45">النافذة</span><strong className="text-xs">{opportunity.windowDays} أيام</strong></div>
       </div>
 
       <p className="text-[11px] text-cream/60 leading-relaxed mt-3">{opportunity.explanation}</p>
@@ -66,10 +49,10 @@ function OpportunityCard({ opportunity, featured, activeRole, isSubmitting, runA
       <div className="mt-3">
         {status === 'pending' && activeRole === 'rashid' && opportunity.action === 'wait_for_offer' && (
           <div className="grid grid-cols-[1fr_auto] gap-2">
-            <button disabled={isSubmitting} onClick={() => runAction(() => api.decideOffer(opportunity.offerId, 'wait', activeRole))} className="bg-coral text-ink font-black text-sm py-2.5 rounded-2xl disabled:opacity-50">
+            <button disabled={isSubmitting} onClick={() => runAction(() => api.decideOffer(opportunity.offerId, 'wait'))} className="bg-coral text-ink font-black text-sm py-2.5 rounded-2xl disabled:opacity-50">
               أنتظر العرض المتوقع
             </button>
-            <button disabled={isSubmitting} onClick={() => runAction(() => api.decideOffer(opportunity.offerId, 'ignore', activeRole))} className="bg-white/5 text-cream/60 font-bold text-xs px-3 rounded-2xl disabled:opacity-50">
+            <button disabled={isSubmitting} onClick={() => runAction(() => api.decideOffer(opportunity.offerId, 'ignore'))} className="bg-white/5 text-cream/60 font-bold text-xs px-3 rounded-2xl disabled:opacity-50">
               تجاهل
             </button>
           </div>
@@ -85,18 +68,14 @@ function OpportunityCard({ opportunity, featured, activeRole, isSubmitting, runA
 
 export default function OpportunitiesView() {
   const {
-    opportunityResult, setOpportunityResult, offers, activeRole, user, game,
+    opportunityResult, setOpportunityResult, offers, activeRole,
     savingsAccountOpened, setActiveView, runAction, isSubmitting,
   } = useAppData();
   const [analysisStep, setAnalysisStep] = useState(-1);
   const [analysisError, setAnalysisError] = useState(null);
-  const [analysisCompleting, setAnalysisCompleting] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const running = useRef(false);
   const runId = useRef(0);
-  const petName = user?.petName || 'صقر';
-  const petStage = game?.stage ?? 0;
-  const petEquipped = game?.equipped ?? null;
 
   useEffect(() => () => { runId.current += 1; running.current = false; }, []);
 
@@ -106,7 +85,6 @@ export default function OpportunitiesView() {
     const currentRun = ++runId.current;
     setOpportunityResult(null);
     setAnalysisError(null);
-    setAnalysisCompleting(false);
     setExpanded(false);
     setAnalysisStep(0);
     try {
@@ -116,20 +94,11 @@ export default function OpportunitiesView() {
         minimumMs: ANALYSIS_MIN_MS,
         onStage: (index) => { if (runId.current === currentRun) setAnalysisStep(index); },
       });
-      if (runId.current === currentRun) {
-        setAnalysisCompleting(true);
-        setAnalysisStep(ANALYSIS_STEPS.length - 1);
-        await new Promise((resolve) => setTimeout(resolve, 900));
-      }
       if (runId.current === currentRun) setOpportunityResult(result);
     } catch {
       if (runId.current === currentRun) setAnalysisError('تعذر إكمال التحليل. حاول مرة أخرى.');
     } finally {
-      if (runId.current === currentRun) {
-        setAnalysisCompleting(false);
-        setAnalysisStep(-1);
-        running.current = false;
-      }
+      if (runId.current === currentRun) { setAnalysisStep(-1); running.current = false; }
     }
   };
 
@@ -147,14 +116,10 @@ export default function OpportunitiesView() {
     );
   }
 
-  const rankedOpportunities = (opportunityResult?.recommendations || []).map((item) => ({
+  const opportunities = (opportunityResult?.recommendations || []).map((item) => ({
     ...item,
     persisted: offers?.predicted?.[item.offerId] || null,
   }));
-  // The backend already returns the recommendation engine's personalized
-  // order. Preserve it exactly; presentation diversity must never reshuffle
-  // model output and make a lower-scored merchant appear more relevant.
-  const opportunities = rankedOpportunities.slice(0, 6);
   const best = opportunities[0];
   const additional = opportunities.slice(1);
   const visibleAdditional = expanded ? additional : additional.slice(0, 3);
@@ -167,54 +132,25 @@ export default function OpportunitiesView() {
       </header>
 
       <div className="px-5 pb-28 space-y-5">
-        {!analysisError && (
-          <section
-            className={`rounded-3xl border p-4 transition-colors duration-500 ${analysisStep >= 0 ? 'bg-gradient-to-l from-violet/15 to-ink-card border-violet/25' : opportunityResult ? 'bg-gradient-to-l from-emerald-400/10 to-ink-card border-emerald-400/20' : 'bg-gradient-to-l from-coral/15 to-ink-card border-coral/25'}`}
-            aria-busy={analysisStep >= 0}
-            data-testid="opportunity-pet-guide"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-[4.75rem] h-[4.75rem] rounded-2xl bg-cream/95 grid place-items-center shrink-0 overflow-hidden">
-                <Mascot
-                  emotion={analysisStep >= 0 ? (analysisCompleting ? 'celebrating' : 'thinking') : opportunityResult ? 'happy' : 'idle'}
-                  stage={petStage}
-                  equipped={petEquipped}
-                  size={72}
-                  track={analysisStep < 0 && !opportunityResult}
-                />
-              </div>
-              <div className="min-w-0 flex-1 text-right">
-                <div className="flex items-center justify-between gap-2">
-                  <p className={`text-[10px] font-black ${analysisStep >= 0 ? 'text-violet' : opportunityResult ? 'text-emerald-300' : 'text-coral'}`}>{petName} · مساعد التوقع</p>
-                  {opportunityResult?.source === 'ml-service' && <span className="shrink-0 rounded-full bg-emerald-400/15 px-2 py-1 text-[8px] font-black text-emerald-300">ML مباشر</span>}
-                </div>
-                <h2 className="font-black text-sm mt-0.5">
-                  {analysisCompleting ? 'اكتمل التحليل!' : analysisStep >= 0 ? `${petName} يفكر الآن…` : opportunityResult ? `وجد ${opportunities.length} فرص مناسبة` : 'اكتشف أفضل فرصة لك'}
-                </h2>
-                <p className="text-[10px] text-cream/50 font-bold leading-relaxed mt-1">
-                  {analysisCompleting ? 'يرتب النتائج ويجهز أفضل فرصة لك.' : analysisStep >= 0 ? 'يقارن بياناتك بنتائج نموذج العروض والشراء.' : opportunityResult ? 'مرتبة حسب نتيجة النموذج وملاءمة ميزانيتك.' : 'يحلل مشترياتك والمواسم وحملات التجار.'}
-                </p>
-              </div>
-            </div>
+        {!opportunityResult && analysisStep === -1 && !analysisError && (
+          <section className="bg-gradient-to-l from-coral/15 to-ink-card border border-coral/25 rounded-3xl p-6 text-center">
+            <Sparkles size={30} className="mx-auto text-coral mb-3" />
+            <h2 className="font-black text-lg">اكتشف أفضل فرصة لك</h2>
+            <p className="text-sm text-cream/60 mt-2 leading-relaxed">تحليل جديد لنمط مشترياتك والمواسم والحملات السابقة.</p>
+            <button type="button" onClick={runAnalysis} className="mt-5 bg-coral text-ink font-black px-5 py-3 rounded-2xl inline-flex items-center gap-2"><Search size={16} /> حلّل فرص التوفير</button>
+          </section>
+        )}
 
-            {!opportunityResult && analysisStep === -1 && (
-              <button type="button" onClick={runAnalysis} className="mt-4 w-full bg-coral text-ink font-black px-4 py-3 rounded-2xl inline-flex items-center justify-center gap-2"><Search size={16} /> حلّل فرص التوفير</button>
-            )}
-
-            {analysisStep >= 0 && (
-              <div className="mt-4 border-t border-white/5 pt-4">
-                <StagedProgress
-                  steps={ANALYSIS_STEPS}
-                  activeIndex={analysisStep}
-                  testId="analysis-progress"
-                  showStageCount
-                  supportingText={analysisCompleting ? 'اكتمل التحليل — لحظة ونجهز النتائج' : 'نحلل بياناتك ونقارن الفرص المتاحة'}
-                />
-                <div className={`mt-4 w-full rounded-2xl py-2.5 text-center text-xs font-black transition-colors ${analysisCompleting ? 'bg-emerald-400/15 text-emerald-300' : 'bg-coral/20 text-coral'}`}>
-                  {analysisCompleting ? 'تم العثور على النتائج ✓' : 'جارٍ تحليل الفرص…'}
-                </div>
-              </div>
-            )}
+        {analysisStep >= 0 && (
+          <section className="bg-ink-card rounded-3xl p-5" aria-busy="true">
+            <StagedProgress
+              steps={ANALYSIS_STEPS}
+              activeIndex={analysisStep}
+              testId="analysis-progress"
+              showStageCount
+              supportingText="نحلل بياناتك ونقارن الفرص المتاحة"
+            />
+            <button type="button" disabled className="mt-4 w-full bg-coral/40 text-cream/60 font-black py-2.5 rounded-2xl cursor-wait">جارٍ تحليل الفرص…</button>
           </section>
         )}
         {analysisError && (
@@ -228,9 +164,6 @@ export default function OpportunitiesView() {
 
         {best && (
           <section data-testid="best-opportunity">
-            <div className="mb-3 rounded-2xl border border-white/10 bg-white/5 px-3 py-2.5 text-[10px] font-bold leading-relaxed text-cream/55">
-              <strong className="text-cream">أفق التوقع: خلال {best.windowDays} أيام.</strong> محرك العروض يقدّر الحملة والتوفير، ثم يرتبها محرك التوصية حسب سلوكك وميزانيتك.
-            </div>
             <div className="flex items-center gap-2 mb-3 px-1"><Sparkles size={16} className="text-coral" /><h2 className="font-black">أفضل فرصة لك</h2></div>
             <OpportunityCard opportunity={best} featured activeRole={activeRole} isSubmitting={isSubmitting} runAction={runAction} />
           </section>
