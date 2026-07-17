@@ -13,7 +13,7 @@ export const ACHIEVEMENTS = {
 export const SHOP_ITEMS = {
   sunglasses: { name: 'نظارة شمسية', price: 50, icon: '🕶️' },
   shemagh: { name: 'شماغ وعقال', price: 100, icon: '🔴' },
-  falcon_hood: { name: 'تاج ذهبي', price: 150, icon: '👑' },
+  falcon_hood: { name: 'تاج الصقر الملكي', price: 150, icon: '✨', description: 'تاج ذهبي منحني يثبت بانسيابية فوق الرأس.' },
 };
 
 // Mirrors backend/src/logic/gameEngine.js so celebration copy is resolved from

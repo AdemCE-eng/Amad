@@ -1,53 +1,42 @@
-// seed.js — inject mock user, pet, and synthetic Arabic POS transactions.
+// seed.js — create one isolated UUID demo record. New browser visitors are
+// provisioned the same way through POST /api/session.
 // Run with: npm run seed
-import { db } from "./firebase.js";
-import { initialState } from "./logic/petEngine.js";
-import { initialFamilyState } from "./logic/familyEngine.js";
-import { initialOffersState, initialLoyaltyState } from "./logic/offerEngine.js";
-
-// Synthetic Arabic POS history (no real customer data — safe for the demo).
-// The PM's larger dataset can be dropped in here later using the same shape.
-const now = Date.now();
-const hour = 3600_000;
-const SEED_TRANSACTIONS = [
-  { type: "salary", amount: 8000, category: "income", label: "إيداع راتب", timestamp: now - 120 * hour },
-  { type: "purchase", amount: 45, category: "coffee", label: "قهوة الصباح", timestamp: now - 90 * hour },
-  { type: "purchase", amount: 320, category: "groceries", label: "بقالة", timestamp: now - 72 * hour },
-  { type: "purchase", amount: 55, category: "transport", label: "بنزين", timestamp: now - 48 * hour },
-  { type: "purchase", amount: 210, category: "dining", label: "مطعم", timestamp: now - 30 * hour },
-  { type: "purchase", amount: 50, category: "coffee", label: "قهوة", timestamp: now - 6 * hour },
-];
+import { randomUUID } from "node:crypto";
+import { adminDb } from "./firebase.js";
+import { freshUserRecord, normalizeUserId } from "./services/userStore.js";
 
 async function seed() {
-  const fresh = initialState();
-  const family = initialFamilyState();
-  await db.ref("/").set({
-    user: fresh.user,
-    pet: fresh.pet,
-    emergencyShield: fresh.emergencyShield,
-    game: fresh.game,
-    family,
-    offers: initialOffersState(),
-    loyalty: initialLoyaltyState(),
+  const userId = normalizeUserId(process.env.NADEEM_SEED_USER_ID) || randomUUID();
+  const record = freshUserRecord(userId);
+
+  await adminDb.ref("/users").set({ [userId]: record });
+
+  // Remove the retired single-user layout so Firebase only shows the current
+  // /users/{uuid} model after an explicit seed/reset operation.
+  await adminDb.ref("/").update({
+    user: null,
+    pet: null,
+    emergencyShield: null,
+    game: null,
+    family: null,
+    offers: null,
+    loyalty: null,
     contributionPlan: null,
     notifications: null,
-    meta: { lastEvent: "idle" },
+    userNotifications: null,
+    meta: null,
     transactions: null,
   });
 
-  for (const t of SEED_TRANSACTIONS) {
-    await db.ref("/transactions").push(t);
-  }
-
   console.log("🌱 Seed complete:");
-  console.log(`   user: ${fresh.user.name}  goal=${fresh.user.goalAmount}  saved=${fresh.user.savedAmount}`);
-  console.log(`   pet:  health=${fresh.pet.health}  mood=${fresh.pet.mood}`);
-  console.log(`   transactions: ${SEED_TRANSACTIONS.length}`);
-  console.log(`   family: ${family.goalTitle}  goal=${family.goalAmount}  saved=${family.savedAmount}  members=${Object.keys(family.members).length}`);
+  console.log(`   UUID username: ${userId}`);
+  console.log(`   path: /users/${userId}`);
+  console.log(`   pet: health=${record.pet.health} mood=${record.pet.mood}`);
+  console.log(`   transactions: ${Object.keys(record.transactions || {}).length}`);
   process.exit(0);
 }
 
-seed().catch((e) => {
-  console.error("❌ Seed failed:", e);
+seed().catch((error) => {
+  console.error("❌ Seed failed:", error);
   process.exit(1);
 });

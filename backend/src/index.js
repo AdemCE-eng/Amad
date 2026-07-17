@@ -10,6 +10,8 @@ import familyRoutes from "./routes/family.js";
 import offersRoutes from "./routes/offers.js";
 import budgetRoutes from "./routes/budget.js";
 import mlRoutes from "./routes/ml.js";
+import userRoutes from "./routes/users.js";
+import { requireUserScope } from "./services/userStore.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 3000;
@@ -19,7 +21,13 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// API
+// Session provisioning and controller inventory intentionally sit outside a
+// user scope. Every product endpoint below requires a UUID and is transparently
+// rooted under /users/{uuid}.
+app.use("/api", userRoutes);
+app.use("/api", requireUserScope);
+
+// User-scoped API
 app.use("/api", simulateRoutes);
 app.use("/api", gameRoutes);
 app.use("/api", familyRoutes);

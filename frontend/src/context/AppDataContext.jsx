@@ -3,6 +3,7 @@ import { useBackendData } from '../lib/useBackendData';
 import { api } from '../lib/api';
 import { CANONICAL_DEMO_ROLE, clearDemoBrowserState } from '../lib/demoReset';
 import { useUserNotifications } from '../lib/useUserNotifications';
+import { getOrCreateUserId } from '../lib/userIdentity';
 
 // Demo-only role switch (no auth, no permissions) — which family member the
 // UI is "acting as". Persisted so a refresh keeps the same role.
@@ -15,7 +16,8 @@ const LEGACY_ROLE_KEY = 'namo_active_role';
 const AppDataContext = createContext(null);
 
 export function AppDataProvider({ children }) {
-  const backend = useBackendData();
+  const [appUserId] = useState(() => getOrCreateUserId());
+  const backend = useBackendData(appUserId);
   const { user, pet } = backend;
 
   const [restarting, setRestarting] = useState(false);
@@ -38,7 +40,14 @@ export function AppDataProvider({ children }) {
   const [flashColor, setFlashColor] = useState(null);
   const [actionError, setActionError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const notificationState = useUserNotifications(activeRole);
+  const notificationState = useUserNotifications(activeRole, appUserId);
+
+  // Provision the UUID namespace through the backend. The realtime listeners
+  // may attach first; Firebase will push the complete fresh record as soon as
+  // this idempotent request finishes.
+  useEffect(() => {
+    api.startSession().catch(() => {});
+  }, []);
 
   // Screen-shake on health loss / green flash on heal, reacting to backend
   // pushes rather than local actions (a purchase from the cheat controller
@@ -139,6 +148,7 @@ export function AppDataProvider({ children }) {
 
   const value = {
     ...backend,
+    appUserId,
     restartDemo, restarting, demoResetVersion,
     activeView, setActiveView,
     petActiveTab, setPetActiveTab,

@@ -1,14 +1,17 @@
 # Firebase Realtime DB — Schema Contract
 
-This is the **shared contract** between the backend and the Flutter frontend. The frontend should
-attach listeners to `/pet` (and read `/user` for goal progress) and switch Lottie animations based
-on the `mood` and `animationState` strings. **The frontend never writes to the DB.**
+This is the **shared contract** between the backend and the React frontend. Every browser gets a
+persistent UUID and all nodes described below live under `/users/<uuid>/`. The frontend therefore
+listens to `/users/<uuid>/pet`, `/users/<uuid>/user`, and the other scoped nodes. It never writes
+directly to the DB.
 
 ## Full tree
 
 ```jsonc
 {
   "user": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "username": "550e8400-e29b-41d4-a716-446655440000",
     "name": "راشد",
     "income": 8000,               // monthly income (SAR) — NXP save rewards scale to % of this
     "goalAmount": 5000,           // the user's personal savings goal (SAR)

@@ -48,8 +48,7 @@
     .time     { background: var(--alinma-dark); }
     .timewarp { grid-column: 1 / -1; }
     .reset    { background: var(--red); grid-column: 1 / -1; padding: 18px 16px; }
-    .persona   { background: #5a6acf; }
-
+    .deleteUsers { background: #721c24; grid-column: 1 / -1; padding: 18px 16px; }
     /* Section label — same light-theme heading treatment as the page title,
        just smaller, so groups of controls read as one consistent page. */
     .sectionTitle { color: var(--alinma-dark); font-size: 1.05rem; font-weight: 800; margin: 4px 0 12px; }
@@ -105,19 +104,6 @@
          GENERATE_AI_PLAN) are gone: they drove POST /api/game/simulate-trigger,
          which this merge removed along with its engine functions. The family /
          offers buttons further down hit the canonical endpoints instead. -->
-
-    <h2 class="sectionTitle">بروفايلات الدخل 💼 | نفس نسبة التوفير = نفس NXP</h2>
-    <div class="actions" style="margin-bottom: 20px">
-      <div class="action">
-        <button class="persona" onclick="setIncomeProfile('student')">👩‍🎓 نورة، طالبة (دخل ٢٬٠٠٠)</button>
-      </div>
-      <div class="action">
-        <button class="persona" onclick="setIncomeProfile('employee')">👨‍💼 آدم، موظف (دخل ٨٬٠٠٠)</button>
-      </div>
-      <div class="action">
-        <button class="persona" onclick="setIncomeProfile('executive')">👔 فيصل، تنفيذي (دخل ٢٥٬٠٠٠)</button>
-      </div>
-    </div>
 
     <div class="settings">
       <input class="amt" type="number" id="goalInput" value="5000" min="1" step="100" placeholder="هدف الادخار (⃁)">
@@ -196,6 +182,7 @@
         <button class="coffee" style="grid-column:1/-1" onclick="sendParentReward()">🎖️ مكافأة الوالد لراشد (احتياطي)</button>
       </div>
       <button class="reset" onclick="call('/api/reset', {})">🔄 إعادة تعيين العرض (Panic Reset)</button>
+      <button class="deleteUsers" onclick="deleteAllUsers()">🗑️ حذف جميع المستخدمين (بين اللجان)</button>
     </div>
 
     <section class="engineStatus" aria-live="polite" aria-labelledby="engineTitle">
@@ -248,6 +235,53 @@
     const API_BASE = location.protocol === 'file:' || !location.origin.startsWith('http')
       ? 'http://localhost:3000'
       : '';
+    const USER_HEADER = 'X-Nadeem-User-Id';
+
+    async function controllerUsers() {
+      const response = await fetch(API_BASE + '/api/controller/users', {
+        headers: { Accept: 'application/json' },
+      });
+      const data = await response.json();
+      if (!response.ok || data.ok === false) throw new Error(data.error || 'users_unavailable');
+      return data.users || [];
+    }
+
+    async function requestForUser(userId, path, options = {}) {
+      const response = await fetch(API_BASE + path, {
+        ...options,
+        headers: {
+          Accept: 'application/json',
+          ...(options.headers || {}),
+          [USER_HEADER]: userId,
+        },
+      });
+      const data = await response.json().catch(() => ({}));
+      return { userId, ok: response.ok && data.ok !== false, data };
+    }
+
+    function summarizeUserResults(entries) {
+      const successful = entries.filter((entry) => entry.ok);
+      const representative = (successful[0] || entries[0])?.data || {};
+      return {
+        ...representative,
+        ok: entries.length > 0 && successful.length === entries.length,
+        affectedUsers: successful.length,
+        totalUsers: entries.length,
+        userResults: entries.map(({ userId, ok, data }) => ({
+          userId,
+          ok,
+          error: data?.error || null,
+        })),
+        ...(entries.length ? {} : { error: 'no_users', message: 'لا يوجد مستخدمون متصلون حاليًا.' }),
+      };
+    }
+
+    async function requestForAllUsers(path, options = {}) {
+      const users = await controllerUsers();
+      if (!users.length) return summarizeUserResults([]);
+      const entries = await Promise.all(users.map((userId) => requestForUser(userId, path, options)));
+      return summarizeUserResults(entries);
+    }
 
     function shortModelName(name, expected) {
       if (typeof name !== 'string') return expected;
@@ -281,7 +315,11 @@
 
     async function refreshMlStatus() {
       try {
-        const response = await fetch(API_BASE + '/api/ml/status?userId=rashid', { headers: { Accept: 'application/json' } });
+        const users = await controllerUsers();
+        if (!users.length) throw new Error('no_users');
+        const response = await fetch(API_BASE + '/api/ml/status?userId=rashid', {
+          headers: { Accept: 'application/json', [USER_HEADER]: users[0] },
+        });
         if (!response.ok) throw new Error('status_unavailable');
         renderMlStatus(await response.json());
       } catch {
@@ -332,22 +370,14 @@
       call('/api/user/goal', { goalAmount });
     }
 
-    // Income-persona switch — swaps name/income/balance only (pet, streak and
-    // goal progress survive), so the operator can save the same % of income
-    // from two personas back-to-back and show identical NXP payouts.
-    function setIncomeProfile(profileId) {
-      call('/api/demo/set-income-profile', { profileId });
-    }
-
     async function call(path, body) {
       setBusy(true);
       try {
-        const res = await fetch(API_BASE + path, {
+        const data = await requestForAllUsers(path, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body),
         });
-        const data = await res.json();
         render(data);
       } catch (e) {
         document.getElementById('raw').textContent = '❌ ' + e.message +
@@ -363,20 +393,21 @@
     async function settleHalfMillion() {
       setBusy(true);
       try {
-        const res = await fetch(API_BASE + '/api/offers/predicted');
-        const data = await res.json();
-        const hm = Object.values(data.predicted || {}).find((o) => o.merchant === 'هاف مليون');
-        if (!hm) throw new Error('لا يوجد عرض متوقع');
-        if (hm.status !== 'waiting') {
-          render({ ok: false, message: hm.status === 'settled' ? 'تمت التسوية مسبقاً' : 'راشد لم يقرر الانتظار بعد (من التطبيق)' });
-          return;
-        }
-        const settle = await fetch(API_BASE + '/api/offers/settle', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ offerId: hm.id, memberId: 'rashid' }),
-        });
-        render(await settle.json());
+        const users = await controllerUsers();
+        const entries = await Promise.all(users.map(async (userId) => {
+          const predicted = await requestForUser(userId, '/api/offers/predicted');
+          const hm = Object.values(predicted.data.predicted || {}).find((offer) => offer.merchant === 'هاف مليون');
+          if (!hm) return { userId, ok: false, data: { error: 'offer_not_found' } };
+          if (hm.status !== 'waiting') {
+            return { userId, ok: false, data: { error: hm.status === 'settled' ? 'already_settled' : 'not_waiting' } };
+          }
+          return requestForUser(userId, '/api/offers/settle', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ offerId: hm.id, memberId: 'rashid' }),
+          });
+        }));
+        render(summarizeUserResults(entries));
       } catch (e) {
         document.getElementById('raw').textContent = '❌ ' + e.message;
       } finally {
@@ -390,7 +421,7 @@
     async function sendParentReward() {
       setBusy(true);
       try {
-        const res = await fetch(API_BASE + '/api/family/reward', {
+        const data = await requestForAllUsers('/api/family/reward', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -402,7 +433,6 @@
             message: 'تستاهل يا بطل، استمريت داخل ميزانيتك 7 أيام.',
           }),
         });
-        const data = await res.json();
         if (data.error === 'duplicate_reward') {
           render({ ok: false, message: 'تم إرسال المكافأة مسبقاً، لا يتم التكرار.' });
         } else {
@@ -410,6 +440,21 @@
         }
       } catch (e) {
         document.getElementById('raw').textContent = '❌ ' + e.message;
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    async function deleteAllUsers() {
+      const confirmed = window.confirm('سيتم حذف جميع المستخدمين وبياناتهم نهائيًا. هل تريد المتابعة؟');
+      if (!confirmed) return;
+      setBusy(true);
+      try {
+        const response = await fetch(API_BASE + '/api/controller/users', { method: 'DELETE' });
+        const data = await response.json();
+        render(data);
+      } catch (error) {
+        document.getElementById('raw').textContent = '❌ ' + error.message;
       } finally {
         setBusy(false);
       }
@@ -505,7 +550,12 @@
     function setBusy(b) { document.body.style.opacity = b ? .6 : 1; }
 
     // Load initial state on open.
-    fetch(API_BASE + '/api/state').then(r => r.json()).then(render).catch(() => {});
+    controllerUsers()
+      .then(async (users) => users[0]
+        ? { entry: await requestForUser(users[0], '/api/state'), activeUsers: users.length }
+        : null)
+      .then((result) => { if (result) render({ ...result.entry.data, activeUsers: result.activeUsers }); })
+      .catch(() => {});
     refreshMlStatus();
   </script>
 </body>

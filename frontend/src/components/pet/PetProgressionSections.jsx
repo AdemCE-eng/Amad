@@ -89,8 +89,8 @@ function Accessories({ game, isSubmitting, runAction, petName }) {
   return (
     <section data-testid="pet-accessory-store">
       <div className="bg-coral/10 border border-coral/20 rounded-3xl p-4 mb-5 flex items-center gap-3" data-testid="equipped-accessory-summary">
-        <div className="w-16 h-16 rounded-2xl bg-cream grid place-items-center overflow-hidden shrink-0">
-          <Mascot emotion={equipFeedback ? 'happy' : 'idle'} stage={1} size={58} track={false} equipped={equipped} />
+        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-ink-soft to-ink-card border border-white/10 grid place-items-center overflow-hidden shrink-0">
+          <Mascot emotion={equipFeedback ? 'happy' : 'idle'} stage={1} size={62} track={false} equipped={equipped} />
         </div>
         <div className="min-w-0"><p className="text-[10px] text-coral font-black">الإكسسوار المجهّز</p><h2 className="font-black mt-1">{equippedItem?.name || 'بدون إكسسوار'}</h2><p className="text-[10px] text-cream/45 mt-1">يمكنك التجهيز أو الإزالة من العناصر المملوكة.</p></div>
       </div>
@@ -113,9 +113,10 @@ function Accessories({ game, isSubmitting, runAction, petName }) {
           const affordable = nxp_balance >= item.price;
           return (
             <article key={id} className="bg-ink-card rounded-3xl p-3 flex items-center gap-3 min-w-0">
-              <div className="w-16 h-16 bg-cream rounded-2xl flex items-center justify-center overflow-hidden shrink-0"><Mascot emotion="idle" stage={1} size={58} track={false} equipped={id} /></div>
+              <div className="w-16 h-16 bg-gradient-to-br from-ink-soft to-ink-card border border-white/10 rounded-2xl flex items-center justify-center overflow-hidden shrink-0"><Mascot emotion="idle" stage={1} size={62} track={false} equipped={id} /></div>
               <div className="flex-1 min-w-0">
-                <p className="font-black text-cream text-sm break-words">{item.icon} {item.name}</p>
+                <p className="font-black text-cream text-sm break-words">{item.name}</p>
+                {item.description && <p className="text-[9px] text-cream/45 font-bold leading-relaxed mt-0.5">{item.description}</p>}
                 <p className="text-[11px] font-bold text-amber-300 mt-0.5">{item.price} NXP</p>
                 {owned && <p className="text-[9px] text-emerald-300 font-bold mt-1">مملوك {isEquipped ? '· مجهز الآن' : ''}</p>}
               </div>

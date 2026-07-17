@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react';
 import { watch } from './firebase';
 import { mergeNotifications, notificationsForRecipient } from './notifications';
 
-export function useUserNotifications(recipientId) {
+export function useUserNotifications(recipientId, userId) {
   const [state, setState] = useState({ notifications: [], loaded: false });
 
   useEffect(() => {
+    if (!userId) return undefined;
+    const userPath = (path) => `/users/${userId}${path}`;
     let current = [];
     let legacy = [];
     let currentLoaded = false;
@@ -15,13 +17,13 @@ export function useUserNotifications(recipientId) {
       notifications: mergeNotifications(current, legacy),
       loaded: currentLoaded,
     });
-    const unsubscribeCurrent = watch(`/userNotifications/${recipientId}`, (value) => {
+    const unsubscribeCurrent = watch(userPath(`/userNotifications/${recipientId}`), (value) => {
       current = notificationsForRecipient(value, recipientId);
       currentLoaded = true;
       publish();
     });
     const unsubscribeLegacy = recipientId === 'rashid'
-      ? watch('/user/notifications', (value) => {
+      ? watch(userPath('/user/notifications'), (value) => {
           legacy = notificationsForRecipient(value, recipientId, 'rashid');
           publish();
         })
@@ -31,7 +33,7 @@ export function useUserNotifications(recipientId) {
       unsubscribeCurrent();
       unsubscribeLegacy?.();
     };
-  }, [recipientId]);
+  }, [recipientId, userId]);
 
   return {
     userNotifications: state.notifications,

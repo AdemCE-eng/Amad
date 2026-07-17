@@ -133,7 +133,7 @@ export default function PetRoomView() {
             <span className="inline-flex items-center gap-1.5 text-[9px] font-black text-violet"><span className="h-1.5 w-1.5 rounded-full bg-emerald-400 motion-safe:animate-pulse" /> استجابة مالية حيّة</span>
             <span className="text-[8px] font-bold text-cream/35">يتحدث حسب حالتك</span>
           </div>
-          <p className="relative z-10 mt-2 text-center text-[13px] font-bold leading-relaxed text-cream">“{pet.message}”</p>
+          <p className="relative z-10 mt-2 text-center text-[13px] font-bold leading-relaxed text-cream">{pet.message}</p>
         </div>
 
         {/* Savings is the primary action and the only input to Saqr evolution. */}

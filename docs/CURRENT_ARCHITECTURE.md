@@ -6,7 +6,7 @@ Nadeem is a local-first hackathon demo with four existing pieces:
 
 1. `cheat-controller/` is a static operator console served by Express.
 2. `backend/` is an ESM Node/Express service. It owns all calculations, calls Gemini only for mascot wording, and writes complete state changes to Firebase Realtime Database.
-3. Firebase Realtime Database is the shared state contract and source of truth. The local emulator is the default development runtime.
+3. Firebase Realtime Database is the source of truth. Each browser is isolated under `/users/<uuid>`; the local emulator is the default development runtime.
 4. `frontend/` is a React/Vite RTL application. It reads backend/Firebase state and renders the family, reward, offer, and mascot experiences.
 
 The approved flow is:
@@ -31,7 +31,7 @@ The approved flow is:
 
 ## Data model
 
-The existing RTDB nodes include `/user`, `/pet`, `/game`, `/transactions`, `/family`, `/offers`, `/loyalty`, `/rewards`, `/notifications`, and `/meta`. The frontend never writes directly. The new ML service is deliberately stateless with respect to Firebase and operates on pseudonymous IDs and derived/synthetic features.
+Each UUID record contains `user`, `pet`, `game`, `transactions`, `family`, `offers`, `loyalty`, `rewards`, `notifications`, and `meta` beneath `/users/<uuid>`. `user.username` is the UUID itself. The frontend never writes directly; `POST /api/session` provisions a new record through the backend. The cheat controller enumerates UUID records and applies each presenter action to all of them. The ML service is deliberately stateless with respect to Firebase and operates on pseudonymous IDs and derived/synthetic features.
 
 ## Tests and baseline
 

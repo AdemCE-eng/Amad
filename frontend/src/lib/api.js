@@ -1,7 +1,12 @@
+import { getOrCreateUserId } from './userIdentity';
+
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
 
 function demoHeaders(recipientId) {
-  return recipientId ? { 'X-Nadeem-Demo-User': recipientId } : {};
+  return {
+    'X-Nadeem-User-Id': getOrCreateUserId(),
+    ...(recipientId ? { 'X-Nadeem-Demo-User': recipientId } : {}),
+  };
 }
 
 async function post(path, body, recipientId) {
@@ -27,6 +32,7 @@ async function get(path, recipientId) {
 }
 
 export const api = {
+  startSession: () => post('/api/session'),
   salary: (amount, savePercent) => post('/api/simulate/salary', { amount, savePercent }),
   save: (amount) => post('/api/simulate/save', { amount }),
   purchase: (amount, category, label) => post('/api/simulate/purchase', { amount, category, label }),

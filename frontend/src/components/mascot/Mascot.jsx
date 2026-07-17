@@ -207,10 +207,20 @@ function Effects({ fx }) {
   }
   if (fx === 'thinking') {
     return (
-      <g fill="#B39DDB" fontFamily="sans-serif" fontWeight="900">
-        <circle className="anim-think" cx="166" cy="65" r="5" opacity="0.7" />
-        <circle className="anim-think" style={{ animationDelay: '0.3s' }} cx="180" cy="50" r="8" opacity="0.85" />
-        <text className="anim-think" style={{ animationDelay: '0.6s' }} x="188" y="34" fontSize="25">?</text>
+      <g aria-hidden="true">
+        <circle className="anim-thought-dot" cx="151" cy="73" r="5" fill="#B39DDB" />
+        <circle className="anim-thought-dot" style={{ animationDelay: '0.24s' }} cx="160" cy="62" r="8" fill="#9C83D5" />
+        <g className="anim-thought-cloud">
+          <path
+            d="M164,57 C151,57 148,45 156,38 C153,26 166,17 178,21 C185,8 206,8 213,21 C226,19 237,31 232,43 C237,54 225,64 213,61 C203,70 187,68 181,59 C175,61 169,60 164,57 Z"
+            fill="#F8F5FF"
+            stroke="#8E76CF"
+            strokeWidth="3.5"
+            strokeLinejoin="round"
+          />
+          <path d="M174,30 Q190,17 207,25" fill="none" stroke="#FFFFFF" strokeWidth="4" strokeLinecap="round" opacity="0.85" />
+          <text x="195" y="53" textAnchor="middle" fill="#5D498E" fontFamily="sans-serif" fontWeight="900" fontSize="46">?</text>
+        </g>
       </g>
     );
   }
@@ -225,7 +235,7 @@ function Effects({ fx }) {
 }
 
 // Accessories render inside the head group so they inherit tilt and bounce.
-function Accessory({ id }) {
+function Accessory({ id, uid }) {
   if (id === 'shemagh') {
     return (
       <g>
@@ -247,16 +257,30 @@ function Accessory({ id }) {
     );
   }
   if (id === 'falcon_hood') {
-    // Gold crown (item id kept for backend compatibility; displayed as تاج).
+    const goldId = `${uid}-crown-gold`;
     return (
-      <g>
-        <path d="M92,52 L98,30 L108,44 L120,24 L132,44 L142,30 L148,52 Q120,44 92,52 Z"
-          fill="#FFC93C" stroke="#E0A421" strokeWidth="2" strokeLinejoin="round" />
-        <path d="M92,52 Q120,44 148,52 L147,60 Q120,52 93,60 Z" fill="#E0A421" />
-        <circle cx="98" cy="30" r="3.5" fill="#EF5350" />
-        <circle cx="120" cy="24" r="4" fill="#42A5F5" />
-        <circle cx="142" cy="30" r="3.5" fill="#66BB6A" />
-        <circle cx="120" cy="50" r="3" fill="#fff" opacity="0.85" />
+      <g filter="drop-shadow(0 5px 4px rgba(91,54,5,.28))">
+        <defs>
+          <linearGradient id={goldId} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#FFF3A6" />
+            <stop offset="0.42" stopColor="#FFD052" />
+            <stop offset="1" stopColor="#D99A1A" />
+          </linearGradient>
+        </defs>
+        <path
+          d="M82,52 L90,23 L105,40 L120,11 L135,40 L150,23 L158,52 Q120,42 82,52 Z"
+          fill={`url(#${goldId})`}
+          stroke="#B67810"
+          strokeWidth="3"
+          strokeLinejoin="round"
+        />
+        <path d="M84,51 Q120,42 156,51 L154,66 Q120,56 86,66 Z" fill={`url(#${goldId})`} stroke="#B67810" strokeWidth="3" />
+        <path d="M89,54 Q120,47 151,54" fill="none" stroke="#FFF3A6" strokeWidth="3" strokeLinecap="round" opacity="0.85" />
+        <path d="M91,62 Q120,55 153,62" fill="none" stroke="#8F590B" strokeWidth="2" opacity="0.55" />
+        <circle cx="90" cy="23" r="4.5" fill="#FF776D" stroke="#A84E43" strokeWidth="1.5" />
+        <circle cx="120" cy="11" r="5.5" fill="#8E76CF" stroke="#5D498E" strokeWidth="1.5" />
+        <circle cx="150" cy="23" r="4.5" fill="#5FD1A2" stroke="#318361" strokeWidth="1.5" />
+        <path d="M114,55 L120,49 L126,55 L120,61 Z" fill="#F8F5FF" stroke="#C88914" strokeWidth="1.5" />
       </g>
     );
   }
@@ -467,10 +491,12 @@ function Mascot({
             <Brow cx={96} rot={e.brow.rot} y={e.brow.y} side={-1} color={P.brow} />
             <Brow cx={144} rot={e.brow.rot} y={e.brow.y} side={1} color={P.brow} />
 
-            <motion.g initial={false} style={{ x: pupilX, y: pupilY }}>
-              <Eye cx={96} lid={e.lid} blinking={blinking} clipId={`${uid}-eyeL`} />
-              <Eye cx={144} lid={e.lid} blinking={blinking} clipId={`${uid}-eyeR`} />
-            </motion.g>
+            <g className={emotion === 'thinking' ? 'anim-thinking-gaze' : ''}>
+              <motion.g initial={false} style={{ x: pupilX, y: pupilY }}>
+                <Eye cx={96} lid={e.lid} blinking={blinking} clipId={`${uid}-eyeL`} />
+                <Eye cx={144} lid={e.lid} blinking={blinking} clipId={`${uid}-eyeR`} />
+              </motion.g>
+            </g>
 
             {/* Malar stripe — the signature dark falcon "moustache" running
                 down from the eye through the pale cheek. THE marking that
@@ -509,7 +535,14 @@ function Mascot({
               );
             })}
 
-            {equipped && <Accessory id={equipped} />}
+            {emotion === 'thinking' && stage >= 1 && (
+              <Pivot x={164} y={150} animate={{ rotate: [-4, 3, -4] }} transition={{ duration: 1.9, repeat: Infinity, ease: 'easeInOut' }}>
+                <path d="M170,160 Q176,137 157,119 Q147,121 146,133 Q154,140 161,160 Z" fill={P.wing} stroke={P.wingDark} strokeWidth="2" strokeLinejoin="round" />
+                <ellipse cx="154" cy="125" rx="4" ry="6" fill={P.belly} opacity="0.6" />
+              </Pivot>
+            )}
+
+            {equipped && <Accessory id={equipped} uid={uid} />}
           </Pivot>
 
           {/* Egg shell (stage 0) wraps the lower body, over the belly. */}

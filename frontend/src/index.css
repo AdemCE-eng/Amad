@@ -167,13 +167,32 @@ body {
 }
 .anim-zzz { animation: zzzFloat 2.4s ease-out infinite; }
 
-@keyframes thinkFloat {
-  0%, 100% { opacity: 0.35; transform: translateY(2px) scale(0.82); }
-  45% { opacity: 1; transform: translateY(-4px) scale(1.08); }
-  70% { opacity: 0.75; transform: translateY(-2px) scale(1); }
+@keyframes thoughtCloudFloat {
+  0%, 100% { transform: translateY(1px) scale(0.97); }
+  50% { transform: translateY(-5px) scale(1.035); }
 }
-.anim-think {
-  animation: thinkFloat 1.5s ease-in-out infinite;
+.anim-thought-cloud {
+  animation: thoughtCloudFloat 1.8s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@keyframes thoughtDotPulse {
+  0%, 100% { opacity: 0.35; transform: scale(0.72); }
+  50% { opacity: 1; transform: scale(1.16); }
+}
+.anim-thought-dot {
+  animation: thoughtDotPulse 1.25s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@keyframes thinkingGaze {
+  0%, 18%, 100% { transform: translate(0, 0); }
+  35%, 78% { transform: translate(4px, -4px); }
+}
+.anim-thinking-gaze {
+  animation: thinkingGaze 2.4s ease-in-out infinite;
   transform-box: fill-box;
   transform-origin: center;
 }

@@ -2,6 +2,7 @@
 // real Realtime Database (production), decided entirely by environment variables.
 import "dotenv/config";
 import admin from "firebase-admin";
+import { AsyncLocalStorage } from "node:async_hooks";
 
 const {
   FIREBASE_PROJECT_ID = "amad-demo",
@@ -30,6 +31,34 @@ console.log(
     : `☁️  Firebase: LIVE @ ${FIREBASE_DATABASE_URL}`
 );
 
-export const db = admin.database();
-export const rootRef = db.ref("/");
+// Every API request runs inside a user scope. Keeping the prefixing here means
+// every existing state access (pet, family, offers, notifications, etc.) is
+// isolated together instead of relying on every route to remember the UUID.
+export const adminDb = admin.database();
+const userScope = new AsyncLocalStorage();
+
+function scopedPath(path = "/") {
+  const userId = userScope.getStore()?.userId;
+  if (!userId) return path;
+  const suffix = String(path).replace(/^\/+/, "");
+  return suffix ? `/users/${userId}/${suffix}` : `/users/${userId}`;
+}
+
+export const db = {
+  ref(path = "/") {
+    return adminDb.ref(scopedPath(path));
+  },
+};
+
+export function runWithUserScope(userId, callback) {
+  return userScope.run({ userId }, callback);
+}
+
+export function currentUserId() {
+  return userScope.getStore()?.userId || null;
+}
+
+// Administrative root access is intentionally unscoped. Application routes
+// should use `db`; user-management routes use `adminDb` explicitly.
+export const rootRef = adminDb.ref("/");
 export default admin;

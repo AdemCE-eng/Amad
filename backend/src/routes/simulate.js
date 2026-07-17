@@ -12,9 +12,8 @@ import {
   hasSufficientFunds,
 } from "../logic/petEngine.js";
 import { applyGameEffects } from "../logic/gameEngine.js";
-import { initialFamilyState } from "../logic/familyEngine.js";
-import { initialOffersState, initialLoyaltyState } from "../logic/offerEngine.js";
 import { generatePetMessage } from "../ai/gemini.js";
+import { freshUserRecord } from "../services/userStore.js";
 
 const router = Router();
 
@@ -180,37 +179,15 @@ router.post("/user/goal", async (req, res, next) => {
 });
 
 // POST /api/reset  — Panic Reset: wipe everything back to a pristine demo state.
-router.post("/reset", async (_req, res, next) => {
+router.post("/reset", async (req, res, next) => {
   try {
-    const fresh = initialState();
-    const family = initialFamilyState();
-    const offers = initialOffersState();
-    const loyalty = initialLoyaltyState();
-    await db.ref("/").set({
-      user: fresh.user,
-      pet: fresh.pet,
-      emergencyShield: fresh.emergencyShield,
-      game: fresh.game,
-      family,
-      offers,
-      loyalty,
-      contributionPlan: null,
-      notifications: null,
-      userNotifications: null,
-      meta: { lastEvent: "reset" },
-      transactions: null,
-    });
+    const fresh = freshUserRecord(req.nadeemUserId, { includeTransactions: false });
+    fresh.meta = { ...fresh.meta, lastEvent: "reset" };
+    await db.ref("/").set(fresh);
     res.json({
       ok: true,
       message: "Demo reset.",
       ...fresh,
-      family,
-      offers,
-      loyalty,
-      contributionPlan: null,
-      notifications: null,
-      userNotifications: null,
-      transactions: null,
     });
   } catch (e) {
     next(e);
