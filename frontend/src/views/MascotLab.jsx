@@ -29,7 +29,7 @@ export default function MascotLab() {
           ))}
         </div>
         <div className="flex gap-2">
-          {[[null, 'بدون'], ['shemagh', 'شماغ'], ['sunglasses', 'نظارة'], ['falcon_hood', 'برقع']].map(([id, label]) => (
+          {[[null, 'بدون'], ['cap', 'كاب'], ['sunglasses', 'نظارة'], ['falcon_hood', 'برقع']].map(([id, label]) => (
             <button
               key={label} onClick={() => setEquipped(id)}
               className={`px-4 py-2 rounded-xl font-bold text-sm ${equipped === id ? 'bg-coin text-white' : 'bg-white text-slate-600'}`}

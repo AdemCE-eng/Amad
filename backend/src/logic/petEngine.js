@@ -84,7 +84,7 @@ export function initialState() {
     },
     emergencyShield: { usesRemaining: 1 },
     // Demo-tuned: streak 6 (one day from the 7-milestone), 24% of goal (one
-    // save from evolution), 60 NXP (one milestone from the shemagh), and a
+    // save from evolution), 60 NXP (one milestone from the cap), and a
     // live coffee challenge — the 3-minute script hits every payoff.
     game: {
       day: 7,

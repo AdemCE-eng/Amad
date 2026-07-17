@@ -36,7 +36,6 @@ export function AppDataProvider({ children }) {
     setActiveRoleState(role);
   };
   const [isPetted, setIsPetted] = useState(false);
-  const [isShaking, setIsShaking] = useState(false);
   const [flashColor, setFlashColor] = useState(null);
   const [actionError, setActionError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -49,17 +48,13 @@ export function AppDataProvider({ children }) {
     api.startSession().catch(() => {});
   }, []);
 
-  // Screen-shake on health loss / green flash on heal, reacting to backend
-  // pushes rather than local actions (a purchase from the cheat controller
-  // shakes the app too).
+  // A saving improvement gets a subtle green flash. Health-loss feedback is
+  // deliberately left to Saqr's state, so a purchase never shakes or flashes
+  // the entire customer app red.
   const [lastHealth, setLastHealth] = useState(null);
   useEffect(() => {
     if (!pet) return;
-    if (lastHealth !== null && pet.health < lastHealth) {
-      setIsShaking(true);
-      setFlashColor('rgba(239, 68, 68, 0.2)');
-      setTimeout(() => { setIsShaking(false); setFlashColor(null); }, 400);
-    } else if (lastHealth !== null && pet.health > lastHealth) {
+    if (lastHealth !== null && pet.health > lastHealth) {
       setFlashColor('rgba(16, 185, 129, 0.2)');
       setTimeout(() => setFlashColor(null), 400);
     }
@@ -128,7 +123,6 @@ export function AppDataProvider({ children }) {
       setPetActiveTab('status');
       setOpportunityResult(null);
       setIsPetted(false);
-      setIsShaking(false);
       setFlashColor(null);
       setLastHealth(null);
       setDemoResetVersion((version) => version + 1);
@@ -157,7 +151,7 @@ export function AppDataProvider({ children }) {
     ...notificationState,
     nxp, akthrPoints,
     isPetted, handlePetInteraction,
-    isShaking, flashColor,
+    flashColor,
     actionError, isSubmitting, runAction,
     isSick, isTired, isHappy, goalProgress,
     budgets, budgetPeriod, savingsPlan, savingsAccountOpened, projectedRollover,

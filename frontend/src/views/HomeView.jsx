@@ -11,6 +11,7 @@ import CountUp from '../components/ui/CountUp';
 import SarAmount from '../components/ui/SarAmount';
 import SavingsPlanSheet from '../components/ui/SavingsPlanSheet';
 import TransactionRow from '../components/ui/TransactionRow';
+import HomePurchaseActions from '../components/ui/HomePurchaseActions';
 import { STAGE_INFO } from '../lib/catalog';
 
 const QUICK_ACTIONS = [
@@ -23,7 +24,7 @@ const QUICK_ACTIONS = [
 export default function HomeView() {
   const {
     user, pet, game, transactions, family, opportunityResult,
-    isShaking, flashColor, setActiveView, unreadNotificationCount,
+    flashColor, setActiveView, unreadNotificationCount,
     budgets, budgetPeriod, projectedRollover, savingsAccountOpened,
   } = useAppData();
   const { emotion } = useMascotEmotion(pet);
@@ -42,7 +43,7 @@ export default function HomeView() {
       : 'مبسوط بالتزامك المالي اليوم';
 
   return (
-    <div className={`bg-ink h-full flex flex-col font-sans text-cream transition-all ${isShaking ? 'animate-screen-shake' : ''}`} dir="rtl">
+    <div className="bg-ink h-full flex flex-col font-sans text-cream transition-all" dir="rtl">
       {flashColor && <div className="absolute inset-0 z-50 pointer-events-none" style={{ backgroundColor: flashColor }} />}
 
       <header className="px-5 pt-4 pb-3 flex items-center justify-between z-10" data-testid="nadeem-home-header">
@@ -87,10 +88,10 @@ export default function HomeView() {
                 <Mascot emotion={emotion} stage={game.stage} equipped={game.equipped} size={72} track={false} />
               </div>
               <div className="min-w-0 flex-1">
-                <div className="flex items-center justify-between gap-2">
-                  <h2 className="font-black text-base leading-tight">{user.petName || 'صقر'} معك · {saqrStage}</h2>
-                  <button type="button" onClick={() => setActiveView('pet')} className="shrink-0 px-2.5 py-1.5 rounded-xl bg-coral text-ink text-[10px] font-black inline-flex items-center gap-1">
-                    افتح {user.petName || 'صقر'} <ChevronLeft size={13} />
+                <div className="flex items-center justify-between gap-2 min-w-0">
+                  <h2 className="min-w-0 truncate font-black text-base leading-tight">{user.petName || 'صقر'} معك · {saqrStage}</h2>
+                  <button type="button" onClick={() => setActiveView('pet')} className="max-w-[112px] shrink-0 px-2 py-1.5 rounded-xl bg-coral text-ink text-[10px] font-black inline-flex items-center gap-1 whitespace-nowrap">
+                    <span className="truncate">اطلع على {user.petName || 'صقر'}</span> <ChevronLeft size={13} className="shrink-0" />
                   </button>
                 </div>
                 <p className="text-[11px] text-cream/55 mt-1">{saqrStatus}</p>
@@ -134,6 +135,9 @@ export default function HomeView() {
             {latestTransactions.length === 0 ? <p className="p-5 text-sm text-cream/40 text-center">لا توجد عمليات بعد</p> : latestTransactions.map((transaction) => <TransactionRow key={transaction.id} transaction={transaction} />)}
           </div>
         </section>
+
+        {/* REMOVABLE_HOME_PURCHASE_ACTIONS: standalone controller-purchase panel. */}
+        <HomePurchaseActions />
       </main>
 
       {planOpen && <SavingsPlanSheet onClose={() => setPlanOpen(false)} />}

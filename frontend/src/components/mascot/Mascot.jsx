@@ -236,12 +236,15 @@ function Effects({ fx }) {
 
 // Accessories render inside the head group so they inherit tilt and bounce.
 function Accessory({ id, uid }) {
-  if (id === 'shemagh') {
+  // `shemagh` remains a render-only alias for customers with saved legacy
+  // inventory. New purchases and all visible copy use the cap.
+  if (id === 'cap' || id === 'shemagh') {
     return (
       <g>
-        <path d="M64,72 Q120,18 176,72 L176,86 Q120,42 64,86 Z" fill="#fff" />
-        <path d="M64,72 Q120,18 176,72 L176,79 Q120,30 64,79 Z" fill="#D32F2F" opacity="0.85" />
-        <ellipse cx="120" cy="52" rx="34" ry="8" fill="none" stroke="#1a1a1a" strokeWidth="6" />
+        <path d="M76,71 Q80,37 120,31 Q160,37 164,71 Q120,55 76,71 Z" fill="#1D4E68" stroke="#14384C" strokeWidth="2" />
+        <path d="M83,61 Q97,42 120,39 Q143,42 157,61 Q120,49 83,61 Z" fill="#2C7596" opacity="0.9" />
+        <path d="M96,68 Q120,60 151,72 Q135,79 107,76 Q99,74 96,68 Z" fill="#14384C" />
+        <path d="M86,70 Q116,64 151,73" fill="none" stroke="#4B9BBD" strokeWidth="2" strokeLinecap="round" opacity="0.8" />
       </g>
     );
   }

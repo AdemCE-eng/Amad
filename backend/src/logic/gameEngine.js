@@ -29,7 +29,7 @@ export const ACHIEVEMENTS = {
 
 export const SHOP_ITEMS = {
   sunglasses: { name: "نظارة شمسية", price: 50, icon: "🕶️" },
-  shemagh: { name: "شماغ وعقال", price: 100, icon: "🔴" },
+  cap: { name: "كاب صقر", price: 100, icon: "🧢" },
   falcon_hood: { name: "تاج الصقر الملكي", price: 150, icon: "✨", description: "تاج ذهبي منحني يثبت بانسيابية فوق الرأس." },
 };
 
@@ -85,6 +85,12 @@ const SAVE_NXP_MAX = 150;
 // Firebase RTDB drops nulls/empty objects, so read defensively.
 function gameOf(state) {
   const g = state.game || {};
+  // Migrate the former shemagh shop key on read. The legacy API identifier
+  // remains accepted below, while persisted games now use the cap key.
+  const legacyShemaghOwned = Boolean(g.inventory?.shemagh);
+  const inventory = legacyShemaghOwned && !g.inventory?.cap
+    ? { ...g.inventory, cap: true }
+    : (g.inventory || {});
   return {
     day: g.day ?? 1,
     streak: { current: 0, best: 0, freezesLeft: 1, status: "alive", ...(g.streak || {}) },
@@ -95,8 +101,8 @@ function gameOf(state) {
     today: { spent: 0, saved: 0, overBudget: false, coffees: 0, ...(g.today || {}) },
     achievements: g.achievements || {},
     activeChallenge: g.activeChallenge || null,
-    inventory: g.inventory || {},
-    equipped: g.equipped ?? null,
+    inventory,
+    equipped: g.equipped === "shemagh" ? "cap" : (g.equipped ?? null),
     lastCelebration: g.lastCelebration || { type: "none", id: "none", at: 0 },
     lastSaveReward: g.lastSaveReward || { nxp: 0, pctOfIncome: 0, at: 0 },
   };
@@ -290,9 +296,10 @@ export function completeChallenge(state) {
 
 export function buyItem(state, itemId) {
   let game = gameOf(state);
-  const item = SHOP_ITEMS[itemId];
+  const canonicalItemId = itemId === "shemagh" ? "cap" : itemId;
+  const item = SHOP_ITEMS[canonicalItemId];
   if (!item) return { error: "unknown_item" };
-  if (game.inventory[itemId]) return { error: "already_owned" };
+  if (game.inventory[canonicalItemId]) return { error: "already_owned" };
   // Spends the SAME balance saving/streaks/challenges credit — that identity
   // is the whole point of unifying on nxp_balance.
   if (game.nxp_balance < item.price) return { error: "insufficient_coins" };
@@ -300,11 +307,11 @@ export function buyItem(state, itemId) {
     {
       ...game,
       nxp_balance: game.nxp_balance - item.price,
-      inventory: { ...game.inventory, [itemId]: true },
-      equipped: itemId,
+      inventory: { ...game.inventory, [canonicalItemId]: true },
+      equipped: canonicalItemId,
     },
     "shop",
-    itemId
+    canonicalItemId
   );
   const pet = { ...state.pet, animationState: "celebrate", updatedAt: Date.now() };
   return {
@@ -320,8 +327,9 @@ export function buyItem(state, itemId) {
 
 export function equipItem(state, itemId) {
   const game = gameOf(state);
-  if (itemId && !game.inventory[itemId]) return { error: "not_owned" };
-  return { state: { ...state, game: { ...game, equipped: itemId || null } } };
+  const canonicalItemId = itemId === "shemagh" ? "cap" : itemId;
+  if (canonicalItemId && !game.inventory[canonicalItemId]) return { error: "not_owned" };
+  return { state: { ...state, game: { ...game, equipped: canonicalItemId || null } } };
 }
 
 // Swap the demo income persona — a settings change like setProfile, NOT a
