@@ -15,6 +15,9 @@ import { applyGameEffects } from "../logic/gameEngine.js";
 import { initialFamilyState } from "../logic/familyEngine.js";
 import { initialOffersState, initialLoyaltyState } from "../logic/offerEngine.js";
 import { generatePetMessage } from "../ai/gemini.js";
+import { buildNotification } from "../logic/notificationEngine.js";
+import { notificationPath } from "../services/notificationService.js";
+import { fallbackLine } from "../../../shared/rafiqIdentity.js";
 
 const router = Router();
 
@@ -59,6 +62,21 @@ export async function commit(next, txn) {
     "/meta": next.meta,
   };
   if (next.game) updates["/game"] = next.game;
+
+  // One-time Sah Sukuk milestone nudge — same recipient-scoped feed the
+  // Notifications tab already renders (mirrors family.js's parent-reward write).
+  if (next._aiContext?.sukukMilestone) {
+    const recipientId = "rashid";
+    const ref = db.ref(notificationPath(recipientId)).push();
+    updates[`/userNotifications/${recipientId}/${ref.key}`] = buildNotification({
+      id: ref.key,
+      recipientId,
+      type: "sukuk_milestone",
+      title: "وصلت 1,000 ريال! 🎉",
+      body: fallbackLine({ sukukMilestone: true }),
+    });
+  }
+
   await db.ref("/").update(updates);
 
   if (txn) await db.ref("/transactions").push({ ...txn, timestamp: Date.now() });

@@ -74,6 +74,11 @@ const SAVE_NXP_K = 5;
 const SAVE_NXP_MIN = 5;
 const SAVE_NXP_MAX = 150;
 
+// Sah Sukuk nudge: the real minimum subscription for Sah Sukuk (Saudi retail
+// government sukuk) is exactly 1,000 SAR — a one-time milestone notification
+// fires the first time savedAmount crosses it upward.
+const SUKUK_MILESTONE_SAR = 1000;
+
 // NOTE: the old inline mockRetailCalendar / predictive-offer block that lived
 // here is gone — offerEngine.js is the canonical sales-prediction engine now
 // (deterministic, MOCK-campaign driven). The SRS pitch-trigger tunables that
@@ -165,6 +170,18 @@ export function applyGameEffects(state, ctx) {
       state = { ...state, _aiContext: { ...state._aiContext, redepositZero: true } };
     }
     user = { ...user, allTimeHighBalance: Math.max(ath, user.savedAmount) };
+
+    // Sah Sukuk milestone nudge — fires once, the first time this exact save
+    // pushes savedAmount from below 1,000 SAR to at/above it. Guarded by the
+    // persisted user flag so it can never re-fire for the same demo run;
+    // Panic Reset clears it for free since initialState() reseeds it false.
+    if (!user.sukukNudgeShown) {
+      const preSaved = user.savedAmount - saved;
+      if (preSaved < SUKUK_MILESTONE_SAR && user.savedAmount >= SUKUK_MILESTONE_SAR) {
+        user = { ...user, sukukNudgeShown: true };
+        state = { ...state, _aiContext: { ...state._aiContext, sukukMilestone: true } };
+      }
+    }
   }
 
   // Achievements from money events.

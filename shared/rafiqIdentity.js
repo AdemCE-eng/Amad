@@ -128,6 +128,17 @@ export const VOICE = {
       "ما دام الهدف محقّق، أنا مرتاح ومحمي، استمتع 💚",
     ],
   },
+  sukuk_milestone: {
+    // One-time nudge: savedAmount just crossed 1,000 SAR for the first time —
+    // exactly Sah Sukuk's real minimum subscription. Celebrate the number,
+    // then point gently toward Sah Sukuk. Nudge only: no advice, no pitch.
+    promptHint: "عبرت مدخرات المستخدم 1,000 ريال لأول مرة، وهو نفس الحد الأدنى للاشتراك في صك صح (صكوك حكومية سعودية للتجزئة). احتفل بهذا الرقم بفخر، وأشر بلطف ودون إلحاح إلى إن هذا بالضبط حيث يبدأ صك صح.",
+    lines: [
+      "وصلت 1,000 ريال! تمام من هنا يبدأ صك صح، استثمار حكومي وآمن 🌱",
+      "ألف ريال أول محطة كفو، وعندها بالضبط يفتح باب صك صح لو حبيت تتعرف عليه 💚",
+      "مدخراتك عدّت الألف! هذا نفس حد صك صح، فكرة تستاهل نظرة وانت مرتاح 🌟",
+    ],
+  },
   purchase_ok: {
     promptHint: "عملية شراء بسيطة ضمن الميزانية. عبّر عن شعور محايد هادئ.",
     lines: [
@@ -204,6 +215,7 @@ const CATEGORY_TO_AMBIENT = {
 // pick the SAME context. ctx is petEngine's `_aiContext`.
 export function selectVoiceKey(ctx = {}) {
   if (ctx.redepositZero) return "save_zero";
+  if (ctx.sukukMilestone) return "sukuk_milestone";
   switch (ctx.event) {
     case "salary": return "salary";
     case "save": return "save";

@@ -14,7 +14,7 @@ import {
   setIncomeProfile,
   INCOME_PROFILES,
 } from "../src/logic/gameEngine.js";
-import { healthStateOf } from "../../shared/rafiqIdentity.js";
+import { healthStateOf, selectVoiceKey, fallbackLine, VOICE } from "../../shared/rafiqIdentity.js";
 
 // Mirror simulate.js's withGame() wiring for a save.
 function runSave(state, amount) {
@@ -187,6 +187,35 @@ test("calibration: saving X% of the goal always heals more than overspending by 
     const heal = applyInstantSave(s, pct * s.user.goalAmount)._aiContext.healthDelta;
     assert.ok(heal > penalty, `at ${pct * 100}%: heal(${heal}) must exceed penalty(${penalty})`);
   }
+});
+
+// ── Sah Sukuk milestone nudge (crosses 1,000 SAR upward, fires once) ────
+test("sukuk milestone: fires once on crossing 1,000 SAR, never re-fires", () => {
+  let s = initialState();
+  s.user = { ...s.user, savedAmount: 400, allTimeHighBalance: 400 };
+
+  // Below the line — no nudge yet.
+  s = runSave(s, 300); // 400 -> 700
+  assert.equal(s.user.savedAmount, 700);
+  assert.equal(s.user.sukukNudgeShown, false);
+  assert.equal(s._aiContext.sukukMilestone, undefined);
+
+  // This save crosses 1,000 — nudge fires exactly once.
+  s = runSave(s, 400); // 700 -> 1100
+  assert.equal(s.user.savedAmount, 1100);
+  assert.equal(s.user.sukukNudgeShown, true);
+  assert.equal(s._aiContext.sukukMilestone, true);
+  assert.equal(selectVoiceKey(s._aiContext), "sukuk_milestone");
+
+  // Further saves above the line never re-fire the nudge.
+  s = runSave(s, 500); // 1100 -> 1600
+  assert.equal(s.user.sukukNudgeShown, true);
+  assert.equal(s._aiContext.sukukMilestone, undefined);
+});
+
+test("sukuk milestone: offline fallback line matches the voice bank entry", () => {
+  const line = fallbackLine({ sukukMilestone: true });
+  assert.ok(VOICE.sukuk_milestone.lines.includes(line));
 });
 
 // ── Demo seed: over-budget reachable in <= 2 purchase actions from reset ──

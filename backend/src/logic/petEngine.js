@@ -66,6 +66,9 @@ export function initialState() {
       // only on the part that pushes savings past this; withdrawals never
       // lower it. Persona-independent — all personas share the savings pool.
       allTimeHighBalance: SEED_SAVED_AMOUNT,
+      // One-shot guard for the Sah Sukuk milestone nudge (gameEngine.js) —
+      // never re-fires once savedAmount has crossed 1,000 SAR upward.
+      sukukNudgeShown: false,
       balance: 8000,
       monthlyBudget: 3000,
       // Demo-tuned: 90 SAR of headroom left. One 50 SAR coffee stays calmly
