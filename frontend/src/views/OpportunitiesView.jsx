@@ -15,6 +15,43 @@ export const ANALYSIS_STEPS = [
 ];
 export const ANALYSIS_MIN_MS = 7500;
 
+function categoryDiverseRecommendations(ranked, limit = 6) {
+  if (ranked.length <= 1) return ranked;
+  const selected = [ranked[0]];
+  const selectedIds = new Set([ranked[0].offerId || ranked[0].merchantId]);
+  const categories = new Set([ranked[0].category]);
+  const displayedOfferScores = new Set([Math.round(ranked[0].offerProbability * 1000)]);
+
+  const add = (item) => {
+    selected.push(item);
+    selectedIds.add(item.offerId || item.merchantId);
+    categories.add(item.category);
+    displayedOfferScores.add(Math.round(item.offerProbability * 1000));
+  };
+
+  for (const item of ranked.slice(1)) {
+    if (selected.length >= limit) break;
+    const score = Math.round(item.offerProbability * 1000);
+    const savingIsDistinct = selected.every((chosen) => Math.abs(chosen.estimatedSavingSar - item.estimatedSavingSar) >= 5);
+    if (categories.has(item.category) || displayedOfferScores.has(score) || !savingIsDistinct) continue;
+    add(item);
+  }
+  for (const item of ranked.slice(1)) {
+    if (selected.length >= limit) break;
+    const id = item.offerId || item.merchantId;
+    const score = Math.round(item.offerProbability * 1000);
+    if (selectedIds.has(id) || displayedOfferScores.has(score)) continue;
+    add(item);
+  }
+  for (const item of ranked.slice(1)) {
+    if (selected.length >= limit) break;
+    const id = item.offerId || item.merchantId;
+    if (selectedIds.has(id)) continue;
+    add(item);
+  }
+  return selected;
+}
+
 function actionLabel(action) {
   if (action === 'wait_for_offer') return 'انتظر العرض المتوقع';
   if (action === 'buy_now') return 'اشترِ الآن';
@@ -27,10 +64,6 @@ function formatPurchaseSuitability(value) {
 
 function formatOfferProbability(value) {
   return `${new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 }).format(value * 100)}٪`;
-}
-
-function formatPersonalizedScore(value) {
-  return Number.isFinite(value) ? `${new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 }).format(value * 100)}٪` : '—';
 }
 
 function formatSaving(value) {
@@ -49,15 +82,15 @@ function OpportunityCard({ opportunity, featured, activeRole, isSubmitting, runA
           <p className="font-black text-cream">{opportunity.merchantNameAr}</p>
           <p className="text-[11px] text-coral font-bold mt-0.5">{opportunity.occasion}</p>
         </div>
-        <span className="bg-coral/15 text-coral text-[10px] font-black px-2.5 py-1 rounded-full shrink-0">
-          عرض {formatOfferProbability(opportunity.offerProbability)}
+        <span className="bg-coral/15 text-coral text-xs font-black px-2.5 py-1 rounded-full shrink-0">
+          {formatOfferProbability(opportunity.offerProbability)}
         </span>
       </div>
 
       <div className="grid grid-cols-3 gap-2 mt-3">
         <div className="bg-white/5 rounded-xl p-2 text-center"><span className="block text-[9px] text-cream/45">ملاءمة الشراء</span><strong className="text-xs">{formatPurchaseSuitability(opportunity.purchaseProbability)}</strong></div>
         <div className="bg-white/5 rounded-xl p-2 text-center"><span className="block text-[9px] text-cream/45">التوفير</span><strong className="text-xs"><span dir="ltr">{formatSaving(opportunity.estimatedSavingSar)} ر.س</span></strong></div>
-        <div className="bg-white/5 rounded-xl p-2 text-center"><span className="block text-[9px] text-cream/45">النتيجة الشخصية</span><strong className="text-xs text-violet">{formatPersonalizedScore(opportunity.personalizedScore)}</strong></div>
+        <div className="bg-white/5 rounded-xl p-2 text-center"><span className="block text-[9px] text-cream/45">النافذة</span><strong className="text-xs">{opportunity.windowDays} أيام</strong></div>
       </div>
 
       <p className="text-[11px] text-cream/60 leading-relaxed mt-3">{opportunity.explanation}</p>
@@ -151,10 +184,7 @@ export default function OpportunitiesView() {
     ...item,
     persisted: offers?.predicted?.[item.offerId] || null,
   }));
-  // The backend already returns the recommendation engine's personalized
-  // order. Preserve it exactly; presentation diversity must never reshuffle
-  // model output and make a lower-scored merchant appear more relevant.
-  const opportunities = rankedOpportunities.slice(0, 6);
+  const opportunities = categoryDiverseRecommendations(rankedOpportunities);
   const best = opportunities[0];
   const additional = opportunities.slice(1);
   const visibleAdditional = expanded ? additional : additional.slice(0, 3);
@@ -228,9 +258,6 @@ export default function OpportunitiesView() {
 
         {best && (
           <section data-testid="best-opportunity">
-            <div className="mb-3 rounded-2xl border border-white/10 bg-white/5 px-3 py-2.5 text-[10px] font-bold leading-relaxed text-cream/55">
-              <strong className="text-cream">أفق التوقع: خلال {best.windowDays} أيام.</strong> محرك العروض يقدّر الحملة والتوفير، ثم يرتبها محرك التوصية حسب سلوكك وميزانيتك.
-            </div>
             <div className="flex items-center gap-2 mb-3 px-1"><Sparkles size={16} className="text-coral" /><h2 className="font-black">أفضل فرصة لك</h2></div>
             <OpportunityCard opportunity={best} featured activeRole={activeRole} isSubmitting={isSubmitting} runAction={runAction} />
           </section>
