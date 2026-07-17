@@ -41,30 +41,11 @@ router.get("/offers/predicted", async (_req, res, next) => {
 // Decision only — no balance moves until settlement.
 router.post("/offers/decide", async (req, res, next) => {
   try {
-    const recipientId = req.body.memberId || "rashid";
     const offers = await readOffers();
     const result = decideOffer(offers, { offerId: req.body.offerId, decision: req.body.decision });
     if (result.error) return res.status(400).json({ ok: false, error: result.error });
-    const offer = result.offers.predicted[req.body.offerId];
-    const updates = { "/offers": result.offers };
-    let notification = null;
-    if (req.body.decision === "wait") {
-      const timestamp = result.offers.decisions[req.body.offerId].at;
-      const notificationId = `offer_waiting_${req.body.offerId}`;
-      notification = buildNotification({
-        id: notificationId,
-        recipientId,
-        type: "offer_waiting",
-        title: `سنراقب عرض ${offer.merchant}`,
-        body: `اخترت انتظار العرض المتوقع من ${offer.merchant}. سنرسل لك إشعارًا عند وصوله.`,
-        timestamp,
-        relatedEntityId: req.body.offerId,
-        merchant: offer.merchant,
-      });
-      updates[`/userNotifications/${recipientId}/${notificationId}`] = notification;
-    }
-    await db.ref("/").update(updates);
-    res.json({ ok: true, offer, decisions: result.offers.decisions, notification });
+    await db.ref("/offers").set(result.offers);
+    res.json({ ok: true, offer: result.offers.predicted[req.body.offerId], decisions: result.offers.decisions });
   } catch (e) {
     next(e);
   }

@@ -13,7 +13,6 @@ import MascotLab from './views/MascotLab';
 import BottomNav from './components/ui/BottomNav';
 import CelebrationOverlay from './components/ui/CelebrationOverlay';
 import RewardNotice from './components/ui/RewardNotice';
-import OfferWaitNotice from './components/ui/OfferWaitNotice';
 
 // iOS-style status bar rendered inside the device screen (like landing-page
 // phone mockups): time on the right in RTL, signal/wifi/battery on the left.
@@ -80,7 +79,6 @@ function AppShell() {
                   <BottomNav activeView={activeView} setActiveView={setActiveView} petName={user?.petName} pet={pet} game={game} petLocked={!savingsAccountOpened} />
                 )}
                 <RewardNotice />
-                <OfferWaitNotice />
             </React.Fragment>
           </div>
         </div>
