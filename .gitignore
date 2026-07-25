@@ -2,6 +2,7 @@
 node_modules/
 .venv/
 ml-service/.venv/
+ml-service/.venv-launcher/
 __pycache__/
 .pytest_cache/
 

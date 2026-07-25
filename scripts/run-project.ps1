@@ -9,6 +9,7 @@ $Root = Split-Path -Parent $ScriptDir
 $BackendDir = Join-Path $Root 'backend'
 $FrontendDir = Join-Path $Root 'frontend'
 $MlDir = Join-Path $Root 'ml-service'
+$MlVenvDir = Join-Path $MlDir '.venv-launcher'
 $FirebaseConfigPath = Join-Path $Root '.firebase.launcher.json'
 $JavaDir = 'C:\Program Files\Eclipse Adoptium\jre-21.0.11.10-hotspot\bin'
 
@@ -124,7 +125,58 @@ function Set-DotEnvValue {
 }
 
 function Get-MlPython {
-  return Join-Path $MlDir '.venv\Scripts\python.exe'
+  return Join-Path $MlVenvDir 'Scripts\python.exe'
+}
+
+function Get-CompatiblePython {
+  $candidates = @(
+    [pscustomobject]@{ Command = 'py'; Arguments = @('-3.13') },
+    [pscustomobject]@{ Command = 'py'; Arguments = @('-3.12') },
+    [pscustomobject]@{ Command = 'py'; Arguments = @('-3.11') },
+    [pscustomobject]@{ Command = 'py'; Arguments = @('-3.10') },
+    [pscustomobject]@{ Command = 'python'; Arguments = @() }
+  )
+
+  foreach ($candidate in $candidates) {
+    if (-not (Test-Command $candidate.Command)) {
+      continue
+    }
+
+    $oldErrorActionPreference = $ErrorActionPreference
+    try {
+      $ErrorActionPreference = 'Continue'
+      $versionArguments = @($candidate.Arguments) + @(
+        '-c',
+        'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")'
+      )
+      $version = (& $candidate.Command @versionArguments 2>$null | Select-Object -Last 1)
+      $exitCode = $LASTEXITCODE
+    } finally {
+      $ErrorActionPreference = $oldErrorActionPreference
+    }
+
+    if ($exitCode -eq 0 -and $version -match '^3\.(10|11|12|13)$') {
+      return $candidate
+    }
+  }
+
+  return $null
+}
+
+function Invoke-NativeCommand {
+  param(
+    [string]$FilePath,
+    [string[]]$Arguments
+  )
+
+  $oldErrorActionPreference = $ErrorActionPreference
+  try {
+    $ErrorActionPreference = 'Continue'
+    & $FilePath @Arguments 2>&1 | Out-Host
+    return $LASTEXITCODE
+  } finally {
+    $ErrorActionPreference = $oldErrorActionPreference
+  }
 }
 
 function Test-MlArtifacts {
@@ -135,8 +187,17 @@ function Test-MlArtifacts {
 function Test-MlRuntime {
   param([string]$Python)
   if (-not (Test-Path -LiteralPath $Python)) { return $false }
-  & $Python -c "import fastapi, uvicorn, pandas, sklearn, catboost, joblib" 2>$null
-  return $LASTEXITCODE -eq 0
+
+  $oldErrorActionPreference = $ErrorActionPreference
+  try {
+    $ErrorActionPreference = 'Continue'
+    & $Python -c "import fastapi, uvicorn, pandas, sklearn, joblib" *> $null
+    $exitCode = $LASTEXITCODE
+  } finally {
+    $ErrorActionPreference = $oldErrorActionPreference
+  }
+
+  return $exitCode -eq 0
 }
 
 function Wait-MlHealth {
@@ -294,7 +355,13 @@ function Run-Check {
   $ports = Get-LaunchPorts
   Write-Host "[OK] Launcher check passed."
   $mlPython = Get-MlPython
-  $mlState = if ((Test-MlArtifacts) -and (Test-MlRuntime $mlPython)) { 'ready' } else { 'setup required or artifacts missing' }
+  $mlState = if ((Test-MlArtifacts) -and (Test-MlRuntime $mlPython)) {
+    'bundled models ready'
+  } elseif (Test-MlArtifacts) {
+    'bundled models found; runtime setup required'
+  } else {
+    'frozen deterministic fallback ready; no local dataset generation'
+  }
   Write-Host "[OK] Available ports: backend=$($ports.Backend), frontend=$($ports.Frontend), firebase-db=$($ports.Database), firebase-ui=$($ports.EmulatorUi), ml=$($ports.Ml)"
   Write-Host "[OK] ML prerequisites: $mlState"
 }
@@ -304,7 +371,7 @@ function Start-Project {
 
   Write-Host ''
   Write-Host '========================================'
-  Write-Host '  Amad - one-click local launcher'
+  Write-Host '  Nadeem - one-click local launcher'
   Write-Host '========================================'
   Write-Host ''
 
@@ -334,7 +401,7 @@ function Start-Project {
     Write-Step 'Creating backend\.env from backend\.env.example...'
     Copy-Item -LiteralPath $backendEnvExample -Destination $backendEnv
   }
-  Set-DotEnvValue $backendEnv 'USE_ML_SERVICE' 'true'
+  Set-DotEnvValue $backendEnv 'USE_ML_SERVICE' 'false'
   Set-DotEnvValue $backendEnv 'ML_SERVICE_URL' $mlUrl
   Set-DotEnvValue $backendEnv 'ML_SERVICE_TIMEOUT_MS' '10000'
 
@@ -375,48 +442,56 @@ function Start-Project {
 
   $mlPython = Get-MlPython
   $mlOnline = $false
-  if (-not (Test-Path -LiteralPath $mlPython)) {
-    if (Test-Command 'python') {
-      Write-Step 'Creating the ML virtual environment...'
-      & python -m venv (Join-Path $MlDir '.venv')
-    } else {
-      Write-Warn 'Python is unavailable; the ML service cannot be started.'
-    }
-  }
-  if ((Test-Path -LiteralPath $mlPython) -and -not (Test-MlRuntime $mlPython)) {
-    Write-Step 'Installing ML runtime dependencies (PyTorch is not included)...'
-    & $mlPython -m pip install -r (Join-Path $MlDir 'requirements.txt')
-  }
-  if ((Test-MlRuntime $mlPython) -and -not (Test-MlArtifacts)) {
-    Write-Step 'Generating the synthetic Saudi demo dataset and training the prediction models...'
-    Push-Location $MlDir
-    try {
-      & $mlPython -m scripts.train_models
-      if ($LASTEXITCODE -ne 0) {
-        Write-Warn 'ML training did not complete; predictions will be unavailable until training succeeds.'
+  if (-not (Test-MlArtifacts)) {
+    Write-Step 'No bundled ML model artifacts found. Skipping local data generation and training.'
+    Write-Host 'Frozen deterministic recommendations enabled - no synthetic datasets were downloaded or generated.' -ForegroundColor Yellow
+  } else {
+    if (-not (Test-Path -LiteralPath $mlPython)) {
+      $compatiblePython = Get-CompatiblePython
+      if ($compatiblePython) {
+        Write-Step 'Creating the ML virtual environment with a supported Python version...'
+        $venvArguments = @($compatiblePython.Arguments) + @('-m', 'venv', $MlVenvDir)
+        $venvExitCode = Invoke-NativeCommand $compatiblePython.Command $venvArguments
+        if ($venvExitCode -ne 0) {
+          Write-Warn 'Could not create the ML virtual environment; deterministic fallback will be used.'
+        }
+      } else {
+        Write-Warn 'Python 3.10-3.13 is required for the ML service. Deterministic fallback will be used.'
       }
-    } finally {
-      Pop-Location
     }
-  }
-  if ((Test-MlRuntime $mlPython) -and (Test-MlArtifacts)) {
-    Write-Step "Starting FastAPI ML service on $mlUrl..."
-    Start-CmdWindow 'Nadeem FastAPI ML Service' $MlDir @(
-      "`"$mlPython`" -m uvicorn app.main:app --host 127.0.0.1 --port $($ports.Ml)"
-    )
-    $mlOnline = Wait-MlHealth $mlUrl 60
+    if ((Test-Path -LiteralPath $mlPython) -and -not (Test-MlRuntime $mlPython)) {
+      Write-Step 'Installing the runtime required by the bundled ML models...'
+      $pipExitCode = Invoke-NativeCommand $mlPython @(
+        '-m',
+        'pip',
+        'install',
+        '-r',
+        (Join-Path $MlDir 'requirements.txt')
+      )
+      if ($pipExitCode -ne 0) {
+        Write-Warn 'ML dependencies could not be installed; deterministic fallback will be used.'
+      }
+    }
+    if (Test-MlRuntime $mlPython) {
+      Write-Step "Starting FastAPI ML service on $mlUrl..."
+      Start-CmdWindow 'Nadeem FastAPI ML Service' $MlDir @(
+        "`"$mlPython`" -m uvicorn app.main:app --host 127.0.0.1 --port $($ports.Ml)"
+      )
+      $mlOnline = Wait-MlHealth $mlUrl 60
+    }
   }
   if ($mlOnline) {
-    Write-Host 'ML service ready — live recommendations enabled' -ForegroundColor Green
+    Write-Host 'ML service ready - live recommendations enabled' -ForegroundColor Green
   } else {
-    Write-Host 'ML service unavailable — deterministic fallback enabled' -ForegroundColor Yellow
+    Write-Host 'ML service unavailable - deterministic fallback enabled' -ForegroundColor Yellow
   }
 
+  $useMlService = if ($mlOnline) { 'true' } else { 'false' }
   Write-Step "Starting backend and Cheat Controller on $backendUrl..."
   Start-CmdWindow 'Amad Backend + Cheat Controller' $BackendDir @(
     "set `"PORT=$($ports.Backend)`"",
     "set `"FIREBASE_DATABASE_EMULATOR_HOST=$emulatorHost`"",
-    'set "USE_ML_SERVICE=true"',
+    "set `"USE_ML_SERVICE=$useMlService`"",
     "set `"ML_SERVICE_URL=$mlUrl`"",
     'set "ML_SERVICE_TIMEOUT_MS=10000"',
     'npm run dev'
