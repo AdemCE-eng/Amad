@@ -59,11 +59,6 @@ def feature_importance(bundle, test):
     return [{"feature": name, "importance": round(max(0, float(value)) / positive, 4)} for name, value in pairs]
 
 
-def sync_showcase(payloads):
-    target = ROOT.parent / "ml-results-showcase" / "generated-results.js"
-    target.write_text("window.NADEEM_RESULTS = " + json.dumps(payloads, ensure_ascii=False, indent=2) + ";\n", encoding="utf-8")
-
-
 def evaluate():
     ARTIFACT_DIR.mkdir(parents=True, exist_ok=True)
     catalog, campaigns, transactions = load_data()
@@ -107,7 +102,6 @@ def evaluate():
         "decisionReason": "Accepted as the best honest validation-selected configuration. A third cycle was not run because validation gains were marginal and changing the generator or test partition after observing results would risk test-driven optimization.",
     })
     history = {"label": RESULTS_LABEL_AR, "cycles": cycles}
-    payloads = {"metrics": metrics, "featureImportance": importance, "confusionMatrices": matrices, "recommendationExamples": examples, "thresholdAnalysis": threshold_analysis, "calibration": calibration, "modelComparison": model_comparison}
     outputs = {
         "metrics.json": metrics, "feature_importance.json": importance, "confusion_matrices.json": matrices,
         "recommendation_examples.json": examples, "threshold_analysis.json": threshold_analysis,
@@ -115,7 +109,6 @@ def evaluate():
     }
     for filename, payload in outputs.items():
         (ARTIFACT_DIR / filename).write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
-    sync_showcase(payloads)
     print(json.dumps(metrics, ensure_ascii=True, indent=2))
 
 

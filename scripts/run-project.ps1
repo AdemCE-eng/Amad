@@ -391,7 +391,7 @@ function Start-Project {
 
   Write-Host "[PORTS] Firebase DB: $($ports.Database)"
   Write-Host "[PORTS] Firebase UI: $($ports.EmulatorUi)"
-  Write-Host "[PORTS] Backend + Cheat Controller: $($ports.Backend)"
+  Write-Host "[PORTS] Nadeem API: $($ports.Backend)"
   Write-Host "[PORTS] React frontend: $($ports.Frontend)"
   Write-Host "[PORTS] FastAPI ML: $($ports.Ml)"
 
@@ -487,8 +487,8 @@ function Start-Project {
   }
 
   $useMlService = if ($mlOnline) { 'true' } else { 'false' }
-  Write-Step "Starting backend and Cheat Controller on $backendUrl..."
-  Start-CmdWindow 'Amad Backend + Cheat Controller' $BackendDir @(
+  Write-Step "Starting Nadeem API on $backendUrl..."
+  Start-CmdWindow 'Nadeem API' $BackendDir @(
     "set `"PORT=$($ports.Backend)`"",
     "set `"FIREBASE_DATABASE_EMULATOR_HOST=$emulatorHost`"",
     "set `"USE_ML_SERVICE=$useMlService`"",
@@ -512,13 +512,12 @@ function Start-Project {
     throw "React frontend did not start on port $($ports.Frontend). Check the frontend terminal window."
   }
 
-  Write-Step 'Opening browser tabs...'
-  Start-Process $backendUrl
+  Write-Step 'Opening the customer application...'
   Start-Process $frontendUrl
 
   Write-Host ''
-  Write-Host 'Done. Keep the service windows open while using the demo.'
-  Write-Host "Cheat Controller: $backendUrl"
+  Write-Host 'Done. Keep the service windows open while developing locally.'
+  Write-Host "Nadeem API:       $backendUrl"
   Write-Host "React app:        $frontendUrl"
   Write-Host "Firebase UI:      $emulatorUiUrl"
   Write-Host "FastAPI health:   $mlUrl/health"

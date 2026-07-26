@@ -10,7 +10,7 @@ PURCHASE_MODEL_PATH = MODEL_DIR / "purchase_model.joblib"
 SELECTED_OFFER_MODEL_PATH = ARTIFACT_DIR / "dl-benchmark" / "models" / "selected_offer_model.joblib"
 
 RANDOM_SEED = 20260923
-# Frozen presentation fixture. This date is an existing realistic National Day
+# Frozen inference fixture. This date is an existing realistic National Day
 # candidate whose CatBoost output is stable and high-confidence without
 # changing the trained artifact or benchmark evaluation split.
 DEMO_USER_ID = "rashid"

@@ -2,7 +2,7 @@ import { STAGE_INFO } from './catalog.js';
 
 const clamp = (value, minimum, maximum) => Math.min(maximum, Math.max(minimum, value));
 
-// Presentation-only derivation. The backend remains the sole owner of stage
+// UI-only derivation. The backend remains the sole owner of stage
 // selection; this helper receives the authoritative stage and existing
 // goalProgress values and only explains the next milestone to the customer.
 export function buildEvolutionPresentation({

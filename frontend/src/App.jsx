@@ -42,9 +42,7 @@ function StatusBar() {
   );
 }
 
-// Shell only: device frame, view switching, and celebrations.
-// The operator/judge control panel is the standalone Cheat Controller served
-// by the backend at http://localhost:3000/ — no in-app PoC panel.
+// Application shell: device frame, view switching, and celebrations.
 function AppShell() {
   const { loading, activeView, setActiveView, user, pet, game, savingsAccountOpened, demoResetVersion, activeRole } = useAppData();
 

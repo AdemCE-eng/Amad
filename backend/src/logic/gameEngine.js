@@ -3,7 +3,7 @@
 // achievements, evolution stages, the weekly challenge, and the shop.
 //
 // Demo-clock rule: days advance ONLY via the advance-day endpoint (never
-// wall-clock), so a full week plays out in seconds on stage.
+// wall-clock), keeping local progression deterministic and testable.
 
 // DEFAULT_INCOME powers the income-relative NXP math below; budgetEngine
 // provides the auto-rollover settlement used by advanceDay.
@@ -52,13 +52,12 @@ function nextChallenge(currentId) {
   return { ...CHALLENGE_POOL[(idx + 1) % CHALLENGE_POOL.length], used: 0, status: "active" };
 }
 
-// Cheat Controller demo personas — same pet/goal/streak, meaningfully
-// different incomes, so equivalent-effort saves (same % of income) visibly
-// earn equal NXP live on stage.
+// Anonymous income profiles keep reward calculations comparable across
+// different income levels while preserving the same pet, goal, and streak.
 export const INCOME_PROFILES = {
-  student: { name: "نورة (طالبة)", income: 2000, balance: 2500 },
-  employee: { name: "آدم (موظف)", income: 8000, balance: 8000 },
-  executive: { name: "فيصل (تنفيذي)", income: 25000, balance: 30000 },
+  student: { name: "مستخدم طالب", income: 2000, balance: 2500 },
+  employee: { name: "مستخدم موظف", income: 8000, balance: 8000 },
+  executive: { name: "مستخدم تنفيذي", income: 25000, balance: 30000 },
 };
 
 const STREAK_MILESTONES = { 3: 30, 7: 70, 14: 150 };
@@ -76,7 +75,7 @@ const SAVE_NXP_MAX = 150;
 
 // NOTE: the old inline mockRetailCalendar / predictive-offer block that lived
 // here is gone — offerEngine.js is the canonical sales-prediction engine now
-// (deterministic, MOCK-campaign driven). The SRS pitch-trigger tunables that
+// (deterministic, MOCK-campaign driven). The retired trigger tunables that
 // sat alongside it went with the applySimulateTrigger functions this branch
 // removed; family state is owned by familyEngine.js.
 
@@ -340,7 +339,7 @@ export function equipItem(state, itemId) {
 
 // Swap the demo income persona — a settings change like setProfile, NOT a
 // financial event: pet, streak, goal progress and challenge all survive so
-// the operator can flip personas mid-pitch and compare saves live.
+// profiles can be changed without resetting financial progress.
 export function setIncomeProfile(state, profileId) {
   const p = INCOME_PROFILES[profileId];
   if (!p) return { error: "unknown_profile" };
@@ -352,7 +351,10 @@ export function setProfile(state, { petName, petType, goalAmount }) {
   if (petName) user.petName = String(petName).slice(0, 30);
   if (petType) user.petType = String(petType);
   if (Number.isFinite(goalAmount) && goalAmount > 0) user.goalAmount = Math.round(goalAmount);
-  const game = { ...gameOf(state), stage: stageFromSavings(user.savedAmount, user.goalAmount) };
+  // Profile and goal edits are settings changes, not savings events. Keeping
+  // the current stage prevents onboarding from hatching the egg merely
+  // because a new target changes the saved/goal ratio.
+  const game = { ...gameOf(state) };
   return { ...state, user, game };
 }
 

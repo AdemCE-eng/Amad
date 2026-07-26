@@ -79,8 +79,8 @@ router.post("/demo/complete-challenge", async (_req, res, next) => {
   }
 });
 
-// POST /api/demo/set-income-profile  { profileId } — Cheat Controller persona
-// switch (student | employee | executive). A settings change like
+// POST /api/demo/set-income-profile  { profileId } — local profile
+// switch (student | employee | executive). This is a settings change like
 // /api/user/goal, not a financial event: no health/AI reaction, just swaps
 // name/income/balance so the next save demonstrates income-relative NXP live.
 router.post("/demo/set-income-profile", async (req, res, next) => {

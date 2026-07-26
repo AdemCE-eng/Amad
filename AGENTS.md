@@ -2,7 +2,7 @@
 
 - Product name: Nadeem / نديم
 - Mascot name: صقر
-- Team identity: Pixel Falcon
+- Team identity: Pixel Falcons
 - Demo child identity: راشد / `rashid`
 - Never include a real personal name.
 - Arabic interfaces must remain RTL.

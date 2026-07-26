@@ -51,9 +51,7 @@ backend-err.log
 /ml-service/training-logs/
 /ml-service/**/*.log
 
-# Browser/test caches and non-canonical screenshot resolution
+# Browser/test caches
 .cache/
 playwright/.cache/
 test-results/
-/visual-design/screenshots/*-1600x900.png
-/ml-results-showcase/screenshots/*-1600x900.png

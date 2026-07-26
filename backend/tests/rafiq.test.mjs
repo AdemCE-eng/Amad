@@ -12,6 +12,7 @@ import {
 import {
   applyGameEffects,
   setIncomeProfile,
+  setProfile,
   INCOME_PROFILES,
 } from "../src/logic/gameEngine.js";
 import { healthStateOf } from "../../shared/rafiqIdentity.js";
@@ -64,6 +65,20 @@ test("persona switch mid-session leaves an in-progress pet untouched", () => {
   assert.deepEqual(after.game, before.game);
   assert.equal(after.user.savedAmount, before.user.savedAmount);
   assert.equal(after.user.allTimeHighBalance, before.user.allTimeHighBalance);
+});
+
+test("onboarding profile and goal edits do not hatch the egg", () => {
+  const before = initialState();
+  assert.equal(before.game.stage, 0);
+
+  const after = setProfile(before, {
+    petName: "صقر",
+    petType: "falcon",
+    goalAmount: 2000,
+  });
+
+  assert.equal(after.user.goalAmount, 2000);
+  assert.equal(after.game.stage, 0, "a settings edit must not count as an evolution event");
 });
 
 // ── Priority 0: anti-farming high-water mark ─────────────────────────────

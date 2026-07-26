@@ -1,45 +1,69 @@
-# Personalized promotion prediction implementation plan
+# Personalized recommendation system
 
-## Goals
+## Objective
 
-Build two reproducible tabular classifiers over clearly marked **MOCK / SYNTHETIC DEMO DATA — SAUDI MARKET**, then combine their probabilities in an explainable recommendation orchestrator. Probabilities come only from scikit-learn models; text is templated explanation of model inputs and outputs.
+Nadeem combines two reproducible tabular models over clearly labeled
+**SYNTHETIC Saudi-market data**. The models calculate probabilities; the
+application turns those outputs into transparent recommendation text.
 
-## Model A: seasonal offer prediction
+## Offer Opportunity Agent
 
-- Unit: merchant-date observation.
-- Target: campaign starts within the configured future window.
-- Inputs: category, city, occasion, calendar position, days to occasion, recent campaign counts, historic same-season count, interval and discount history, duration, salary-day proximity, and Saudi seasonal indicators.
-- Model: `HistGradientBoostingClassifier` behind a `ColumnTransformer` with one-hot categorical encoding.
-- Split: chronological; the newest period is held out.
-- Output: calibrated-looking model probability (without claiming formal calibration), thresholded confidence, saving estimate, and feature-based reasons.
+- **Selected model:** CatBoost
+- **Unit:** merchant and observation date
+- **Target:** whether a merchant campaign starts within the prediction window
+- **Signals:** historical campaigns, seasonality, Saudi occasions,
+  salary-period proximity, merchant category, campaign intervals, and prior
+  discount behavior
+- **Output:** probability of a near-term offer plus an estimated saving
 
-## Model B: user purchase behavior
+## Purchase Behavior Agent
 
-- Unit: pseudonymous user/merchant/date observation.
-- Target: purchase from that merchant in the next seven days.
-- Inputs: recency, 7/30/90-day frequency, average spend, merchant/category spend shares, weekday/time preference, interval consistency, RFM values, seasonal and salary-day behavior, and city.
-- Model: `RandomForestClassifier` behind the same explicit categorical/numeric preprocessing pattern. A transparent RFM layer contributes features but is not presented as the model.
-- Split: chronological to prevent future transaction leakage.
-- Ranking metrics include Precision@3 and HitRate@3.
+- **Selected model:** HistGradientBoosting
+- **Unit:** pseudonymous user, merchant, and observation date
+- **Target:** whether the user purchases from that merchant within seven days
+- **Signals:** recency, frequency, spending, merchant and category affinity,
+  purchase timing, interval consistency, seasonality, and salary periods
+- **Output:** probability of near-term purchase
 
-## Recommendation orchestration
+## Recommendation Coordinator
 
-For non-essential merchants only:
+For non-essential merchants, the coordinator combines:
 
-`score = normalizedSaving × offerProbability × purchaseProbability7d × budgetRelevance`
+```text
+offer probability × purchase probability × estimated saving × budget relevance
+```
 
-Recommendations must pass the offer and personalized-score thresholds, have meaningful expected savings, and not be accepted/dismissed. Ranking is deterministic. High offer probability alone and high affinity alone are both insufficient.
+It then applies eligibility rules, essential-category suppression, and prior
+user decisions. High offer probability alone is not enough, and the result is
+always presented as probabilistic guidance rather than a guaranteed promotion.
 
-## Integration
+## Model selection
 
-- FastAPI exposes health, offer prediction, purchase patterns, recommendations, and development-only retraining.
-- Express adds only `/api/ml/recommendations` and an adapter controlled by `USE_ML_SERVICE`, `ML_SERVICE_URL`, and `ML_SERVICE_TIMEOUT_MS`.
-- The adapter sends only a pseudonymous user ID and validates all remote data. Every failure mode gracefully falls back to existing deterministic output.
+The benchmark compared conventional tabular models with CatBoost and optional
+neural candidates, including MLP and GRU experiments. Selection considered F1,
+balanced accuracy, calibration, latency, artifact size, and training cost.
+Neural models were not selected because they did not provide enough practical
+improvement for this dataset and runtime.
 
-## Evaluation and artifacts
+Detailed methodology and results are documented in
+[the model card](../ml-service/MODEL_CARD.md).
 
-Data generation, training, and evaluation use a fixed seed. Metrics, confusion matrices, feature importance, and recommendation examples are written by scripts, never hand-authored. All results carry the Arabic synthetic-data limitation label. Tests assert time-safe features, actual fitted estimators, deterministic ranking, affinity/offer counterexamples, essential suppression, API behavior, and adapter privacy/fallback behavior.
+## Integration and fallback
 
-## Visual outputs
+- FastAPI exposes health, prediction, purchase-pattern, and recommendation
+  endpoints.
+- Express sends only a pseudonymous user identifier to the optional ML service.
+- The adapter validates remote results before using them.
+- If the ML service is disabled, unavailable, slow, or returns invalid data,
+  Nadeem uses deterministic local recommendation logic.
 
-`visual-design/` is an offline RTL component laboratory; `ml-results-showcase/` is a separate offline results dashboard. Both consume generated artifacts. A sync script generates `generated-results.js`; Playwright captures canonical 1920×1080 PNGs. Neither folder is linked from the production frontend.
+## Reproducibility and safety
+
+Data generation, training, and evaluation use a fixed seed. Generated datasets
+and model binaries remain local and are ignored by Git. Evaluation scripts
+write metrics and diagnostic artifacts rather than relying on hand-authored
+results.
+
+The current dataset is synthetic and does not represent real customer activity.
+Production use would require consented data, governance, calibration monitoring,
+drift detection, security review, and verified merchant campaign sources.

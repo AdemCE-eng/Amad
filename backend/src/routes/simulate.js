@@ -1,5 +1,5 @@
-// simulate.js — the endpoints the Cheat Controller drives.
-// Every mutating route: read state → petEngine (math) → Gemini (message) →
+// Simulation endpoints for local development and automated validation.
+// Every mutating route: read state → petEngine (math) → response generation →
 // single Firebase write → return the new state.
 import { Router } from "express";
 import { db } from "../firebase.js";
@@ -65,8 +65,8 @@ export async function commit(next, txn) {
   if (txn) await db.ref("/transactions").push({ ...txn, timestamp: Date.now() });
 
   // aiSource is NOT stored in Firebase (the frontend never needs it) — it's
-  // only surfaced in the HTTP response so the Cheat Controller can show
-  // whether the message just came from a real Gemini call or a fallback.
+  // only surfaced in the HTTP response for diagnostics, indicating whether
+  // response generation used the configured service or the local fallback.
   return { user: next.user, pet, emergencyShield: next.emergencyShield, game: next.game, meta: next.meta, aiSource };
 }
 

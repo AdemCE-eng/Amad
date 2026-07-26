@@ -12,7 +12,7 @@ import SarAmount from './SarAmount';
 // Applying does BOTH in one action: /api/plan/apply (opens account, installs the
 // edited budgets, sets the goal) + /api/user/profile (the chosen companion).
 const INCOME_PRESETS = [4000, 8000, 15000, 25000];
-const DEFAULT_SAVINGS_GOAL = 4000;
+const DEFAULT_SAVINGS_GOAL = 5000;
 const CADENCE_LABEL = { daily: 'يومي', weekly: 'أسبوعي', monthly: 'شهري' };
 const NAME_SUGGESTIONS = ['صقر', 'سعود', 'رزين', 'وفرة'];
 const COMPANIONS = [
@@ -27,14 +27,16 @@ export default function SavingsPlanSheet({ onClose }) {
   const [income, setIncome] = useState('8000');
   const [plan, setPlan] = useState(null);
   const [budgets, setBudgets] = useState(null);   // editable copy
-  const [target, setTarget] = useState(0);        // editable monthly savings
-  const [goal, setGoal] = useState(DEFAULT_SAVINGS_GOAL);
+  const [target, setTarget] = useState('');       // editable monthly savings
+  const [goal, setGoal] = useState(String(DEFAULT_SAVINGS_GOAL));
   const [loadingPlan, setLoadingPlan] = useState(false);
   const [petType, setPetType] = useState('falcon');
   const [petName, setPetName] = useState('');
 
   const incomeNum = parseFloat(income) || 0;
-  const ratePct = incomeNum > 0 ? Math.round((target / incomeNum) * 100) : 0;
+  const targetNum = Math.round(parseFloat(target) || 0);
+  const goalNum = Math.round(parseFloat(goal) || 0);
+  const ratePct = incomeNum > 0 ? Math.round((targetNum / incomeNum) * 100) : 0;
 
   const compute = async () => {
     if (!incomeNum || incomeNum <= 0) return;
@@ -44,7 +46,8 @@ export default function SavingsPlanSheet({ onClose }) {
       setPlan(res.plan);
       // deep copy the budgets so edits don't mutate the response
       setBudgets(JSON.parse(JSON.stringify(res.plan.budgets)));
-      setTarget(res.plan.monthlyTarget);
+      setTarget(String(res.plan.monthlyTarget));
+      setGoal(String(Math.max(1, res.plan.monthlyTarget * 12)));
       setStep('plan');
     } catch { /* offline demo: stay on income step */ }
     setLoadingPlan(false);
@@ -57,8 +60,8 @@ export default function SavingsPlanSheet({ onClose }) {
 
   const apply = () => {
     runAction(async () => {
-      await api.applyPlan({ monthlyIncome: incomeNum, budgets, monthlyTarget: target, goalAmount: goal });
-      await api.setProfile({ petName: petName.trim() || 'صقر', petType, goalAmount: goal });
+      await api.applyPlan({ monthlyIncome: incomeNum, budgets, monthlyTarget: targetNum, goalAmount: goalNum });
+      await api.setProfile({ petName: petName.trim() || 'صقر', petType, goalAmount: goalNum });
     }).then(onClose);
   };
 
@@ -132,7 +135,8 @@ export default function SavingsPlanSheet({ onClose }) {
               </div>
               <input
                 type="number" inputMode="numeric" min="1" max={incomeNum} value={target}
-                onChange={(e) => setTarget(Math.min(incomeNum, Math.max(0, Math.round(parseFloat(e.target.value) || 0))))}
+                onChange={(e) => setTarget(e.target.value)}
+                onBlur={() => setTarget(String(Math.min(incomeNum, Math.max(0, targetNum))))}
                 className="mt-2 w-full text-center text-2xl font-black bg-white/10 text-emerald-400 border-2 border-white/15 focus:border-coral rounded-xl py-2.5 outline-none"
               />
               <p className="mt-1.5 text-center text-[10px] font-bold text-cream/40">
@@ -142,13 +146,17 @@ export default function SavingsPlanSheet({ onClose }) {
               <div className="mt-3 border-t border-white/10 pt-3">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-bold text-cream/60">هدف الادخار (⃁)</label>
-                  <span className="text-[10px] font-bold text-cream/40">القيمة الافتراضية 4000</span>
+                  <span className="text-[10px] font-bold text-cream/40">هدف مقترح لمدة 12 شهرًا</span>
                 </div>
                 <input
                   type="number" inputMode="numeric" min="1" value={goal}
-                  onChange={(e) => setGoal(Math.max(1, Math.round(parseFloat(e.target.value) || 1)))}
+                  onChange={(e) => setGoal(e.target.value)}
+                  onBlur={() => setGoal(String(Math.max(1, goalNum)))}
                   className="mt-2 w-full text-center text-2xl font-black bg-white/10 text-coral border-2 border-white/15 focus:border-coral rounded-xl py-2.5 outline-none"
                 />
+                <p className="mt-1.5 text-center text-[10px] font-bold text-cream/40">
+                  المبلغ الكلي الذي ينمو معه صقر، ويمكنك تعديله كما يناسبك
+                </p>
               </div>
             </div>
 
@@ -173,7 +181,7 @@ export default function SavingsPlanSheet({ onClose }) {
 
             <button
               onClick={() => setStep('pet')}
-              disabled={target <= 0 || target > incomeNum}
+              disabled={targetNum <= 0 || targetNum > incomeNum || goalNum <= 0}
               className="mt-6 w-full bg-coral text-ink font-black py-4 rounded-2xl active:scale-95 transition-transform shadow-lg shadow-coral/20 flex items-center justify-center gap-2 disabled:bg-white/10 disabled:text-cream/30 disabled:shadow-none"
             >
               التالي: اختر مرافقك <ChevronLeft size={18} />
@@ -185,7 +193,7 @@ export default function SavingsPlanSheet({ onClose }) {
         {step === 'pet' && (
           <>
             <p className="text-sm text-cream/50 font-medium mb-3">
-              مرافقك يرتبط بخطتك مباشرة، وينمو كلما اقتربت من هدفك (<SarAmount value={goal} />).
+              مرافقك يرتبط بخطتك مباشرة، وينمو كلما اقتربت من هدفك (<SarAmount value={goalNum} />).
             </p>
             <div className="flex justify-center my-2">
               <Mascot emotion={petName ? 'happy' : 'idle'} stage={0} size={130} />

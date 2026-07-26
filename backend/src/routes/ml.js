@@ -8,9 +8,8 @@ import {
 
 const router = Router();
 
-// Read-only operator check. Unlike /ml/recommendations, this does not
-// materialize offers in Firebase, so opening the Cheat Controller cannot
-// advance or alter the customer demo journey.
+// Read-only service check. Unlike /ml/recommendations, this does not
+// materialize offers in Firebase or alter the customer journey.
 router.get("/ml/status", async (req, res, next) => {
   try {
     const result = await getPersonalizedRecommendations(String(req.query.userId || "rashid"));

@@ -9,7 +9,7 @@ FROZEN_TRANSACTION_TIMESTAMP = pd.Timestamp("2026-09-07T19:00:00")
 
 
 def canonical_demo_transactions(transactions):
-    """Return the frozen presentation history without mutating model data.
+    """Return the frozen inference history without mutating model data.
 
     The source row is SYNTHETIC. Moving its timestamp within the same synthetic
     history creates a repeatable inference fixture and does not touch the

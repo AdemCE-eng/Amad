@@ -36,7 +36,7 @@ export function initialLoyaltyState() {
 
 // Pre-analysis state used by seed and full reset. Recommendations are
 // materialized only after a fresh /api/ml/recommendations request, preventing
-// old cards from flashing before the presentation analysis starts.
+// stale cards from appearing before a fresh analysis starts.
 export function initialOffersState() {
   return {
     predicted: {},

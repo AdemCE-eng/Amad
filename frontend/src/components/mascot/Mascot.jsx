@@ -354,7 +354,7 @@ function Mascot({
   const stateShadow = stateGlow && stateGlow !== 'none' ? `drop-shadow(${stateGlow})` : '';
   const wrapperFilter = [tierShadow, stateShadow].filter(Boolean).join(' ') || 'none';
 
-  // Revive burst — the most-watched pitch moment. Leaving `sick` for any
+  // Revive burst. Leaving `sick` for any
   // healthier state fires a one-shot pop + expanding ring (~0.9s).
   const [reviving, setReviving] = useState(false);
   const prevEmotion = useRef(emotion);
@@ -541,22 +541,23 @@ function Mascot({
             {equipped && <Accessory id={equipped} uid={uid} />}
           </Pivot>
 
-          {/* Egg shell (stage 0) wraps the lower body, over the belly. */}
+          {/* Original stage-zero treatment: Saqr remains inside the egg shell. */}
           {stage === 0 && (
-            <g>
+            <g data-mascot-stage="egg">
               <path
-                d="M60,160 
-                    L75,148 L90,160 
-                    L105,148 L120,160 
-                    L135,148 L150,160 
-                    L165,148 L180,160 
-                    Q170,208 120,208 
+                d="M60,160
+                    L75,148 L90,160
+                    L105,148 L120,160
+                    L135,148 L150,160
+                    L165,148 L180,160
+                    Q170,208 120,208
                     Q70,208 60,160 Z"
                 fill={C.shell} stroke={C.shellEdge} strokeWidth="2"
               />
               <ellipse cx="102" cy="182" rx="7" ry="10" fill="#fff" opacity="0.5" />
             </g>
           )}
+
         </g>
 
         <Effects fx={e.fx} />

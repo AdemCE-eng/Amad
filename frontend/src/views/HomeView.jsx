@@ -11,7 +11,6 @@ import CountUp from '../components/ui/CountUp';
 import SarAmount from '../components/ui/SarAmount';
 import SavingsPlanSheet from '../components/ui/SavingsPlanSheet';
 import TransactionRow from '../components/ui/TransactionRow';
-import HomePurchaseActions from '../components/ui/HomePurchaseActions';
 import { STAGE_INFO } from '../lib/catalog';
 
 const QUICK_ACTIONS = [
@@ -136,8 +135,6 @@ export default function HomeView() {
           </div>
         </section>
 
-        {/* REMOVABLE_HOME_PURCHASE_ACTIONS: standalone controller-purchase panel. */}
-        <HomePurchaseActions />
       </main>
 
       {planOpen && <SavingsPlanSheet onClose={() => setPlanOpen(false)} />}

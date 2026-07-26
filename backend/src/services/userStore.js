@@ -82,7 +82,7 @@ export async function listUserIds() {
 
 export async function removeAllUsers() {
   // `/users` is authoritative. The remaining keys remove the retired shared
-  // layout as well, so a between-judges wipe leaves no orphaned demo identity.
+  // layout as well, so a reset leaves no orphaned local identity.
   await adminDb.ref("/").update({
     users: null,
     user: null,

@@ -124,7 +124,7 @@ export function AppDataProvider({ children }) {
     }
   };
 
-  // Full presentation reset. The backend restores canonical Firebase state;
+  // Full local-state reset. The backend restores canonical Firebase state;
   // the frontend returns Home and remounts every view so no analysis, loading,
   // notice, setup-step, or cached visual state can flash from the prior run.
   // Setup then begins only from Home's existing savings-plan card.

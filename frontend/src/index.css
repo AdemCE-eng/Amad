@@ -211,7 +211,7 @@ body {
 }
 .anim-flap-r { animation: flapR 0.5s ease-in-out infinite; }
 
-/* ── Revive burst (Sick → healthier): the single most-watched pitch beat ── */
+/* ── Revive burst (Sick → healthier) ── */
 @keyframes revivePop {
   0% { transform: scale(0.9); }
   35% { transform: scale(1.16); }

@@ -1,8 +1,8 @@
-import { USER_ID_KEY } from './userIdentity';
+import { USER_ID_KEY } from './userIdentity.js';
 
 export const CANONICAL_DEMO_ROLE = 'rashid';
 
-// Browser-only presentation state must never survive a full backend reset.
+// Browser-only transient state must never survive a full backend reset.
 // Financial and game state remain owned by Firebase; these keys only control
 // transient UI choices, notices, and analysis visibility.
 export function clearDemoBrowserState(storage = window.localStorage) {

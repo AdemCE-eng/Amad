@@ -37,9 +37,3 @@ Endpoints: `GET /health`, `POST /v1/offers/predict`, `GET /v1/users/{user_id}/pu
 The chronological 70/15/15 train/validation/test partitions prevent future records from contributing to features. Actual evaluation output is generated into `artifacts/`; it is labeled as experimental Saudi-market data and must not be interpreted as production performance.
 
 See `MODEL_CARD.md` for dataset scope, temporal splits, actual limitations, and production requirements.
-
-From the repository root, synchronize evaluated JSON results into the offline HTML showcase:
-
-```powershell
-npm --prefix ml-results-showcase run sync-results
-```

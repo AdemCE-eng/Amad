@@ -70,7 +70,7 @@ export function initialState() {
       name: "راشد",
       petName: "صقر",
       petType: "falcon",
-      income: DEFAULT_INCOME, // SAR/month — swapped live via the Cheat Controller's income profiles
+      income: DEFAULT_INCOME, // SAR/month — configurable through local income profiles
       goalAmount: 4000,
       savedAmount: SEED_SAVED_AMOUNT,
       // NXP high-water mark of savedAmount (anti-farming): deposits earn NXP
@@ -106,7 +106,7 @@ export function initialState() {
       achievements: { first_save: { unlockedAt: Date.now() - 5 * 86400000 } },
       // Mirrors gameEngine's CHALLENGE_POOL[0] (kept inline — gameEngine
       // imports from this file, so importing back would be circular), with a
-      // demo-tuned used=1 so the progress bar is already alive on stage.
+      // Seeded with initial progress so the weekly challenge is visible.
       activeChallenge: {
         id: "less_coffee",
         title: "قهوة أقل هذا الأسبوع",

@@ -1,123 +1,206 @@
-# Nadeem
+# Nadeem — نديم
 
-> A proactive financial companion that turns saving into an engaging habit, guides spending decisions before they happen, and brings families closer to shared goals.
+> A proactive, personalized financial companion for better saving and spending decisions.
 
-## The Problem
+Nadeem by **Pixel Falcons** explores how personal finance can become more
+timely, understandable, and engaging. It combines
+budget planning, family saving, financial gamification, and probabilistic
+merchant-opportunity recommendations in one Arabic-first experience.
 
-Traditional banking applications are strongest after money has already been spent. They show balances and transaction history, but offer limited motivation to save, limited guidance before the next purchase, and few reasons for families to build financial habits together.
+This repository is an engineering case study, not a production banking
+application. All current financial activity and model training data is clearly
+labeled **MOCK / SYNTHETIC** and represents fictional Saudi-market scenarios.
 
-Customers need more than another dashboard. They need immediate emotional feedback, relevant guidance at the moment of decision, and a shared experience that makes long-term progress feel achievable.
+## Product Overview
 
-## The Solution
+Most financial applications explain spending after it happens. Nadeem focuses
+on the moment before the next decision:
 
-Nadeem combines three connected experiences:
+- Can the user save more this month?
+- Is a possible merchant opportunity relevant to their real behavior?
+- Would waiting help, or is buying now the better action?
+- How can a family make progress toward one shared goal?
 
-1. **Gamification** makes progress visible and emotionally rewarding.
-2. **AI Prediction** evaluates whether waiting for a likely merchant opportunity could save more than buying today.
-3. **Family Saving** turns individual intentions into shared goals and coordinated action.
+Nadeem turns those questions into a guided customer journey instead of another
+passive dashboard.
 
-Together, these experiences help customers build healthier habits before spending happens—not simply review it afterward.
+## Key Features
 
-## Why Banks Need This
+### Personal saving and budgeting
 
-Nadeem gives banks a positive reason to engage customers between transactions. Instead of relying on generic campaigns or passive financial summaries, banks can support timely decisions, reinforce saving behavior, and create more relevant customer interactions.
+- Income-based saving-plan suggestions
+- Editable monthly targets and category budgets
+- Automatic tracking of saving progress
+- Emergency-withdrawal protection
 
-The result is a stronger everyday relationship: customers return to care for progress, review personalized opportunities, contribute to family goals, and celebrate better financial choices.
+### Saqr financial companion
 
-## Three Core Innovations
+Saqr (صقر) reflects positive financial behavior through health, mood,
+progression, streaks, and accessible celebration states. The companion begins
+in its egg stage and evolves only through actual saving progress.
 
-### 1. Gamification
+### Personalized saving opportunities
 
-Saving usually offers a delayed reward. Nadeem makes that reward visible today through Saqr, a virtual companion whose health, mood, and evolution respond to positive financial behavior.
+Two analytical models evaluate different signals:
 
-Every contribution becomes meaningful feedback. Customers see progress, receive encouragement, earn rewards, and watch Saqr grow as their saving habit becomes stronger. NXP, Akthr points, and cashback remain separate reward types, each supporting a clear role in the experience.
+1. **Offer Opportunity Agent — CatBoost**
+   estimates whether a merchant campaign may appear soon.
+2. **Purchase Behavior Agent — HistGradientBoosting**
+   estimates whether a user may purchase from that merchant soon.
 
-This is not a virtual pet added beside a banking product. Saqr is the emotional interface for financial progress: it turns an abstract balance into a relationship customers want to maintain. Emergency protection also prevents a necessary withdrawal from feeling like personal failure.
+The Recommendation Coordinator combines both probabilities with estimated
+saving, budget relevance, essential-category safeguards, and previous user
+decisions. It returns one understandable action: **wait**, **buy now**, or
+**not relevant**.
 
-By shortening the emotional distance between today's action and tomorrow's goal, Nadeem encourages repeat engagement and helps consistent saving become a habit.
+Predictions are probabilistic. Nadeem never guarantees that a future promotion
+will occur.
 
-### 2. AI Prediction
+### Family saving
 
-Nadeem does not simply recommend products or display a generic merchant list. It estimates whether waiting for a possible future merchant opportunity could create greater savings than purchasing today.
+- Shared family goals and progress
+- Explainable contribution planning
+- Individual contribution history
+- Parent-to-child encouragement and rewards
 
-Before presenting guidance, the AI Recommendation Engine evaluates the predicted likelihood of an opportunity, the customer's likelihood of purchasing, estimated savings, budget relevance, recent behavior, previous decisions, and essential-spending safeguards.
+### Separate reward systems
 
-It then recommends one clear action: wait, buy now, or treat the opportunity as not relevant. These recommendations are probabilistic, and Nadeem never presents a future promotion as guaranteed.
+- **NXP:** virtual in-app progression currency
+- **Akthr:** loyalty-style reward points
+- **Cashback:** campaign-funded monetary rewards
 
-For banks, this creates a more useful moment of engagement. A relevant recommendation can strengthen trust, improve campaign relevance, and help customers associate the bank with better decisions—not only completed transactions.
+These balances remain separate throughout the application.
 
-### 3. Family Saving
+### Reliable fallback
 
-Nadeem makes saving collaborative through shared goals, contribution planning, progress visibility, and parent-to-child rewards.
+The React and Node application continues to work when the Python ML service is
+unavailable. The backend validates ML responses and switches to deterministic,
+labeled fallback guidance on timeout, invalid output, low confidence, or
+service failure.
 
-Each family member can understand how their contribution supports the goal while parents coordinate a realistic plan. Encouragement and rewards turn the goal into a shared commitment rather than an isolated balance.
+## Architecture
 
-This social layer creates accountability and continuity. Families have more reasons to return, celebrate progress together, and maintain the saving journey over time.
+```text
+Arabic React application
+          │
+          ▼
+Node.js / Express application services
+     │                         │
+     ▼                         ▼
+Firebase Realtime DB     Recommendation adapter
+                               │
+                    ┌──────────┴──────────┐
+                    ▼                     ▼
+             FastAPI ML service   Deterministic fallback
+                    │
+          ┌─────────┴─────────┐
+          ▼                   ▼
+       CatBoost      HistGradientBoosting
+          └─────────┬─────────┘
+                    ▼
+        Personalized recommendation
+```
 
-## Judge Demonstration Flow
+The backend owns financial calculations, rewards, family workflows, and state
+changes. Firebase keeps customer screens synchronized. The optional FastAPI
+service is stateless with respect to Firebase and receives only pseudonymous
+identifiers and derived behavioral features.
 
-1. Activate a personal saving goal and make a contribution.
-2. Show Saqr's immediate health, mood, and evolution response.
-3. Review the distinct NXP, Akthr, and cashback reward experiences.
-4. Open Saving Opportunities and request a personalized prediction.
-5. Explain why Nadeem recommends waiting, buying today, or ignoring the opportunity.
-6. Open the family goal and generate a contribution plan.
-7. Switch to the parent role and send a family reward.
-8. Return to Rashid's account to show the notification and shared celebration.
-9. Reset the complete journey from the Cheat Controller for the next demonstration.
+## Model Selection
 
-## System Architecture
+Traditional tabular models and optional neural candidates were evaluated under
+the same chronological protocol. The benchmark included logistic regression,
+tree ensembles, CatBoost, embedding MLPs, and a GRU.
 
-![Nadeem system architecture](visual-design/assets/svg/nadeem-system-architecture.svg)
+- CatBoost was selected for offer opportunity prediction.
+- HistGradientBoosting remained selected for purchase behavior.
+- Neural candidates were not selected because they did not provide enough
+  improvement to justify their additional complexity and training cost.
 
-The three product innovations come together in one customer experience. Customer actions flow to Nadeem Core Services, which coordinates financial logic, rewards, family journeys, notifications, and business rules. Core Services keeps the Financial Platform synchronized and requests personalized guidance from the AI Recommendation Engine when needed. The engine returns its prediction to Core Services, which turns it into a clear recommendation and delivers it back to the customer.
+Selection considered F1, balanced accuracy, calibration, latency, artifact
+size, and training cost. Exact results and limitations remain in the
+[model card](ml-service/MODEL_CARD.md).
+
+## Data and Safety
+
+All current datasets are **MOCK / SYNTHETIC — SAUDI MARKET**.
+
+- No real customer banking data is included.
+- No real account numbers, IBANs, card details, or raw banking descriptions are
+  stored in the repository.
+- Merchant campaign histories are fictional examples, not factual claims.
+- User identifiers are pseudonymous.
+- Essential purchases are suppressed from delay recommendations.
+- An LLM may explain a prediction but never calculates its probability.
+
+Real deployment would require consented transaction features, verified campaign
+history, authentication and authorization, governance, monitoring,
+recalibration, and drift detection.
 
 ## Technology Stack
 
-| Experience layer | Technology |
+| Area | Technologies |
 | --- | --- |
-| Customer application | React |
-| Application and financial services | Node.js |
-| Live data synchronization | Realtime database |
-| Predictive intelligence | Python ML service |
+| Frontend | React, Vite, Tailwind CSS, Motion |
+| Backend | Node.js, Express |
+| State | Firebase Realtime Database emulator |
+| ML service | Python, FastAPI, scikit-learn, CatBoost |
+| Data | pandas, NumPy, joblib |
+| Optional benchmark | PyTorch |
+| Testing | Node test runner, pytest |
 
-## Repository
+PyTorch is used only for optional benchmark experiments and is not required for
+normal application startup.
+
+## Repository Structure
 
 ```text
 Amad/
-|-- frontend/                 Customer application
-|-- backend/                  Application services and financial journeys
-|-- ml-service/               AI Recommendation Engine
-|-- cheat-controller/         Demonstration control interface
-|-- visual-design/            Presentation-ready technical visuals
-|-- ml-results-showcase/      Detailed AI evaluation material
-|-- docs/                     Architecture and API documentation
-`-- run-project.bat           One-click Windows launcher
+├── frontend/        Arabic React customer application
+├── backend/         Express API, financial engines, and Firebase integration
+├── ml-service/      FastAPI prediction service and reproducible ML pipeline
+├── shared/          Shared domain constants and identity rules
+├── docs/            Architecture, API, and data-model documentation
+├── scripts/         Local development launcher
+└── run-project.bat  One-click Windows startup
 ```
 
-## Getting Started
+## Quick Start
 
-### Fastest Windows demonstration
+### Prerequisites
 
-Prerequisites are Node.js, npm, and Java. Python is needed only when running the live AI Recommendation Engine.
+- Node.js and npm
+- Java 17 or newer
+- Firebase CLI
+- Python 3.10–3.13 only when using the optional ML service
 
-1. Open the repository root.
-2. Double-click `run-project.bat`.
-3. Keep the service terminal windows open.
-4. Use the customer application and Cheat Controller links printed by the launcher.
+### One-click Windows startup
 
-The launcher prepares the local demonstration, starts the required services, seeds the presentation state, and opens the browser experiences. If the live AI service is unavailable, Nadeem continues through its reliable offline fallback.
+From the repository root:
 
-### Manual local setup
+```powershell
+.\run-project.bat
+```
 
-Start the Firebase database emulator:
+The launcher starts the Firebase emulator, seeds isolated local data, starts
+the API and frontend, and uses the deterministic recommendation fallback when
+local model artifacts are unavailable.
+
+### Manual startup
+
+Install the Firebase CLI once:
 
 ```powershell
 npm install -g firebase-tools
-firebase emulators:start --only database
 ```
 
-Start the application services:
+Start the Realtime Database emulator:
+
+```powershell
+firebase emulators:start --only database --project amad-demo
+```
+
+In a second terminal, start the backend:
 
 ```powershell
 cd backend
@@ -127,68 +210,86 @@ npm run seed
 npm run dev
 ```
 
-Start the customer application:
+In a third terminal, start the frontend:
 
 ```powershell
 cd frontend
 npm install
-npm run dev -- --host 127.0.0.1 --port 5173
+npm run dev
 ```
 
 Default local addresses:
 
-- Customer application: `http://localhost:5173/`
-- Cheat Controller: `http://localhost:3000/`
-- Firebase Emulator UI: `http://localhost:4000/`
+- Frontend: `http://127.0.0.1:5173`
+- API: `http://127.0.0.1:3000`
+- API health: `http://127.0.0.1:3000/health`
+- Firebase Emulator UI: `http://127.0.0.1:4000`
 
-For live predictions, follow the [AI service setup guide](ml-service/README.md). The core demonstration remains available without Python.
+## Optional ML Service
 
-## Cheat Controller
+From `ml-service`:
 
-The Cheat Controller gives the presenter a controlled way to demonstrate the full journey without exposing operator controls in the customer experience.
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe -m scripts.generate_demo_data
+.\.venv\Scripts\python.exe -m scripts.train_models
+.\.venv\Scripts\python.exe -m scripts.evaluate_models
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --port 8001
+```
 
-It can:
+Configure the backend:
 
-- Set a personal saving goal and add savings.
-- Deposit a salary with an automatic saving percentage.
-- Simulate in-budget and over-budget purchases.
-- Trigger a protected emergency withdrawal.
-- Generate and settle the staged merchant opportunity.
-- Switch between child and parent roles.
-- Send a family reward.
-- Show whether guidance came from live AI or the offline fallback.
-- Restore the complete demonstration state in about one second.
+```env
+USE_ML_SERVICE=true
+ML_SERVICE_URL=http://127.0.0.1:8001
+ML_SERVICE_TIMEOUT_MS=1500
+```
 
-With the default manual setup, open `http://localhost:3000/`.
+Generated full datasets and fitted model binaries are intentionally ignored by
+Git. Small schema-preserving samples and evaluation metadata remain tracked.
 
-## Technical Documentation
+## Testing
 
-Detailed engineering, evaluation, and model information remains in the supporting documentation:
+Frontend:
 
-- [Current system architecture](docs/CURRENT_ARCHITECTURE.md)
-- [API reference](docs/API.md)
+```powershell
+npm --prefix frontend test
+npm --prefix frontend run build
+```
+
+Backend:
+
+```powershell
+npm --prefix backend test
+npm --prefix backend run test:routes
+```
+
+Route tests require the Firebase emulator and backend to be running.
+
+ML:
+
+```powershell
+ml-service\.venv\Scripts\python.exe -m pytest ml-service
+```
+
+Tests that load trained estimators require locally generated model artifacts.
+
+## Documentation
+
+- [Current architecture](docs/CURRENT_ARCHITECTURE.md)
+- [Backend API](docs/API.md)
 - [Firebase data model](docs/DATA_MODEL.md)
-- [AI implementation plan](docs/AI_IMPLEMENTATION_PLAN.md)
-- [AI model card](ml-service/MODEL_CARD.md)
-- [AI service setup](ml-service/README.md)
-- [Technical visual guide](visual-design/README.md)
-- [AI results showcase](ml-results-showcase/README.md)
+- [AI implementation notes](docs/AI_IMPLEMENTATION_PLAN.md)
+- [ML service guide](ml-service/README.md)
+- [Model card](ml-service/MODEL_CARD.md)
 
-## Live demo links
-- [Front page](https://nadeemfront.onrender.com)
-- [Backend](https://nadeemback.onrender.com)
+## Current Limitations
 
-## Notes
-
-> Nadeem is a hackathon prototype that uses SYNTHETIC and MOCK data only; it contains and processes no real customer banking data.
-
-## Troubleshooting
-
-| Symptom | Resolution |
-| --- | --- |
-| Customer application is blank or stale | Restart the frontend, then hard-refresh with `Ctrl+Shift+R`. |
-| Application services are unavailable | Restart `npm run dev` from `backend/`. |
-| Demonstration state is inconsistent | Use the full reset action in the Cheat Controller. |
-| AI status shows fallback | Verify the local AI service when live prediction is required; the core journey remains available. |
-| A family reward is already sent | Reset the journey before replaying that step. |
-| The presenter needs a fast recovery | Reset, refresh the customer application, and restart from the Home activation card. |
+- Model results use synthetic data and are not production performance.
+- Merchant opportunities remain stochastic and cannot be guaranteed.
+- Model binaries must be generated locally.
+- The repository has no production banking integration.
+- Authentication and authorization are not production-ready.
+- Real deployment requires verified campaign data and consented behavioral
+  features.

@@ -1,5 +1,5 @@
 // ⚠️ MOCK — Sah Sukuk (صك صح) savings product. Static synthetic figures for
-// the "grow the family goal" pitch slide — no real product integration.
+// the family-goal experience — no real product integration.
 
 export const MOCK_SOURCE = "sah-sukuk";
 

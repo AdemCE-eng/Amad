@@ -2,47 +2,71 @@
 
 ## Runtime topology
 
-Nadeem is a local-first hackathon demo with four existing pieces:
+Nadeem has three primary runtime components:
 
-1. `cheat-controller/` is a static operator console served by Express.
-2. `backend/` is an ESM Node/Express service. It owns all calculations, calls Gemini only for mascot wording, and writes complete state changes to Firebase Realtime Database.
-3. Firebase Realtime Database is the source of truth. Each browser is isolated under `/users/<uuid>`; the local emulator is the default development runtime.
-4. `frontend/` is a React/Vite RTL application. It reads backend/Firebase state and renders the family, reward, offer, and mascot experiences.
+1. `frontend/` is an Arabic-first React/Vite application for saving, budgets,
+   family goals, rewards, personalized opportunities, and Saqr progression.
+2. `backend/` is an ESM Node.js/Express service. It owns financial
+   calculations, validation, workflows, and all Firebase writes.
+3. `ml-service/` is an optional FastAPI service for offer-opportunity and
+   purchase-behavior prediction.
 
-The approved flow is:
+Firebase Realtime Database is the application state store. Local development
+uses the emulator by default, with each browser isolated under
+`/users/<uuid>`.
 
-`operator or React client -> Express routes -> pure engines -> atomic Firebase update -> React listeners`
+```text
+React client
+    │
+    ▼
+Express routes → pure domain engines → Firebase update → React listeners
+    │
+    └── recommendation adapter → FastAPI ML service
+                               └→ deterministic fallback
+```
 
 ## Backend boundaries
 
-- `backend/src/index.js` mounts stable routes under `/api`, exposes `/health`, and serves the cheat controller.
-- `backend/src/logic/` contains pure deterministic engines. `familyEngine.js` calculates explainable savings capacity; `offerEngine.js` derives repeat-campaign predictions; `gameEngine.js` owns NXP/streaks; `petEngine.js` owns mascot state.
-- `backend/src/routes/` performs I/O and atomic Firebase writes around those engines.
-- `backend/src/mocks/` contains explicitly MOCK Open Banking, merchant campaign, Akthr, and Sah Sukuk data.
-- `backend/src/ai/gemini.js` generates mascot text only and has deterministic fallback copy. It does not calculate financial or prediction values.
+- `backend/src/index.js` mounts routes under `/api` and exposes `/health`.
+- `backend/src/logic/` contains deterministic financial and game engines.
+- `backend/src/routes/` performs I/O and Firebase writes around those engines.
+- `backend/src/mocks/` contains explicitly labeled MOCK financial and campaign
+  data.
+- `backend/src/services/personalizedOfferService.js` validates ML responses and
+  owns fallback behavior.
+- `backend/src/ai/gemini.js` may generate mascot wording. It does not calculate
+  financial values or probabilities.
 
-## Existing offer behavior
+## Recommendation architecture
 
-`offerEngine.js` must remain stable. It groups MOCK campaign history by merchant and occasion and predicts a repeat when at least two yearly records exist. Its 65%/78% values are deterministic demo rules, not a trained model. `/api/offers/predicted`, `/api/offers/decide`, and `/api/offers/settle` implement the existing demo journey. Offer settlement contributes the expected saving to the family goal and grants NXP; it does not alter Akthr.
+`GET /api/ml/recommendations` calls the recommendation adapter. When enabled,
+the adapter requests predictions from FastAPI, validates the response, applies
+essential-category suppression, and materializes customer recommendations.
 
-## Existing family behavior
+The FastAPI service combines:
 
-`familyEngine.js` calculates each family member's safe surplus and allocates the monthly goal by relative saving capacity. The route layer owns contribution, reward, and notification writes. NXP, Akthr, and money remain separate values.
+- CatBoost offer-opportunity probabilities
+- HistGradientBoosting purchase-behavior probabilities
+- Estimated saving
+- Budget relevance
+- Previous user decisions
+
+When ML is disabled, unavailable, slow, or invalid, the adapter returns a
+deterministic labeled fallback. The core application does not require Python.
 
 ## Data model
 
-Each UUID record contains `user`, `pet`, `game`, `transactions`, `family`, `offers`, `loyalty`, `rewards`, `notifications`, and `meta` beneath `/users/<uuid>`. `user.username` is the UUID itself. The frontend never writes directly; `POST /api/session` provisions a new record through the backend. The cheat controller enumerates UUID records and applies each presenter action to all of them. The ML service is deliberately stateless with respect to Firebase and operates on pseudonymous IDs and derived/synthetic features.
+Each UUID record contains `user`, `pet`, `game`, `transactions`, `family`,
+`offers`, `loyalty`, `rewards`, `notifications`, and `meta` under
+`/users/<uuid>`.
 
-## Tests and baseline
+The frontend never writes directly to Firebase. `POST /api/session` provisions
+the UUID namespace through the backend, and all later state changes pass
+through validated API routes.
 
-- `npm --prefix frontend run build`: passed on the isolated branch baseline.
-- `npm --prefix backend test`: 24/24 passed.
-- `npm --prefix backend run test:routes`: requires the Firebase emulator and backend to be running; without them it fails fast with the documented prerequisite.
+## Security and production boundaries
 
-## Extension seam
-
-The personalized system is added beside, not inside, the stable offer engine:
-
-`GET /api/ml/recommendations -> personalizedOfferService -> FastAPI when enabled -> validated result`
-
-When ML is disabled, unavailable, slow, invalid, essential, or below threshold, the adapter returns a deterministic fallback derived from the existing offer engine. Existing route semantics and default demo behavior are unchanged.
+The current repository uses MOCK / SYNTHETIC
+data. A production deployment would require authentication, authorization,
+consent, secrets management, verified banking integrations, audit logging,
+model monitoring, and drift detection.

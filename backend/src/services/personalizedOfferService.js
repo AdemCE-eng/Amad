@@ -99,10 +99,9 @@ export function validateMlResponse(payload) {
       || a.merchantId.localeCompare(b.merchantId));
 }
 
-// Safe operator-facing status derived from the same service result used by
-// the application. It deliberately excludes recommendations and exceptions:
-// the Cheat Controller only needs availability, selected models, and the
-// labeled fallback reason.
+// Safe diagnostic status derived from the same service result used by the
+// application. It deliberately excludes recommendations and exceptions,
+// exposing only availability, selected models, and the labeled fallback reason.
 export function recommendationEngineStatus(result) {
   const online = result?.source === "ml-service";
   return {

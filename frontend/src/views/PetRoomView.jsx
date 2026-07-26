@@ -136,7 +136,7 @@ export default function PetRoomView() {
           onTap={() => { poke(); handlePetInteraction(); }}
         />
 
-        {/* One glance tells judges how behavior becomes a living outcome. */}
+        {/* Summarizes how saving behavior affects the companion. */}
         <div className="relative mb-3 w-full overflow-hidden rounded-2xl border border-violet/20 bg-gradient-to-l from-violet/10 via-ink-card to-coral/10 px-4 py-3" data-testid="pet-status-message">
           <div className="flex items-center justify-between gap-3">
             <span className="inline-flex items-center gap-1.5 text-[9px] font-black text-violet"><span className="h-1.5 w-1.5 rounded-full bg-emerald-400 motion-safe:animate-pulse" /> استجابة مالية حيّة</span>

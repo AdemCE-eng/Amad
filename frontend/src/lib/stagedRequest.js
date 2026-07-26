@@ -2,7 +2,7 @@ const defaultSleep = (milliseconds) => new Promise((resolve) => setTimeout(resol
 const defaultNow = () => (typeof performance === 'undefined' ? Date.now() : performance.now());
 
 // Starts the real request synchronously, while a customer-facing stage timeline
-// progresses in parallel. Success waits for both; failures stop presentation
+// progresses in parallel. Success waits for both; failures stop the sequence
 // immediately so callers can show a genuine retry state.
 export async function runStagedRequest({
   request,

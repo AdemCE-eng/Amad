@@ -4,7 +4,7 @@ The Nadeem frontend is a React and Vite experience for personal saving, Saqr pro
 
 ## Run locally
 
-From the repository root, use `run-project.bat` to start the complete demo. To run only the frontend:
+From the repository root, use `run-project.bat` to start the local application. To run only the frontend:
 
 ```powershell
 cd frontend
