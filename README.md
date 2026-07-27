@@ -1,6 +1,21 @@
-# Nadeem — نديم
+<p align="center">
+  <img src="docs/assets/brand/nadeem-logo.png" alt="Nadeem logo" width="170">
+</p>
 
-> A proactive, personalized financial companion for better saving and spending decisions.
+<h1 align="center">Nadeem — نديم</h1>
+
+---
+
+<p align="center">
+  A proactive, personalized financial companion for better saving and spending decisions.
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/React-19-0B6B78?style=flat-square&logo=react&logoColor=white" alt="React 19">
+  <img src="https://img.shields.io/badge/Node.js-Express-2F855A?style=flat-square&logo=nodedotjs&logoColor=white" alt="Node.js and Express">
+  <img src="https://img.shields.io/badge/Python-FastAPI-009688?style=flat-square&logo=python&logoColor=white" alt="Python and FastAPI">
+  <img src="https://img.shields.io/badge/Interface-Arabic_RTL-F47E66?style=flat-square" alt="Arabic RTL interface">
+</p>
 
 Nadeem by **Pixel Falcons** explores how personal finance can become more
 timely, understandable, and engaging. It combines
@@ -77,6 +92,25 @@ The React and Node application continues to work when the Python ML service is
 unavailable. The backend validates ML responses and switches to deterministic,
 labeled fallback guidance on timeout, invalid output, low confidence, or
 service failure.
+
+## Product Screens
+
+<table>
+  <tr>
+    <td align="center"><img src="docs/assets/app-screens/home.png" alt="Nadeem home screen" width="180"></td>
+    <td align="center"><img src="docs/assets/app-screens/saqr.png" alt="Saqr saving companion" width="180"></td>
+    <td align="center"><img src="docs/assets/app-screens/opportunities.png" alt="Personalized saving opportunity results" width="180"></td>
+    <td align="center"><img src="docs/assets/app-screens/family.png" alt="Family saving goal" width="180"></td>
+    <td align="center"><img src="docs/assets/app-screens/rewards.png" alt="Nadeem rewards" width="180"></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>Home</strong></td>
+    <td align="center"><strong>Saqr</strong></td>
+    <td align="center"><strong>Saving opportunities</strong></td>
+    <td align="center"><strong>Family saving</strong></td>
+    <td align="center"><strong>Rewards</strong></td>
+  </tr>
+</table>
 
 ## Architecture
 
